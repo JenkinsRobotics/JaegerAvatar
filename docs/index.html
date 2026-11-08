@@ -1,545 +1,106 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="{{REPO_NAME}} — {{DESCRIPTION}} Built on JaegerOS, the Jaeger ecosystem's local-first, modular runtime.">
-<meta property="og:title" content="{{REPO_NAME}} — {{TAGLINE}}">
-<meta property="og:description" content="{{DESCRIPTION}}">
-<meta property="og:type" content="website">
-<meta name="theme-color" content="#0d1117">
-<title>{{REPO_NAME}} — {{TAGLINE}}</title>
-<link rel="icon" type="image/png" href="https://jenkinsrobotics.com/wp-content/uploads/2021/04/cropped-cropped-Jenkins-logo-transparent-1.png">
-<style>
-  /* ── Palette + design system CLONED from JROS-site/index.html ──
-     Same tokens, same section/nav/hero/feature/roadmap/footer
-     patterns. See gh-pages/SITE.md for what to touch per-repo. ── */
-  :root {
-    --bg:        #0a0e14;
-    --bg2:       #0d1117;
-    --panel:     #11161d;
-    --panel2:    #161b22;
-    --fg:        #c9d1d9;
-    --heading:   #f0f6fc;
-    --muted:     #8b949e;
-    --border:    #21262d;
-    --border2:   #30363d;
-    --accent:    #58a6ff;
-    --accent2:   #79c0ff;
-    --accent3:   #1f6feb;
-    --glow:      rgba(88, 166, 255, 0.18);
-    --green:     #3fb950;
-    --warn:      #d29922;
-    --red:       #f85149;
-    --radius:    10px;
-    --mono:      'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    --sans:      -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  }
-
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; scroll-padding-top: 64px; }
-
-  body {
-    margin: 0;
-    color: var(--fg);
-    font-family: var(--sans);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    background:
-      radial-gradient(1200px 600px at 80% -15%, rgba(88,166,255,0.16), transparent 60%),
-      radial-gradient(900px 600px at -5% 5%, rgba(31,111,235,0.18), transparent 55%),
-      var(--bg);
-    background-attachment: fixed;
-  }
-
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { color: var(--accent2); }
-
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
-  code.inline {
-    background: var(--panel); padding: 1px 6px; border-radius: 4px;
-    border: 1px solid var(--border); font-family: var(--mono);
-    font-size: 13px; color: var(--accent2);
-  }
-
-  .hero, section {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 80px 0;
-    position: relative;
-  }
-  section:nth-of-type(odd) {
-    background-color: var(--bg2);
-    background-image: radial-gradient(circle, rgba(88,166,255,0.05) 1px, transparent 1.4px);
-    background-size: 28px 28px;
-  }
-  section:nth-of-type(even) {
-    background-color: var(--bg);
-    background-image: radial-gradient(circle, rgba(88,166,255,0.04) 1px, transparent 1.4px);
-    background-size: 28px 28px;
-  }
-
-  .hero, section { opacity: 0; transform: translateY(24px); transition: opacity .65s cubic-bezier(.2,.7,.2,1), transform .65s cubic-bezier(.2,.7,.2,1); }
-  .hero.in, section.in { opacity: 1; transform: none; }
-  @media (prefers-reduced-motion: reduce) {
-    .hero, section { opacity: 1 !important; transform: none !important; transition: none; }
-    .feature { opacity: 1 !important; transform: none !important; }
-  }
-
-  nav {
-    position: sticky; top: 0; z-index: 50;
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    background: rgba(10, 14, 20, 0.86);
-    border-bottom: 1px solid var(--border);
-  }
-  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; color: var(--heading); letter-spacing: -0.01em; }
-  .brand-logo { flex-shrink: 0; border-radius: 6px; filter: drop-shadow(0 0 8px var(--glow)); }
-  .nav-links { display: flex; align-items: center; gap: 24px; }
-  .nav-links a { color: var(--muted); font-size: 14px; font-weight: 500; transition: color 0.15s ease; }
-  .nav-links a:hover { color: var(--fg); }
-
-  .btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 9px 16px; border-radius: var(--radius); font-weight: 600; font-size: 14px;
-    border: 1px solid var(--border2); color: var(--fg); background: var(--panel);
-    transition: transform .12s ease, border-color .15s ease, background .15s ease;
-    cursor: pointer; font-family: inherit;
-  }
-  .btn:hover { transform: translateY(-1px); border-color: var(--accent); color: var(--accent2); }
-  .btn.primary {
-    background: linear-gradient(135deg, var(--accent3), var(--accent));
-    color: #fff; border: 1px solid var(--accent3);
-    box-shadow: 0 4px 18px rgba(88, 166, 255, 0.25);
-  }
-  .btn.primary:hover { filter: brightness(1.08); color: #fff; }
-
-  .hero { padding-top: 100px; text-align: center; overflow: hidden; position: relative; }
-  .hero .wrap { position: relative; z-index: 2; }
-  .hero-bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
-  .hero-bg::before {
-    content: ""; position: absolute; inset: -40px;
-    background-image:
-      linear-gradient(rgba(88,166,255,0.07) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(88,166,255,0.07) 1px, transparent 1px);
-    background-size: 48px 48px;
-    mask-image: radial-gradient(ellipse at center, #000 30%, transparent 78%);
-    -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 78%);
-    animation: grid-drift 32s linear infinite;
-  }
-  @keyframes grid-drift { from { transform: translate(0, 0); } to { transform: translate(48px, 48px); } }
-  .hero-bg .orb { position: absolute; width: 540px; height: 540px; border-radius: 50%; filter: blur(80px); opacity: 0.55; will-change: transform; }
-  .hero-bg .orb.one { background: radial-gradient(circle, rgba(88,166,255,0.55), transparent 70%); top: -180px; left: -120px; animation: orb-float-1 22s ease-in-out infinite; }
-  .hero-bg .orb.two { background: radial-gradient(circle, rgba(31,111,235,0.5), transparent 70%); bottom: -200px; right: -120px; animation: orb-float-2 28s ease-in-out infinite; }
-  .hero-bg .orb.three { width: 320px; height: 320px; background: radial-gradient(circle, rgba(121,192,255,0.35), transparent 70%); top: 30%; left: 50%; transform: translate(-50%, -50%); animation: orb-pulse 9s ease-in-out infinite; }
-  @keyframes orb-float-1 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(140px, 80px) scale(1.12); } }
-  @keyframes orb-float-2 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-100px, -60px) scale(1.08); } }
-  @keyframes orb-pulse { 0%, 100% { opacity: 0.32; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.55; transform: translate(-50%, -50%) scale(1.18); } }
-  .hero-bg .scan {
-    position: absolute; left: 0; right: 0; height: 180px;
-    background: linear-gradient(180deg, transparent 0%, rgba(88,166,255,0.10) 50%, transparent 100%);
-    animation: scan-sweep 14s linear infinite; will-change: transform;
-  }
-  @keyframes scan-sweep { 0% { transform: translateY(-100%); opacity: 0; } 8% { opacity: 1; } 92% { opacity: 1; } 100% { transform: translateY(110vh); opacity: 0; } }
-  .hero-bg .dot { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: var(--accent2); box-shadow: 0 0 8px var(--accent2); opacity: 0.7; }
-  .hero-bg .dot.a { top: 22%; left: 14%; animation: dot-drift 13s ease-in-out infinite; }
-  .hero-bg .dot.b { top: 70%; left: 22%; animation: dot-drift 17s ease-in-out infinite reverse; }
-  .hero-bg .dot.c { top: 30%; right: 18%; animation: dot-drift 19s ease-in-out infinite; }
-  .hero-bg .dot.d { top: 78%; right: 12%; animation: dot-drift 15s ease-in-out infinite reverse; }
-  .hero-bg .dot.e { top: 12%; left: 52%; animation: dot-drift 21s ease-in-out infinite; }
-  @keyframes dot-drift { 0%, 100% { transform: translate(0, 0); opacity: 0.5; } 50% { transform: translate(20px, -16px); opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) {
-    .hero-bg::before, .hero-bg .orb, .hero-bg .scan, .hero-bg .dot, .hero-mark { animation: none !important; }
-  }
-
-  .badge {
-    display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-family: var(--mono);
-    color: var(--muted); border: 1px solid var(--border2); background: var(--panel);
-    padding: 6px 14px; border-radius: 999px; margin-bottom: 28px;
-  }
-  .badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
-
-  .hero-logo { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 6px; }
-  .hero-mark { border-radius: 14px; filter: drop-shadow(0 6px 26px var(--glow)) drop-shadow(0 0 10px rgba(88,166,255,0.25)); animation: mark-bob 6s ease-in-out infinite; }
-  @keyframes mark-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-  .wordmark { font-family: var(--mono); font-size: clamp(36px, 7vw, 56px); font-weight: 700; color: var(--heading); letter-spacing: -0.02em; line-height: 1; }
-
-  .hero h1 { font-size: clamp(28px, 4.4vw, 44px); line-height: 1.15; margin: 24px 0 8px; letter-spacing: -0.015em; font-weight: 700; color: var(--heading); }
-  .hero h1 .grad { background: linear-gradient(135deg, var(--accent2), var(--accent)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-  .hero .slogan { color: var(--accent); font-family: var(--mono); font-size: 13px; margin: 0 0 28px; letter-spacing: 0.5px; opacity: 0.85; }
-  .hero .lede { font-size: clamp(16px, 2.1vw, 19px); color: var(--muted); max-width: 660px; margin: 0 auto 36px; }
-  .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
-
-  .term { max-width: 680px; margin: 32px auto 0; text-align: left; background: var(--panel2); border: 1px solid var(--border2); border-radius: var(--radius); overflow: hidden; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55); }
-  .term-bar { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; border-bottom: 1px solid var(--border); background: var(--panel); }
-  .term-bar .ttl { color: var(--muted); font-size: 12px; font-family: var(--mono); }
-  .term-bar .lights { display: flex; gap: 6px; }
-  .term-bar .lights span { width: 11px; height: 11px; border-radius: 50%; background: var(--border2); }
-  .term-bar .lights span:first-child { background: #ff5f57; }
-  .term-bar .lights span:nth-child(2) { background: #febc2e; }
-  .term-bar .lights span:nth-child(3) { background: #28c840; }
-  .term pre { margin: 0; padding: 18px 18px; font-family: var(--mono); font-size: 13.5px; color: var(--fg); line-height: 1.75; white-space: pre-wrap; word-break: break-all; }
-  .term .pmt { color: var(--accent); }
-  .term .cm { color: var(--muted); font-style: italic; }
-  .term .ok { color: var(--green); }
-  .term .blink { display: inline-block; color: var(--accent2); animation: term-blink 1.05s steps(1) infinite; }
-  @keyframes term-blink { 50% { opacity: 0; } }
-
-  .eyebrow { color: var(--accent); font-weight: 700; font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
-  h2.h { font-size: clamp(22px, 3.2vw, 32px); margin: 10px 0 16px; letter-spacing: -0.015em; color: var(--heading); font-weight: 700; line-height: 1.2; }
-  .sub { color: var(--muted); max-width: 680px; font-size: 16px; }
-  .center { text-align: center; }
-  .center .sub { margin-left: auto; margin-right: auto; }
-
-  .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; margin-top: 44px; }
-  .feature { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; transition: border-color .18s ease, transform .18s ease, background .18s ease; opacity: 0; transform: translateY(16px); }
-  #features.in .feature { animation: domino-in .5s cubic-bezier(.2,.7,.2,1) forwards; }
-  #features.in .feature:nth-child(1) { animation-delay: .04s; }
-  #features.in .feature:nth-child(2) { animation-delay: .09s; }
-  #features.in .feature:nth-child(3) { animation-delay: .14s; }
-  #features.in .feature:nth-child(4) { animation-delay: .19s; }
-  #features.in .feature:nth-child(5) { animation-delay: .24s; }
-  #features.in .feature:nth-child(6) { animation-delay: .29s; }
-  @keyframes domino-in { to { opacity: 1; transform: none; } }
-  .feature:hover { border-color: var(--accent); transform: translateY(-2px); background: var(--panel2); }
-  .feature h3 { font-size: 16px; margin: 0 0 8px; color: var(--heading); font-weight: 600; letter-spacing: -0.01em; }
-  .feature p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
-  .feature .pill { display: inline-block; margin-top: 12px; padding: 2px 9px; font-family: var(--mono); font-size: 11px; color: var(--accent2); background: rgba(88, 166, 255, 0.08); border: 1px solid rgba(88, 166, 255, 0.25); border-radius: 999px; }
-  .feature .pill.dev { color: var(--warn); background: rgba(210, 153, 34, 0.08); border-color: rgba(210, 153, 34, 0.30); }
-  .feature.dev { border-style: dashed; background: rgba(13, 17, 23, 0.5); }
-
-  .ondeck-divider { display: flex; align-items: center; gap: 14px; margin: 56px 0 24px; color: var(--accent); font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
-  .ondeck-divider::before, .ondeck-divider::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--border2), transparent); }
-
-  .arch { margin-top: 44px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
-  @media (max-width: 720px) { .arch { grid-template-columns: 1fr; } }
-  .arch-box { background: var(--panel); border: 1px solid var(--border2); border-radius: var(--radius); padding: 22px; }
-  .arch-box h4 { margin: 0 0 8px; color: var(--accent); font-family: var(--mono); font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
-  .arch-box h3 { margin: 0 0 12px; font-size: 18px; color: var(--heading); }
-  .arch-box p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
-
-  .roadmap { margin-top: 44px; position: relative; }
-  .roadmap::before { content: ""; position: absolute; left: 18px; top: 6px; bottom: 6px; width: 2px; background: linear-gradient(180deg, var(--accent), var(--accent3), transparent); }
-  .milestone { position: relative; padding: 0 0 28px 56px; }
-  .milestone::before { content: ""; position: absolute; left: 11px; top: 6px; width: 16px; height: 16px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); box-shadow: 0 0 0 4px var(--bg2), 0 0 12px var(--glow); }
-  .milestone.done::before { background: var(--accent); }
-  .milestone.next::before { background: var(--bg); border-color: var(--accent2); animation: pulse 2.4s ease-in-out infinite; }
-  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 4px var(--bg2), 0 0 12px var(--glow); } 50% { box-shadow: 0 0 0 4px var(--bg2), 0 0 22px var(--accent2); } }
-  .milestone h4 { margin: 0 0 6px; font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: 0.04em; }
-  .milestone h3 { margin: 0 0 8px; color: var(--heading); font-size: 17px; letter-spacing: -0.01em; }
-  .milestone p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
-
-  .install-grid { margin-top: 44px; display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 760px; }
-  .step { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; position: relative; }
-  .step .n { position: absolute; top: -14px; left: 18px; background: var(--accent); color: #fff; font-family: var(--mono); font-weight: 700; font-size: 14px; padding: 3px 10px; border-radius: 999px; box-shadow: 0 4px 12px var(--glow); }
-  .step h3 { margin: 8px 0 8px; color: var(--heading); font-size: 16px; }
-  .step p { margin: 0 0 12px; color: var(--muted); font-size: 14px; }
-  .step pre { margin: 0; padding: 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; font-family: var(--mono); font-size: 12.5px; color: var(--fg); overflow-x: auto; line-height: 1.55; }
-  .step pre .pmt { color: var(--accent); }
-  .step pre .cm { color: var(--muted); }
-
-  footer { border-top: 1px solid var(--border); padding: 56px 0 32px; background: var(--bg2); }
-  footer .wrap { display: grid; grid-template-columns: 1.3fr 2fr; gap: 40px; align-items: start; }
-  @media (max-width: 720px) { footer .wrap { grid-template-columns: 1fr; gap: 28px; } }
-  .foot-brand { display: flex; align-items: flex-start; gap: 14px; }
-  .foot-brand img { border-radius: 6px; border: 1px solid var(--border2); background: #fff; padding: 3px; flex-shrink: 0; }
-  .foot-line { font-family: var(--mono); color: var(--heading); font-size: 14px; margin-bottom: 4px; font-weight: 600; }
-  .foot-sub { color: var(--muted); font-size: 13px; line-height: 1.5; }
-  .foot-sub a { color: var(--accent); }
-  .foot-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
-  @media (max-width: 540px) { .foot-cols { grid-template-columns: repeat(2, 1fr); gap: 20px; } }
-  .foot-col { display: flex; flex-direction: column; gap: 6px; }
-  .foot-h { color: var(--accent); font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 6px; }
-  .foot-col a { color: var(--muted); font-size: 13.5px; }
-  .foot-col a:hover { color: var(--fg); }
-  .foot-motto { margin-top: 10px; color: var(--accent2); font-family: var(--mono); font-size: 12px; font-style: italic; letter-spacing: 0.02em; opacity: 0.85; }
-
-  @media (max-width: 640px) { .nav-links a:not(.btn) { display: none; } .nav-links { gap: 12px; } }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jaeger Avatar — Give your agent a face</title>
+  <meta name="description" content="An open-source character application in development. Create and customize animated AI characters, with planned embedded JaegerAgent and optional JaegerAI integration.">
+  <meta name="theme-color" content="#0a0e14">
+  <meta property="og:title" content="Jaeger Avatar — Give your agent a face">
+  <meta property="og:description" content="Create a character. Give it a voice. Bring it to life. Explore the direction of Jaeger Avatar, an open-source application in early development.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://jenkinsrobotics.github.io/JaegerAvatar/">
+  <link rel="canonical" href="https://jenkinsrobotics.github.io/JaegerAvatar/">
+  <link rel="icon" type="image/svg+xml" href="assets/avatar-mark.svg">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/site.js" defer></script>
 </head>
 <body>
-
-<!-- ─────────────────────── NAV ─────────────────────── -->
-<nav>
-  <div class="wrap">
-    <div class="brand">
-      <img class="brand-logo" src="https://jenkinsrobotics.com/wp-content/uploads/2021/04/cropped-cropped-Jenkins-logo-transparent-1.png"
-           alt="Jenkins Robotics" width="26" height="26">
-      {{REPO_NAME}}
-    </div>
-    <div class="nav-links">
-      <a href="#what">What it is</a>
-      <a href="#features">Capabilities</a>
-      <a href="#architecture">Architecture</a>
-      <a href="#install">Install</a>
-      <a href="#roadmap">Roadmap</a>
-      <a class="btn" href="https://github.com/JenkinsRobotics/{{REPO_NAME}}" target="_blank" rel="noopener">GitHub →</a>
-    </div>
-  </div>
-</nav>
-
-<!-- ─────────────────────── HERO ─────────────────────── -->
-<header class="hero" id="top">
-  <div class="hero-bg" aria-hidden="true">
-    <div class="orb one"></div>
-    <div class="orb two"></div>
-    <div class="orb three"></div>
-    <div class="scan"></div>
-    <div class="dot a"></div>
-    <div class="dot b"></div>
-    <div class="dot c"></div>
-    <div class="dot d"></div>
-    <div class="dot e"></div>
-  </div>
-  <div class="wrap">
-    <div class="badge"><span class="dot"></span> {{STATUS_LINE}} · Apache-2.0</div>
-
-    <div class="hero-logo" aria-hidden="true">
-      <img class="hero-mark" src="https://jenkinsrobotics.com/wp-content/uploads/2021/04/cropped-cropped-Jenkins-logo-transparent-1.png"
-           alt="Jenkins Robotics" width="88" height="88">
-      <div class="wordmark">{{REPO_NAME}}</div>
-    </div>
-
-    <p class="slogan">// {{TAGLINE}}</p>
-
-    <h1>{{HERO_HEADLINE_PLAIN}} <span class="grad">{{HERO_HEADLINE_ACCENT}}</span></h1>
-
-    <p class="lede">{{DESCRIPTION}}</p>
-
-    <div class="hero-cta">
-      <a class="btn primary" href="#install">Get started →</a>
-      <a class="btn" href="https://github.com/JenkinsRobotics/{{REPO_NAME}}" target="_blank" rel="noopener">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.6-.3-5.4-1.3-5.4-5.8 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.1 0 4.6-2.8 5.5-5.5 5.8.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/>
-        </svg>
-        Star on GitHub
-      </a>
-    </div>
-
-    <div class="term" aria-label="install one-liner">
-      <div class="term-bar">
-        <div class="lights"><span></span><span></span><span></span></div>
-        <span class="ttl">install — bash</span>
-        <span style="width:48px"></span>
-      </div>
-<pre><span class="cm"># Clone, pin JaegerOS, install editable.</span>
-<span class="pmt">$</span> git clone https://github.com/JenkinsRobotics/{{REPO_NAME}}.git
-<span class="pmt">$</span> cd {{REPO_NAME}}
-<span class="pmt">$</span> pip install -e .<span class="blink">▎</span></pre>
-    </div>
-  </div>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <nav class="wrap navigation" aria-label="Main navigation">
+    <a class="brand" href="#main"><img src="assets/avatar-mark.svg" width="34" height="34" alt=""><span>Jaeger<span class="brand-light"> Avatar</span></span></a>
+    <div class="nav-links"><a href="#vision">The vision</a><a href="#packs">Character packs</a><a href="#ecosystem">Ecosystem</a><a class="nav-github" href="https://github.com/JenkinsRobotics/JaegerAvatar">GitHub <span aria-hidden="true">↗</span></a></div>
+  </nav>
 </header>
-
-<!-- ─────────────────────── WHAT IS IT ─────────────────────── -->
-<section id="what">
-  <div class="wrap">
-    <div class="eyebrow">// what it is</div>
-    <h2 class="h">{{WHAT_HEADLINE}}</h2>
-    <p class="sub">{{DESCRIPTION}}</p>
-
-    <p class="sub" style="margin-top: 18px;">
-      Built on <a href="https://github.com/JenkinsRobotics/JaegerOS" target="_blank" rel="noopener">JaegerOS</a>
-      — the framework layer of the Jaeger ecosystem (Bus · Node ·
-      modules/slots · supervisor · safety · contract · capability layer).
-      This repo pins a JaegerOS release; it doesn't fork or edit it.
-    </p>
-
-    <p class="sub" style="margin-top: 18px;">
-      One copy of every truth: the module's contract lives in
-      <code class="inline">module.yaml</code>, nowhere else. See this
-      repo's <code class="inline">CONVENTIONS.md</code> for the full
-      ecosystem ruleset this template is built from.
-    </p>
-  </div>
-</section>
-
-<!-- ─────────────────────── CAPABILITIES ─────────────────────── -->
-<section id="features">
-  <div class="wrap">
-    <div class="center">
-      <div class="eyebrow">// capabilities</div>
-      <h2 class="h">{{CAPABILITIES_HEADLINE}}</h2>
-      <p class="sub">Replace these placeholder cards with what this repo actually does — one card per real capability, not aspirational ones. See <code class="inline">CONVENTIONS.md</code> → "No spec ahead of code."</p>
+<main id="main">
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <div class="hero-copy">
+      <p class="eyebrow"><span class="status-dot"></span> Open source · Early development</p>
+      <h1 id="hero-title">Give your agent<br><span>a face.</span></h1>
+      <p class="hero-lede">A character you create.<br>A presence you can talk to.</p>
+      <p class="hero-description">Jaeger Avatar is a standalone character application in development. Shape its look, voice and personality, then bring it into conversation.</p>
+      <div class="actions"><a class="button primary" href="#vision">Explore the vision <span aria-hidden="true">↓</span></a><a class="button" href="https://github.com/JenkinsRobotics/JaegerAvatar">View the project <span aria-hidden="true">↗</span></a></div>
+      <p class="release-note">The application is being defined. No app download yet.</p>
     </div>
-
-    <div class="feature-grid">
-      <div class="feature">
-        <h3>{{FEATURE_1_TITLE}}</h3>
-        <p>{{FEATURE_1_DESCRIPTION}}</p>
-        <span class="pill">{{FEATURE_1_TAG}}</span>
+    <div class="character-panel">
+      <div class="panel-top"><span class="mono">EXPRESSION SKETCH / 01</span><span class="live-label">Browser illustration</span></div>
+      <div class="character-stage" data-expression="neutral">
+        <div class="stage-orbit" aria-hidden="true"></div>
+        <svg class="character" viewBox="0 0 480 340" role="img" aria-label="An illustrated robot face showing the selected expression">
+          <defs>
+            <linearGradient id="shell" x1="0" y1="0" x2="0.85" y2="1"><stop stop-color="#eff7ff"/><stop offset=".5" stop-color="#b2c7dd"/><stop offset="1" stop-color="#647b97"/></linearGradient>
+            <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#233650"/><stop offset=".55" stop-color="#0a1424"/><stop offset="1" stop-color="#101f33"/></linearGradient>
+            <linearGradient id="eye" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#c1efff"/><stop offset="1" stop-color="#58a6ff"/></linearGradient>
+            <filter id="glow"><feGaussianBlur stdDeviation="3"/></filter>
+          </defs>
+          <ellipse cx="240" cy="305" rx="107" ry="11" fill="#02060d" opacity=".55"/>
+          <g class="head">
+            <path d="M234 68V47" stroke="#91adc9" stroke-width="7" stroke-linecap="round"/>
+            <circle cx="234" cy="40" r="9" fill="#79c0ff"/>
+            <rect x="62" y="143" width="23" height="62" rx="11" fill="#54708d"/>
+            <rect x="395" y="143" width="23" height="62" rx="11" fill="#54708d"/>
+            <rect x="77" y="71" width="326" height="215" rx="91" fill="url(#shell)"/>
+            <path d="M115 119C144 80 325 76 367 116" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/>
+            <rect x="96" y="94" width="288" height="164" rx="68" fill="url(#glass)" stroke="#7893b0" stroke-width="2"/>
+            <path d="M128 122C164 101 225 106 255 110" fill="none" stroke="#adcdf4" stroke-width="3" stroke-linecap="round" opacity=".12"/>
+            <g class="gaze">
+              <g class="eyes eyes-neutral"><rect x="148" y="146" width="48" height="55" rx="20" fill="url(#eye)"/><rect x="284" y="146" width="48" height="55" rx="20" fill="url(#eye)"/></g>
+              <g class="eyes eyes-curious"><rect x="148" y="150" width="48" height="44" rx="18" fill="url(#eye)"/><rect x="281" y="135" width="54" height="68" rx="23" fill="url(#eye)"/><path d="M282 121L327 115" stroke="#79c0ff" stroke-width="5" stroke-linecap="round"/></g>
+              <g class="eyes eyes-happy"><path d="M147 175Q172 140 197 175M283 175Q308 140 333 175" fill="none" stroke="#a4e1ff" stroke-width="12" stroke-linecap="round"/><path d="M150 199L145 210M165 202L162 213M315 202L318 213M330 199L335 210" stroke="#79c0ff" stroke-width="3" stroke-linecap="round" opacity=".65"/></g>
+              <path class="mouth" d="M226 218Q240 225 254 218" fill="none" stroke="#79c0ff" stroke-width="4" stroke-linecap="round"/>
+            </g>
+            <circle cx="240" cy="272" r="3" fill="#d2e7f8"/>
+          </g>
+        </svg>
+        <span class="stage-coordinate mono" aria-hidden="true">LOOK / EXPRESSION / PRESENCE</span>
       </div>
-
-      <div class="feature">
-        <h3>{{FEATURE_2_TITLE}}</h3>
-        <p>{{FEATURE_2_DESCRIPTION}}</p>
-        <span class="pill">{{FEATURE_2_TAG}}</span>
+      <div class="preview-controls">
+        <div class="expression-row"><span class="control-label">Expression</span><div class="expression-buttons" role="group" aria-label="Illustrated expression"><button type="button" data-expression="neutral" aria-pressed="true">Neutral</button><button type="button" data-expression="curious" aria-pressed="false">Curious</button><button type="button" data-expression="happy" aria-pressed="false">Happy</button></div></div>
+        <div class="gaze-control"><label for="gaze">Gaze</label><span aria-hidden="true">←</span><input id="gaze" type="range" min="-100" max="100" value="0" aria-valuetext="Centered"><span aria-hidden="true">→</span></div>
       </div>
-
-      <div class="feature">
-        <h3>{{FEATURE_3_TITLE}}</h3>
-        <p>{{FEATURE_3_DESCRIPTION}}</p>
-        <span class="pill">{{FEATURE_3_TAG}}</span>
-      </div>
+      <p class="panel-note" id="preview-status" role="status">Illustrative face · no AI connected</p>
+      <noscript><p class="panel-note">Enable JavaScript to try expression and gaze controls.</p></noscript>
     </div>
+  </section>
 
-    <!-- On-deck — capabilities in active development, not yet shipped -->
-    <div class="ondeck-divider"><span>// on deck — in active development</span></div>
+  <div class="principles wrap" aria-label="Product principles"><span>YOUR CHARACTER</span><span>YOUR CHOICE OF CONTROLLER</span><span>OPEN SOURCE</span></div>
 
-    <div class="feature-grid">
-      <div class="feature dev">
-        <h3>{{PLANNED_FEATURE_TITLE}}</h3>
-        <p>{{PLANNED_FEATURE_DESCRIPTION}}</p>
-        <span class="pill dev">planned</span>
-      </div>
+  <section class="section wrap" id="vision" aria-labelledby="vision-title">
+    <div class="section-heading"><p class="eyebrow">01 / THE PLANNED EXPERIENCE</p><h2 id="vision-title">Make it yours.<br>Then meet it.</h2><p>Character creation and conversation, in one application. The following workflows are planned.</p></div>
+    <div class="workflow">
+      <article><span class="step-number">01</span><h3>Create the character</h3><p>Give it an identity, personality and preferred voice. Start with who you want to meet.</p><span class="detail">Identity · Persona · Voice defaults</span></article>
+      <article><span class="step-number">02</span><h3>Shape its presence</h3><p>Import or customize its appearance. Map expressions, mouth shapes, gaze and gestures.</p><span class="detail">Visual assets · Controls · Performance</span></article>
+      <article><span class="step-number">03</span><h3>Bring it to life</h3><p>Talk with an embedded agent, connect your existing assistant, or take the controls yourself.</p><span class="detail">Conversation · Puppeteering · Playback</span></article>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ─────────────────────── ARCHITECTURE ─────────────────────── -->
-<section id="architecture">
-  <div class="wrap">
-    <div class="eyebrow">// architecture</div>
-    <h2 class="h">Pinned to JaegerOS, not forked from it.</h2>
-    <p class="sub">
-      This repo composes onto the Jaeger ecosystem's tier map — see the
-      <a href="https://github.com/JenkinsRobotics/JaegerOS" target="_blank" rel="noopener">JaegerOS</a>
-      repo for the full architecture this template serves.
-    </p>
+  <section class="section section-tint" id="packs" aria-labelledby="packs-title"><div class="wrap split">
+    <div><p class="eyebrow">02 / PORTABLE CHARACTER PACKS · PLANNED</p><h2 id="packs-title">A character.<br>Many ways to perform.</h2><p class="section-copy">The pack describes who the character is and how it appears. The controller supplies what it does next.</p><p class="section-copy">The same character could be driven by an AI, a human performer or a saved scene. Pack interchange will be qualified against real consumers as the application develops.</p><a class="text-link" href="https://github.com/JenkinsRobotics/JaegerAvatar/blob/master/dev/docs/vision/PRODUCT_SCOPE.md">Read the character scope <span aria-hidden="true">↗</span></a></div>
+    <div class="pack-diagram"><div class="pack-title"><img src="assets/avatar-mark.svg" width="40" height="40" alt=""><div><strong>Character pack</strong><span>Reusable identity &amp; presentation</span></div><span class="outline-label">PLANNED</span></div><dl><div><dt>Identity</dt><dd>Name, persona &amp; voice defaults</dd></div><div><dt>Appearance</dt><dd>Assets &amp; visual representations</dd></div><div><dt>Expression</dt><dd>Controls, mappings &amp; clips</dd></div></dl><div class="pack-boundary"><span class="small-dot"></span><p>Private memory, credentials and tool permissions stay with the running assistant.</p></div></div>
+  </div></section>
 
-    <div class="arch">
-      <div class="arch-box">
-        <h4>// this repo</h4>
-        <h3>{{REPO_NAME}}</h3>
-        <p>{{DESCRIPTION}} Declares its contract in <code class="inline">module.yaml</code> (slot, topics, tools, requirements) — the single source of truth for what this repo consumes and produces.</p>
-      </div>
-      <div class="arch-box">
-        <h4>// pinned framework</h4>
-        <h3>JaegerOS</h3>
-        <p>Bus · Node · modules/slots · supervisor · safety · contract · capability layer. This repo builds on a pinned release; JaegerOS itself is never edited to make this repo work.</p>
-      </div>
-    </div>
-  </div>
-</section>
+  <section class="section wrap" id="ecosystem" aria-labelledby="ecosystem-title">
+    <div class="section-heading"><p class="eyebrow">03 / THE JAEGER ECOSYSTEM</p><h2 id="ecosystem-title">Its own application.<br>A connected family.</h2><p>Two planned ways to run the conversational experience, with one clear owner of each assistant session.</p></div>
+    <div class="mode-grid"><article class="mode"><span class="outline-label">PRIMARY PATH · PLANNED</span><h3>Run independently</h3><p>Jaeger Avatar hosts the reusable JaegerAgent engine. Choose a character and talk, without running a separate JaegerAI application.</p><div class="flow"><span>Jaeger Avatar</span><span aria-hidden="true">↓</span><a href="https://github.com/JenkinsRobotics/jaeger-agent">Embedded JaegerAgent</a></div></article><article class="mode"><span class="outline-label">OPTIONAL CONNECTION · PLANNED</span><h3>Give your assistant a face</h3><p>Connect to an existing JaegerAI instance. It keeps its conversation, memory and tools; Avatar gives that same assistant a visible presence.</p><div class="flow"><span>Jaeger Avatar</span><span aria-hidden="true">↕</span><a href="https://github.com/JenkinsRobotics/JaegerAI">Your JaegerAI instance</a></div></article></div>
+    <div class="family"><p><a href="https://github.com/JenkinsRobotics/JaegerOS">JaegerOS <span aria-hidden="true">↗</span></a><span>Runtime infrastructure</span></p><p><a href="https://github.com/JenkinsRobotics/JaegerAnimation">JaegerAnimation <span aria-hidden="true">↗</span></a><span>Raster &amp; media playback</span></p><p><a href="https://github.com/JenkinsRobotics/Mochi">Mochi <span aria-hidden="true">↗</span></a><span>Character &amp; robot workbench</span></p><p><a href="https://github.com/JenkinsRobotics/Aether-Animation">Aether Animation <span aria-hidden="true">↗</span></a><span>Physical rigs &amp; animatronics</span></p></div>
+  </section>
 
-<!-- ─────────────────────── INSTALL ─────────────────────── -->
-<section id="install">
-  <div class="wrap">
-    <div class="eyebrow">// install</div>
-    <h2 class="h">Three steps, no dependency hell.</h2>
-
-    <div class="install-grid">
-      <div class="step">
-        <span class="n">1</span>
-        <h3>Clone</h3>
-        <p>Standard clone — no special install location required.</p>
-        <pre><span class="pmt">$</span> git clone https://github.com/JenkinsRobotics/{{REPO_NAME}}.git
-<span class="pmt">$</span> cd {{REPO_NAME}}</pre>
-      </div>
-
-      <div class="step">
-        <span class="n">2</span>
-        <h3>Pin + install</h3>
-        <p>Fill in the JaegerOS version range, then install editable.</p>
-        <pre><span class="pmt">$</span> cp pyproject.toml.example pyproject.toml
-<span class="cm"># edit the jaeger-os dependency range, then:</span>
-<span class="pmt">$</span> pip install -e .</pre>
-      </div>
-
-      <div class="step">
-        <span class="n">3</span>
-        <h3>Prove the contract</h3>
-        <p>The module-contract smoke test proves the manifest parses and the factory builds a live node — no real hardware or models needed.</p>
-        <pre><span class="pmt">$</span> pytest src/{{package_name}}/tests</pre>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ─────────────────────── ROADMAP ─────────────────────── -->
-<section id="roadmap">
-  <div class="wrap">
-    <div class="eyebrow">// roadmap</div>
-    <h2 class="h">{{ROADMAP_HEADLINE}}</h2>
-
-    <div class="roadmap">
-      <div class="milestone done">
-        <h4>{{MILESTONE_1_VERSION}} — Shipped</h4>
-        <h3>{{MILESTONE_1_TITLE}}</h3>
-        <p>{{MILESTONE_1_DESCRIPTION}}</p>
-      </div>
-
-      <div class="milestone next">
-        <h4>{{MILESTONE_2_VERSION}} — Next</h4>
-        <h3>{{MILESTONE_2_TITLE}}</h3>
-        <p>{{MILESTONE_2_DESCRIPTION}}</p>
-      </div>
-
-      <div class="milestone">
-        <h4>Later</h4>
-        <h3>{{MILESTONE_3_TITLE}}</h3>
-        <p>{{MILESTONE_3_DESCRIPTION}}</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ─────────────────────── FOOTER ─────────────────────── -->
-<footer>
-  <div class="wrap">
-    <div class="foot-brand">
-      <img src="https://jenkinsrobotics.com/wp-content/uploads/2021/04/cropped-cropped-Jenkins-logo-transparent-1.png"
-           alt="Jenkins Robotics" width="42" height="42" loading="lazy">
-      <div>
-        <div class="foot-line">{{REPO_NAME}} · Apache-2.0</div>
-        <div class="foot-sub">
-          A <a href="https://jenkinsrobotics.com" target="_blank" rel="noopener">Jenkins Robotics</a>
-          project — part of the Jaeger ecosystem, built on
-          <a href="https://github.com/JenkinsRobotics/JaegerOS" target="_blank" rel="noopener">JaegerOS</a>.
-        </div>
-        <div class="foot-motto">&ldquo;Engineering the future, one robot at a time.&rdquo;</div>
-      </div>
-    </div>
-    <div class="foot-cols">
-      <div class="foot-col">
-        <div class="foot-h">Project</div>
-        <a href="https://github.com/JenkinsRobotics/{{REPO_NAME}}" target="_blank" rel="noopener">GitHub repo</a>
-        <a href="https://github.com/JenkinsRobotics/{{REPO_NAME}}/blob/master/README.md" target="_blank" rel="noopener">README</a>
-        <a href="https://github.com/JenkinsRobotics/{{REPO_NAME}}/issues" target="_blank" rel="noopener">Issues</a>
-      </div>
-      <div class="foot-col">
-        <div class="foot-h">Ecosystem</div>
-        <a href="https://github.com/JenkinsRobotics/JaegerOS" target="_blank" rel="noopener">JaegerOS</a>
-        <a href="https://github.com/JenkinsRobotics/Jaeger-AI" target="_blank" rel="noopener">Jaeger-AI</a>
-        <a href="https://github.com/JenkinsRobotics/JP01" target="_blank" rel="noopener">JP01</a>
-      </div>
-      <div class="foot-col">
-        <div class="foot-h">Jenkins Robotics</div>
-        <a href="https://jenkinsrobotics.com" target="_blank" rel="noopener">jenkinsrobotics.com</a>
-        <a href="https://jenkinsrobotics.github.io" target="_blank" rel="noopener">Project index</a>
-        <a href="https://discord.gg/sAnE5pRVyT" target="_blank" rel="noopener">Discord</a>
-      </div>
-    </div>
-  </div>
-</footer>
-
-<script>
-  // Intersection-observer reveal — fades each section in once.
-  const reveal = (entries) => {
-    for (const e of entries) {
-      if (e.isIntersecting) {
-        e.target.classList.add('in');
-      }
-    }
-  };
-  if ('IntersectionObserver' in window) {
-    const io = new IntersectionObserver(reveal, { threshold: 0.12, rootMargin: '0px 0px -10% 0px' });
-    document.querySelectorAll('.hero, section').forEach(el => io.observe(el));
-  } else {
-    document.querySelectorAll('.hero, section').forEach(el => el.classList.add('in'));
-  }
-</script>
-
+  <section class="section section-tint" id="development" aria-labelledby="development-title"><div class="wrap split">
+    <div><p class="eyebrow">04 / EARLY DEVELOPMENT</p><h2 id="development-title">A clear direction.<br>An open starting point.</h2><p class="section-copy">The scope, architecture and this website are in place. The application runtime is the work ahead.</p><p class="section-copy">Follow the repository for implementation. There is no installer yet, and the expression sketch above is not a running agent.</p><div class="actions"><a class="button primary" href="https://github.com/JenkinsRobotics/JaegerAvatar">Follow development <span aria-hidden="true">↗</span></a><a class="text-link" href="https://github.com/JenkinsRobotics/JaegerAvatar/blob/master/dev/docs/reality/STATUS.md">Current status <span aria-hidden="true">↗</span></a></div></div>
+    <ol class="milestones"><li><span class="milestone-number">01</span><div><h3>One character on screen</h3><p>A validated pack, a working representation and direct expression controls.</p></div></li><li><span class="milestone-number">02</span><div><h3>A real conversation</h3><p>Embedded JaegerAgent, synchronized speech and clean interruption.</p></div></li><li><span class="milestone-number">03</span><div><h3>Make it portable</h3><p>Character editing, save/reopen and verified pack exchange.</p></div></li><li><span class="milestone-number">04</span><div><h3>Connect and perform</h3><p>JaegerAI connection, then tracking, recording and streaming workflows.</p></div></li></ol>
+  </div></section>
+</main>
+<footer class="wrap footer"><a class="brand" href="#main"><img src="assets/avatar-mark.svg" width="26" height="26" alt="">Jaeger Avatar</a><p>A Jenkins Robotics project · Apache-2.0</p><div><a href="https://github.com/JenkinsRobotics/JaegerAvatar/blob/master/LICENSE">License</a><a href="https://github.com/JenkinsRobotics/JaegerAvatar/blob/master/dev/docs/README.md">Documentation</a><a href="https://github.com/JenkinsRobotics/JaegerAvatar">GitHub <span aria-hidden="true">↗</span></a></div></footer>
 </body>
 </html>

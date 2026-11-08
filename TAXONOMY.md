@@ -1,5 +1,11 @@
 # Taxonomy — the five compositional tiers
 
+> **Inherited reference.** This document predates the current JaegerAgent /
+> JaegerAI separation. For this repository, Jaeger Avatar is an application,
+> JaegerAgent is the reusable engine, and JaegerAI is a separate assistant
+> product. Use [current architecture](dev/docs/vision/ARCHITECTURE.md) for
+> implementation; historical tier examples below are retained for context.
+
 > Operator-ratified, written against `THREE_TIER_STRUCTURE.md` and
 > `JAEGER_ECOSYSTEM.md` (JaegerOS repo, branch `0.9.0`, ratified
 > 2026-07-11) plus this template's own module/workspace skeletons and a

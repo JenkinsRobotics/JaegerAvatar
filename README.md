@@ -1,206 +1,99 @@
-<h1 align="center">{{REPO_NAME}}</h1>
-
+<h1 align="center">Jaeger Avatar</h1>
+<p align="center"><strong>Create a character. Give it a voice. Bring it to life.</strong></p>
 <p align="center">
-  <em>{{DESCRIPTION}}</em>
+  <a href="https://jenkinsrobotics.github.io/JaegerAvatar/">Project website</a> ·
+  <a href="dev/docs/vision/PRODUCT_SCOPE.md">Product scope</a> ·
+  <a href="dev/docs/roadmap/README.md">Roadmap</a> ·
+  <a href="LICENSE">Apache-2.0</a>
 </p>
 
-<p align="center">
-  <a href="https://github.com/JenkinsRobotics/{{REPO_NAME}}/releases"><img src="https://img.shields.io/badge/version-0.1.0-2EA44F?style=for-the-badge" alt="Version"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-2EA44F?style=for-the-badge" alt="License"></a>
-  <img src="https://img.shields.io/badge/python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/JaegerOS-pinned-58A6FF?style=for-the-badge" alt="JaegerOS pinned">
-</p>
+> **Early development.** This repository currently contains the product documentation,
+> an interactive project website and retained application-template references.
+> The avatar application, embedded agent, pack editor and JaegerAI connection are
+> **planned**, not installed or runnable here yet. See [current status](dev/docs/reality/STATUS.md).
 
----
+## What is Jaeger Avatar?
 
-> ## Replace-these checklist (delete this block once done)
->
-> - [ ] `{{REPO_NAME}}` — every occurrence, this file + `docs/index.html` + `pyproject.toml.example`
-> - [ ] `{{DESCRIPTION}}` — one-line description, this file + `docs/index.html`
-> - [ ] `{{package_name}}` — the Python import name (snake_case) — rename the
->       `{{package_name}}/` directory itself, and every path inside it
-> - [ ] Fill in `{{package_name}}/module.yaml` (drop the `.example`
->       suffix from every `*.example` file once real values are in)
-> - [ ] Pin a real JaegerOS version range in `pyproject.toml.example`
->       (see [Ecosystem links](#ecosystem-links))
-> - [ ] Seed `dev/docs/reality/STATUS.md` with today's date and truth
-> - [ ] Enable GitHub Pages from `docs/` (see `docs/SITE.md`)
-> - [ ] Pick a LICENSE (Apache-2.0 shipped by default — swap if this repo
->       needs different terms)
-> - [ ] Building a project (a robot, a rig) instead of a module? Use
->       [`workspace/`](workspace/) instead of `{{package_name}}/` — see
->       [`workspace/README.md`](workspace/README.md) for its own checklist
+Jaeger Avatar is a planned standalone application for creating, customizing and
+interacting with animated AI characters. Configure a character's appearance,
+expressions, gestures, personality and voice; save it as a portable character
+pack; then bring it into a conversation or a performance.
 
----
+An **avatar** is the visual representation. A **character** combines that
+representation with identity and behavior defaults. An **agent instance** is a
+running assistant with its own conversation, memory, tools and permissions.
+These are separate objects: sharing a character does not share private memories.
 
-## What it is
+## Planned experience
 
-`{{REPO_NAME}}` is a **{{DESCRIPTION}}** built on
-[JaegerOS](https://github.com/JenkinsRobotics/JaegerOS) — the framework
-layer of the Jaeger ecosystem (Bus · Node · modules/slots · supervisor ·
-safety · contract · capability layer). This repo doesn't fork or edit
-JaegerOS; it **pins** a release and builds on top of it, the same way a
-ROS package builds on ROS.
+- **Create a character:** identity, personality, backstory and voice preferences.
+- **Configure its appearance:** import or customize 2D, 3D or procedural assets;
+  map expressions, gaze, mouth shapes and gestures. Full model sculpting is not
+  an initial milestone.
+- **Save a portable pack:** assets, declared controls, reusable clips and optional
+  persona defaults. Credentials and conversation state stay with the runtime.
+- **Talk and interact:** host JaegerAgent inside the standalone app, with speech
+  and animation synchronized to the active conversation.
+- **Connect an existing assistant:** use Avatar as the animated interface for a
+  JaegerAI instance while that instance retains memory, permissions and tools.
+- **Perform in other modes:** human puppeteering and scripted playback, with
+  recording and streaming outputs in later milestones.
 
-This template scaffolds three different repo shapes. Pick the one that
-matches what you're building — see [`CONVENTIONS.md`](CONVENTIONS.md)
-for the full picture and when to reach for each:
+A character pack does not require an agent. A person, a script or an AI can drive
+its declared controls. The default product experience will be conversational.
 
-- **Module repo** (the `{{package_name}}/` directory at this repo's
-  root) — a self-contained capability (`module.yaml` + `config.py` +
-  `node.py` + tests) that plugs into **any** JaegerOS project through a
-  **slot** (see [`jaeger_os/nodes/kokoro_tts/`](https://github.com/JenkinsRobotics/JaegerOS/tree/master/jaeger_os/nodes/kokoro_tts)
-  for the canonical shape this mirrors). Use this when you're building
-  one swappable engine (a TTS backend, an STT backend, …) meant to be
-  used by many different projects.
-- **Workspace repo** (the [`workspace/`](workspace/) directory) — a
-  project that owns a **Body's bringup**: `topology.yaml` (controllers,
-  capabilities, e-stop scope), `manifest.toml` (the node graph that
-  actually boots), `unit.yaml` (this physical/simulated unit's identity
-  + live-verified gate), and `bringup/boot.py` (links → adapters →
-  e-stop → capabilities → runtime). Mirrors JaegerOS's own reference
-  hardware package, `jaeger_os/hardware/packages/jp01/`. Use this when
-  you're standing up a robot, a rig, or any other physical/simulated
-  body — see [`workspace/README.md`](workspace/README.md) to start.
-- **Suite app** — a project that owns a **Mind-facing product**: its
-  own faces (chat window, tray, voice), assembling JaegerOS + Jaeger AI
-  + whichever modules it needs (the `jaeger.toml` / `jaeger.windowed.toml`
-  manifest shapes in [Jaeger-AI](https://github.com/JenkinsRobotics/Jaeger-AI)
-  are the reference). Use this when you're building an agentic product
-  surface rather than a hardware bringup. **(planned)** — this template
-  doesn't scaffold a suite-app skeleton yet; start from Jaeger-AI itself
-  and pin forward rather than improvising one from this repo.
+## Where it fits
 
-See [`CONVENTIONS.md`](CONVENTIONS.md) for the rules every repo in the
-ecosystem follows, and the tier map in
-[Ecosystem links](#ecosystem-links). For the formal version of that
-tier map — five compositional roles (NODE, MODULE,
-PACKAGE/WORKSPACE, APP, DISTRIBUTION), a ROS comparison, and
-marketplace tagging — see [`TAXONOMY.md`](TAXONOMY.md). See
-[`examples/`](examples/README.md) for six worked concept mappings
-(a bare TTS module, a chatbot, JP01's own head, a lidar+SLAM demo, a
-six-axis arm, and JP01 itself) that exercise the taxonomy against
-real and archetypal apps, honest about what already exists versus
-what still needs building.
+| Project | Responsibility |
+| --- | --- |
+| **Jaeger Avatar** | Character creation/customization, rendering and the avatar interaction experience. |
+| [JaegerAgent](https://github.com/JenkinsRobotics/jaeger-agent) | Reusable headless agent engine: models, turns, tools, skills and multimodal processing. Planned embedded runtime for Avatar. |
+| [JaegerAI](https://github.com/JenkinsRobotics/JaegerAI) | Complete general-purpose assistant application. Avatar can become an optional interface for an existing instance. |
+| [JaegerOS](https://github.com/JenkinsRobotics/JaegerOS) | Runtime composition, messaging, modules, supervision and capability contracts. |
+| [JaegerAnimation](https://github.com/JenkinsRobotics/JaegerAnimation) | Reusable raster/media playback and the existing `character/v1` loader. |
+| [Mochi](https://github.com/JenkinsRobotics/Mochi) | Character and virtual-robot workbench for proving runtime capabilities intended for JP01. |
+| [Aether Animation](https://github.com/JenkinsRobotics/Aether-Animation) | Physical mechanisms, animatronics, rig control and digital-twin development. |
 
-## Install
+**Standalone mode (planned):** Avatar hosts JaegerAgent and owns the session's
+configuration and storage. JaegerAI is not a required second application.
 
-```bash
-git clone https://github.com/JenkinsRobotics/{{REPO_NAME}}.git
-cd {{REPO_NAME}}
-python3 -m venv .venv && source .venv/bin/activate
-cp pyproject.toml.example pyproject.toml   # after filling in the pin — see checklist above
-pip install -e .
-```
+**Connected mode (planned):** JaegerAI owns the assistant session; Avatar renders
+and voices that session through an explicit client adapter. It does not create
+an additional agent or independent memory for the same conversation.
 
-This repo depends on a **pinned** `jaeger-os` release — it does not
-vendor or fork the framework. See `pyproject.toml.example` for where the
-version range is declared.
-
-## Quick start
-
-```bash
-# Run this module's contract smoke test — proves module.yaml parses,
-# the factory builds a live node, and the bus contract round-trips —
-# all without touching real hardware or models.
-pytest {{package_name}}/tests
-
-# Or run it directly:
-python -m {{package_name}}.tests.test_module_contract
-```
-
-Wire the module into a running JaegerOS instance by pointing its module
-discovery at this package (see JaegerOS's `jaeger_os/core/modules.py` for
-how `discover_modules()` walks module roots) — or, for a project-tier
-repo, declare it in your instance's manifest.
-
-## Module layout
-
-The canonical shape every module/hardware-package repo in the ecosystem
-follows, mirroring [`jaeger_os/nodes/kokoro_tts/`](https://github.com/JenkinsRobotics/JaegerOS/tree/master/jaeger_os/nodes/kokoro_tts)
-in JaegerOS itself:
-
-```
-{{package_name}}/
-├── __init__.py            ← exports the factory (module.yaml's `factory:` target)
-├── module.yaml.example    ← the manifest: slot, topics, tools, requires_*
-├── config.py.example      ← this module's settings-catalog schema slice
-├── node.py.example        ← the four-phase Node (setup → tick → teardown → health)
-├── docs/                  ← this module's own design notes
-│   └── DESIGN.md.example
-└── tests/
-    └── test_module_contract.py.example   ← the module-contract smoke test
-```
-
-One copy of every truth: the manifest (`module.yaml`) is the single
-source for what this module consumes, produces, and requires — nothing
-else in the repo should restate it.
-
-## Workspace layout
-
-The project-tier shape — a repo that brings up a Body (or any project
-that owns its own bringup), mirroring JaegerOS's own reference hardware
-package (`jaeger_os/hardware/packages/jp01/`):
-
-```
-workspace/
-├── README.md                  ← what a workspace repo is, and why these files
-├── topology.yaml.example      ← controllers, capabilities, safety — the
-│                                 Body's capability declaration
-├── manifest.toml.example      ← [[node]] graph: engine modules bind by
-│                                 slot=, the hardware package binds by factory
-├── unit.yaml.example          ← this unit's identity + live-verified gate
-├── requirements.txt.example   ← the pinned-stack pattern (JaegerOS +
-│                                 modules @ tag)
-├── bringup/
-│   └── boot.py.example         ← links → adapters → e-stop → capabilities
-│                                  → runtime
-└── SAFETY_CHECKLIST.md        ← walk before any live (non-simulated) run
-```
-
-Start at [`workspace/README.md`](workspace/README.md) if this repo is a
-workspace rather than a module — it has its own replace-these checklist.
+The pack format and visual integration require compatibility work. Existing
+JaegerAI personas, Mochi packs and Aether formats are not automatically interchangeable.
+See [architecture](dev/docs/vision/ARCHITECTURE.md).
 
 ## Development
 
-```bash
-pytest {{package_name}}/tests    # module-contract smoke test
-ruff check                       # lint, if configured
+There is no application installer or launch command yet. To preview the project
+website, using Python 3:
+
+```sh
+git clone https://github.com/JenkinsRobotics/JaegerAvatar.git
+cd JaegerAvatar
+python3 scripts/check_site.py
+python3 -m http.server 8898 --bind 127.0.0.1 --directory docs
 ```
 
-Follow [`CONVENTIONS.md`](CONVENTIONS.md) — especially: no doc describes
-behavior the code doesn't implement yet (mark it `(planned)` instead),
-and `dev/docs/reality/STATUS.md` stays truthful — any commit that changes
-behavior updates it in the same commit.
+Open [the local website](http://127.0.0.1:8898/). Its expression sketch runs in the
+browser without a model, microphone or account; it is an illustration of the
+control concept, not the finished avatar runtime.
 
-CI (`.github/workflows/ci.yml`) runs the test suite and, if this repo
-sits below the Mind in the dependency graph, the nervous-system dependency
-check (see `CONVENTIONS.md` → "The connection rule").
+- [Documentation map](dev/docs/README.md)
+- [Product scope](dev/docs/vision/PRODUCT_SCOPE.md)
+- [Architecture and integration](dev/docs/vision/ARCHITECTURE.md)
+- [Milestones](dev/docs/roadmap/README.md)
+- [GitHub Pages publishing](docs/SITE.md)
+- [Contributor conventions](CONVENTIONS.md)
 
-## Ecosystem links
-
-- [JaegerOS](https://github.com/JenkinsRobotics/JaegerOS) — the framework
-  this repo pins (Bus · Node · modules/slots · supervisor · safety ·
-  contract · capability layer). You build on it; you don't edit it.
-- [Jaeger-AI](https://github.com/JenkinsRobotics/Jaeger-AI) — the turnkey
-  agentic product (the Mind): loop, tools, skills, memory, persona, local
-  inference, and its own faces (chat app, TUI, voice).
-- [JP01](https://github.com/JenkinsRobotics/JP01) — the reference
-  hardware Jaeger (the Body); the first repo to consume out-of-tree
-  modules and hardware packages the way this template scaffolds.
-
----
+The inherited `workspace/`, `examples/`, `{{package_name}}/` and
+`pyproject.toml.example` are retained template references. They are not an
+implemented Jaeger Avatar package. Runtime packaging and dependency pins will
+be selected and verified during implementation.
 
 ## License
 
-[Apache-2.0](LICENSE) © Jenkins Robotics
-
-## Standalone use
-
-Every module runs by itself — no agent, no app:
-
-    python -m {{package_name}} --smoke
-
-See `__main__.py` (from the `.example`). Inputs/outputs are declared in
-`module.yaml` (`consumes`/`produces` topics, `tools`, `requires_*`) — the
-slot contract IS the interface.
+[Apache License 2.0](LICENSE). Original character assets and imported models
+retain their own licenses and attribution.

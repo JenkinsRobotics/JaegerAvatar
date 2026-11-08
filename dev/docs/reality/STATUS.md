@@ -1,27 +1,33 @@
-# STATUS
+# Current status — November 7, 2026
 
-> Truthful, or it's worthless. Any commit that changes behavior updates
-> this file in the same commit — see `CONVENTIONS.md` → "STATUS stays
-> truthful." This is a seed; replace everything below once the repo has
-> real history.
+## Implemented in this repository
 
-## Current state — {{DATE}}
+- Product-specific README, scope, architecture and milestone documents.
+- Responsive GitHub Pages source in `docs/`, using the existing Jaeger palette.
+- An illustrative browser-only expression sketch: neutral, curious and happy
+  presets with a gaze slider. No model, microphone or account is used.
+- A dependency-free site/document check and CI that runs the actual check.
 
-- **Repo:** `{{REPO_NAME}}` — {{DESCRIPTION}}
-- **Version:** see `VERSION` / `pyproject.toml`'s `dynamic` version field
-- **JaegerOS pin:** not yet set — fill in once `pyproject.toml.example`
-  has a real dependency range (see README checklist)
-- **What works:** nothing yet — this is a freshly-scaffolded template
-  instance
-- **What's stubbed:** every `*.example` file under `src/{{package_name}}/`
-  — `module.yaml`, `config.py`, `node.py`, the module-contract test
-- **Known gaps:** (list real ones here as they appear; delete this line
-  once there's real content)
+## Not implemented
 
-## How to update this file
+- Installable/runnable Jaeger Avatar application or real runtime dependency pins.
+- Embedded JaegerAgent and connected JaegerAI adapters.
+- Character-pack import/export/editor, 3D rendering or camera tracking.
+- Generated speech, persistent agent sessions, recording or streaming output.
+- Universal interchange between JaegerAI personas, Mochi packs and Aether formats.
 
-1. Ship a behavior change.
-2. In the same commit, add or edit a line above reflecting the new truth.
-3. If something moves from "planned" to "shipped," delete it from
-   `../roadmap/` (or mark it done there) — don't leave the same fact
-   living in two docs, per `CONVENTIONS.md` law 1.
+The `workspace/`, `examples/`, `{{package_name}}/` and packaging examples remain
+inherited references. `VERSION` is inherited template metadata, not a published
+application release. No existing experiment has been imported as the product.
+
+## Verification
+
+Run `python3 scripts/check_site.py` and `git diff --check` for website/document
+changes. The initial site passed Chromium checks at 1440, 1024, 768, 390 and 320 px
+without horizontal overflow. All three expression presets, keyboard gaze control,
+reduced-motion behavior and no-JavaScript content were exercised; no browser
+errors were observed. Desktop and mobile screenshots were reviewed. This is
+website verification only; runtime qualification requires separate tests.
+
+The publishing target is the existing `gh-pages` branch. Live deployment status
+must be verified after the branch update; the source check alone does not prove it.

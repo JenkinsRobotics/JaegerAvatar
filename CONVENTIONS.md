@@ -1,5 +1,12 @@
 # Conventions
 
+> **Jaeger Avatar application boundary — November 7, 2026.** The product scope
+> and architecture in `dev/docs/vision/` govern this application. Standalone
+> Avatar embeds JaegerAgent using supported runtime APIs; connected mode uses
+> JaegerAI's client protocol. JaegerAI is a separate assistant product. The
+> module/workspace scaffolds and older app recipes below are historical template
+> references, not a requirement to depend on the complete JaegerAI app.
+
 Every repo in the Jaeger ecosystem (JaegerOS, Jaeger-AI, modules, hardware
 packages, projects) follows these rules. They're condensed from
 `JaegerOS/dev/docs/vision/THREE_TIER_STRUCTURE.md` — read that doc for the
