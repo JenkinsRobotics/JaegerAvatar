@@ -3,8 +3,8 @@
 Milestones are acceptance gates, not release dates. None of the runtime features
 below is implemented in this repository yet.
 
-**Completed foundation:** `avatar/v1` loader/validator and 34 seeded avatars,
-combining Mochi, JaegerAI and JaegerAgent data with original source attribution.
+**Completed foundation:** `avatar/v1` loader/validator and 39 seeded avatars,
+combining Mochi, JaegerAI, JaegerAgent and recovered UI experiments with source attribution.
 See the [pack contract and migration](../packs/AVATAR_PACKS.md). Playback and
 downstream adoption remain acceptance gates below.
 

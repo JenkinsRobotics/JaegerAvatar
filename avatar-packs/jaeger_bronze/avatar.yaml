@@ -1,0 +1,83 @@
+schema: avatar/v1
+avatar: jaeger_bronze
+name: Jaeger (Bronze)
+version: 0.1.0
+description: Bronze Jaeger design study preserved from the design-tokens branch, including full and face
+  crops at the original resolutions.
+default_profile: null
+default_representation: full
+profiles: {}
+representations:
+  full:
+    source: jaeger_ai_design
+    format: character/v1
+    root: sources/jaeger_ai_design/packages/jaeger-design-tokens/assets
+    status: media_available
+    notes: Static full artwork from the design study.
+    presentation:
+      kind: clip_set
+      assets:
+        primary:
+          file: avatar-bronze-full-1024.png
+          type: image
+          adapter: image
+      default_asset: primary
+      render:
+        adapter: image
+        asset: avatar-bronze-full-1024.png
+        framing: fit
+        scaling: smooth
+      expressions:
+        idle:
+          clips: avatar-bronze-full-1024.png
+          loop: false
+      default_expression: idle
+      default_mouth: ''
+  face:
+    source: jaeger_ai_design
+    format: character/v1
+    root: sources/jaeger_ai_design/packages/jaeger-design-tokens/assets
+    status: media_available
+    notes: Static face artwork from the design study.
+    presentation:
+      kind: clip_set
+      assets:
+        primary:
+          file: avatar-bronze-face-1024.png
+          type: image
+          adapter: image
+      default_asset: primary
+      render:
+        adapter: image
+        asset: avatar-bronze-face-1024.png
+        framing: fit
+        scaling: smooth
+      expressions:
+        idle:
+          clips: avatar-bronze-face-1024.png
+          loop: false
+      default_expression: idle
+      default_mouth: ''
+sources:
+  jaeger_ai_design:
+    commit: fc9f4695cd7ac905237cf128566fcf3996b34cbf
+    declared_license: Unspecified
+    status: portrait_prototype
+    notes: Recovered from wip/design-tokens-20261021. The current UI icon duplicates the 128px face asset.
+      Original variants are preserved; no animated rig or persona is supplied.
+    repository: https://github.com/JenkinsRobotics/JaegerAI
+    working_tree_modified: false
+    files:
+      sources/jaeger_ai_design/LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/jaeger_ai_design/packages/jaeger-design-tokens/assets/avatar-bronze-face-1024.png: 40c404cf4399dfe3e6970f60505843b19b71584eb464590d1ed40af76af6cb74
+      sources/jaeger_ai_design/packages/jaeger-design-tokens/assets/avatar-bronze-face-128.png: 1d47524444ba87d49938c6abaef01b94028ec2fa3ec20a8569a606db38200a66
+      sources/jaeger_ai_design/packages/jaeger-design-tokens/assets/avatar-bronze-face-24.png: 03ff35918186a52ea822dc4e12590ee53998e54545205910f21ebb5ebd0d4504
+      sources/jaeger_ai_design/packages/jaeger-design-tokens/assets/avatar-bronze-face-32.png: 391feac02f117b310a121c55fe6a9a74642e6a391e308208c7d6f209460e6af0
+      sources/jaeger_ai_design/packages/jaeger-design-tokens/assets/avatar-bronze-face-64.png: 36baba41da25b7193f72a38cb1572627dd8da99879bef6c77e593f360c518d05
+      sources/jaeger_ai_design/packages/jaeger-design-tokens/assets/avatar-bronze-full-1024.png: 4b4a9813bab4c091d8e6b81597d046625b9794cf652025806053e3795dc55b22
+      sources/jaeger_ai_design/packages/jaeger-design-tokens/assets/avatar-bronze-full-128.png: 2499e812d3251d5d13298317dae12cbd82506f3b7f709e32dcfee906bc032b90
+      sources/jaeger_ai_design/packages/jaeger-design-tokens/assets/avatar-bronze-full-24.png: c06784a2575cce0733366b6888630a2173dfb50dd7ec10fc3e9830af0175c1f3
+      sources/jaeger_ai_design/packages/jaeger-design-tokens/assets/avatar-bronze-full-32.png: 9ad47e9c8cdd96d640b3e8fcc56cd65e3a2ba98203fcafd644886f71bcb13dfb
+      sources/jaeger_ai_design/packages/jaeger-design-tokens/assets/avatar-bronze-full-512.png: 1508d3ff24e46586c2e759dfef006d5bda5df638fb266e122dba0619365f814c
+      sources/jaeger_ai_design/packages/jaeger-design-tokens/assets/avatar-bronze-full-64.png: 3681335257c115e42bf6e43f0e2b12d63bd887f74021a105a0ccb73becd6e859
+    repository_license: sources/jaeger_ai_design/LICENSE

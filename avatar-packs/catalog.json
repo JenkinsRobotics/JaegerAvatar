@@ -15,7 +15,18 @@
       "manifest": "assistant/avatar.yaml",
       "sources": [
         "jaeger_agent",
-        "jaeger_ai"
+        "jaeger_ai",
+        "jaeger_ai_canvas_experiment",
+        "jaeger_ai_shapes_experiment",
+        "jaeger_ai_vrm_experiment"
+      ]
+    },
+    {
+      "avatar": "atlas",
+      "name": "Atlas (Portrait prototype)",
+      "manifest": "atlas/avatar.yaml",
+      "sources": [
+        "jaeger_ai_ui"
       ]
     },
     {
@@ -157,6 +168,24 @@
       ]
     },
     {
+      "avatar": "jaeger_bronze",
+      "name": "Jaeger (Bronze)",
+      "manifest": "jaeger_bronze/avatar.yaml",
+      "sources": [
+        "jaeger_ai_design"
+      ]
+    },
+    {
+      "avatar": "jaeger_sculpted",
+      "name": "Jaeger (Sculpted)",
+      "manifest": "jaeger_sculpted/avatar.yaml",
+      "sources": [
+        "jaeger_ai_3d_experiment",
+        "jaeger_ai_svg_experiment",
+        "jaeger_ai_ui"
+      ]
+    },
+    {
       "avatar": "jarvis",
       "name": "Jarvis",
       "manifest": "jarvis/avatar.yaml",
@@ -198,6 +227,14 @@
       ]
     },
     {
+      "avatar": "nova",
+      "name": "Nova (Portrait prototype)",
+      "manifest": "nova/avatar.yaml",
+      "sources": [
+        "jaeger_ai_ui"
+      ]
+    },
+    {
       "avatar": "orbs",
       "name": "Orbs",
       "manifest": "orbs/avatar.yaml",
@@ -227,6 +264,14 @@
       "manifest": "purge_man/avatar.yaml",
       "sources": [
         "mochi"
+      ]
+    },
+    {
+      "avatar": "relay",
+      "name": "Relay (Portrait prototype)",
+      "manifest": "relay/avatar.yaml",
+      "sources": [
+        "jaeger_ai_ui"
       ]
     },
     {

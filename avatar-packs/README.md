@@ -3,17 +3,22 @@
 Jaeger Avatar owns this library and its `avatar/v1` format, the successor to the
 earlier character packs. [Format, ownership and migration](../dev/docs/packs/AVATAR_PACKS.md).
 
-The seed contains **34 avatars, 39 persona profiles and 38 representations**:
+The library contains **39 avatars, 39 persona profiles and 45 representations**:
 
 | Source | Imported foundation |
 | --- | --- |
 | Mochi | 18 visual character packs with personas, sprites, clips, procedural faces and motion scripts. |
 | JaegerAI | 20 persona/card packs, including traits, SOUL text, backstory and lore. |
 | JaegerAgent | Default Assistant persona as data; no agent engine or visual model. |
+| JaegerAI UI experiments | Sculpted Jaeger with six clips; Atlas, Nova and Relay portraits; bronze Jaeger artwork; archived SVG, cutout, canvas, shape and 3D/VRM experiments. |
 
 Mochi, TARS, GLaDOS and HAL combine the two source libraries in separate variants.
 Their defaults select the JaegerAI persona and Mochi appearance. Assistant defaults
 to JaegerAgent's neutral persona with the JaegerAI card representation.
+
+See [sculpted Jaeger](jaeger_sculpted/README.md),
+[Clanker](clanker/README.md) and the
+[experiment inventory](../dev/docs/packs/EXPERIMENT_IMPORT.md).
 
 Browse [catalog.json](catalog.json), or run from the repository root:
 
@@ -34,8 +39,8 @@ record the missing declaration in `unavailable_assets`.
 
 Imported material retains its source terms. Many source asset licenses are
 `Unspecified`; copying the repository's Apache-2.0 license does not relicense
-those assets. Each source's `REPOSITORY_LICENSE` is contextual attribution,
-while `declared_license` preserves the original pack declaration.
+those assets. Each source's `REPOSITORY_LICENSE` or `LICENSE` snapshot is
+contextual attribution, while `declared_license` preserves the source declaration.
 
 This catalog validates data and asset references. A card is not an animated
 model, and procedural files are not executed by the loader. The app renderer,

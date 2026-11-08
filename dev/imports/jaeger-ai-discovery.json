@@ -1,0 +1,1042 @@
+{
+  "schema": "avatar-source-discovery/v1",
+  "repository": "https://github.com/JenkinsRobotics/JaegerAI",
+  "remote_branches": {
+    "origin/0.13-dev": "a7a40f7e4255df07951234f00c731d362fcdf4fa",
+    "origin/audit/hermes-suite-20261101": "2bd2afc80cb8014e7c057c2db9d9b49b92dc238d",
+    "origin/audit/phase-1b-auth": "4bd830cce1ba429b3855e08ef725ca76601a054d",
+    "origin/consolidate/one-gateway": "2ef73cedcc95f0016061da5b09cb07a5cc664f3e",
+    "origin/dependabot/github_actions/actions/checkout-7": "108bdc6503416b8a234ea87bbdfc34ff3ea379e1",
+    "origin/dependabot/github_actions/actions/setup-node-7": "a9c7add6c8cd46acfba3337b960cfc1b3ad3c368",
+    "origin/dependabot/github_actions/actions/setup-python-7": "9d65903f4ff3bc4a7470a5c098e26e1b48c7193c",
+    "origin/dependabot/github_actions/actions/upload-artifact-7": "9eedadcdfe08f4cc649f459c4156e0c9923a9839",
+    "origin/dependabot/github_actions/softprops/action-gh-release-3": "629de37a928b2e37611f5cf75d82a7cbc70cea1c",
+    "origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c": "9790418a7db2ad1cfe4d9d30eef0852fb4c94529",
+    "origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35": "b284fbea85c3c9e289159a4da03458da38e14863",
+    "origin/dependabot/pip/dev-dependencies-222a843cd6": "ad7f32505aebbb3b812afc772b02f59d71c56531",
+    "origin/dependabot/pip/production-dependencies-96e48b9c2e": "a8426a40e45c8d46125891cd7684b11d5ad59e78",
+    "origin/feat/mac-combined-candidate-v1": "f829f73d5d52687a2631da38b10c6159a40378c0",
+    "origin/feat/mcp-events": "3153b72485bbca79545aa5eaa8265a507366286f",
+    "origin/feat/native-stop-release-candidate": "7422d70786cffa422c73ca4b830ab72947f15c27",
+    "origin/fix/core-flows": "35ef8d966a2c0a25a746717a0b80efaacaedd5a6",
+    "origin/fix/j063-muse-confinement": "6fb60960073abff4a93fe961f5640cd2d9b2ffcd",
+    "origin/gh-pages": "e44e9c4333174433f711142ba18d03a702f0a49b",
+    "origin/master": "e42e98872e68a5b88cac595140a2e9a4034ac216",
+    "origin/phase1b/capability-pre-autosquash": "247594f9350eca3b9213cf2b165683afcbb1f16f",
+    "origin/phase1b/capability-pre-autosquash2": "ea43f872a2e591e9bdab748c0e6ef6d333ac09e2",
+    "origin/phase1b/capability-pre-autosquash3": "4efa46e0a3e32052e6b2033f3ecf2568379d1eba",
+    "origin/phase1b/capability-pre-datefix": "daa23404d98802845fdb2223c148cd00d9929d71",
+    "origin/phase1b/land-dryrun": "77536740be033890e049e5e45eca09ed23fa97b3",
+    "origin/pinocchio": "4124422b15e7f0ca28941774992000b24a151719",
+    "origin/preserved/20261019/jaeger-ide-fix": "da172b0b73ef061470faa01ad7dec9ffaf8bfb38",
+    "origin/preserved/20261019/mac-combined-candidate-source": "f829f73d5d52687a2631da38b10c6159a40378c0",
+    "origin/preserved/20261019/mcp-events": "3153b72485bbca79545aa5eaa8265a507366286f",
+    "origin/preserved/20261019/mcpev-wt": "3153b72485bbca79545aa5eaa8265a507366286f",
+    "origin/preserved/20261019/stop-only-candidate-source": "7422d70786cffa422c73ca4b830ab72947f15c27",
+    "origin/release/0.14.0": "c12aebc85580fd35fc56e9eaedc384f3ba706391",
+    "origin/ui/codex-style-shell": "02860ff3d9b0c0d189d1553dd026c0fa158ae0d4",
+    "origin/wip/blueprint-20261021": "218c2ff5292f92469a4a107b960136ffeec19681",
+    "origin/wip/design-tokens-20261021": "fc9f4695cd7ac905237cf128566fcf3996b34cbf"
+  },
+  "scope": "Tracked avatar/character media across remote branches, existing character manifests, and selected historical UI renderer experiments. Runtime conversation/configuration data was not imported.",
+  "additional_character_manifests": [],
+  "tracked_model_files": [],
+  "candidates": [
+    {
+      "path": "jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/connecting.mp4",
+      "sha": "72d58ef448f9b64908ea12fb0d89529a239e67f9",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/master"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_sculpted"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/idle.mp4",
+      "sha": "fb31facf6fd014e13ad9ef2ac52e60e436d30716",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/master"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_sculpted"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/making_something.mp4",
+      "sha": "b1922950ef816c9767fbf08f917aec2a152ee5ab",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/master"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_sculpted"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/milestone.mp4",
+      "sha": "23ae06c02e9edd48872127646112ba39cf7f7311",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/master"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_sculpted"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/portrait.png",
+      "sha": "585168ba33ad761ef4a0010ff3ac197816a201fb",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/master"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_sculpted"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/waiting.mp4",
+      "sha": "b7aa350666530645d61ae24f32165dc1c909a6a1",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/master"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_sculpted"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/working.mp4",
+      "sha": "49fa4ed591f00bb1daf3a4a4e876164b382a78be",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/master"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_sculpted"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/avatar-placeholder-atlas.jpg",
+      "sha": "cc9f24cdc6c72d38ac12258bb605482f6052ded9",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "imported_portrait_prototype",
+      "avatar": "atlas"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/avatar-placeholder-nova.jpg",
+      "sha": "fbbe3a861afa479be6d3976ff0dd176fd7ad1d04",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "imported_portrait_prototype",
+      "avatar": "nova"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/avatar-placeholder-relay.jpg",
+      "sha": "4d350f288d56a5b7153efc8e64eb264175b44bf7",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "imported_portrait_prototype",
+      "avatar": "relay"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/icon-avatar-bronze-face-128.png",
+      "sha": "fdcb5df7628097597d2bec1c7403d4b93dd4eb31",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_bronze"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/anakin_skywalker.png",
+      "sha": "fd817046e91adc9826bdb17d1894fae2603b1dd1",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "anakin_skywalker/sources/jaeger_ai/assets/card-320x420.png",
+        "anakin_skywalker/sources/jaeger_ai/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/assistant.png",
+      "sha": "0a9c504f6fc71f33dac976f7ef1ba4a163a508c9",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "assistant/sources/jaeger_ai/assets/card-320x420.png",
+        "assistant/sources/jaeger_ai/card.png",
+        "reliability_auditor/sources/jaeger_ai/card.png",
+        "research_strategist/sources/jaeger_ai/card.png",
+        "robotics_architect/sources/jaeger_ai/card.png",
+        "systems_principal/sources/jaeger_ai/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/bender.png",
+      "sha": "ebf7e29f90b8adb05e541a116a8d210d37cdc2af",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "bender/sources/jaeger_ai/assets/card-320x420.png",
+        "bender/sources/jaeger_ai/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/clanker.png",
+      "sha": "6fd8d5422d66de1ecedeffb03f1f1aafe459f732",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "clanker/sources/jaeger_ai/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/eren_yeager.png",
+      "sha": "c0610a0c76962193552922057a51ff71a61e4441",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "eren_yeager/sources/jaeger_ai/assets/card-320x420.png",
+        "eren_yeager/sources/jaeger_ai/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/glados.png",
+      "sha": "2a542088f0b8c5d540d70b877998b363e1536795",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "glados/sources/jaeger_ai/assets/card-320x420.png",
+        "glados/sources/jaeger_ai/card.png",
+        "glados/sources/mochi/assets/card-320x420.png",
+        "glados/sources/mochi/assets/glados.png",
+        "glados/sources/mochi/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/hal_9000.png",
+      "sha": "397e57c57c9715ac45543cd98d3bab5b6c3a9e6e",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "hal_9000/sources/jaeger_ai/assets/card-320x420.png",
+        "hal_9000/sources/jaeger_ai/card.png",
+        "hal_9000/sources/mochi/assets/hal.png",
+        "hal_9000/sources/mochi/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/helldiver.png",
+      "sha": "4dcb8b6816c756726468116d878188cfb3cbfaa7",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "helldiver/sources/jaeger_ai/assets/card-320x420.png",
+        "helldiver/sources/jaeger_ai/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/jaeger-sculpted.png",
+      "sha": "be28269174b809d079a5dd1f2b66e933110318c9",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/master"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_sculpted"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/jarvis.png",
+      "sha": "70e819eac9def54cde987f96921a6fae48c928a9",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "jarvis/sources/jaeger_ai/assets/card-320x420.png",
+        "jarvis/sources/jaeger_ai/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/kamina.png",
+      "sha": "50b2983e03cc2216d48f44a6aaeabe8be2789b6b",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "kamina/sources/jaeger_ai/assets/card-320x420.png",
+        "kamina/sources/jaeger_ai/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/lelouch.png",
+      "sha": "3f8fb2101ab80b4e322347eb0e0ee8d601c5d3df",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "lelouch/sources/jaeger_ai/assets/card-320x420.png",
+        "lelouch/sources/jaeger_ai/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/lilith.png",
+      "sha": "0deaa258b9be1f0439b56f53a22a93bd90bab870",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "lilith/sources/jaeger_ai/assets/card-320x420.png",
+        "lilith/sources/jaeger_ai/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/mochi.png",
+      "sha": "261443be8c951c9cba84d86a57bd0b6c2ab6ebbe",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "mochi/sources/jaeger_ai/assets/card-320x420.png",
+        "mochi/sources/jaeger_ai/card.png",
+        "mochi/sources/mochi/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/paul_atreides.png",
+      "sha": "110032b0ed16cc26e4b3226f42a357860ee69199",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "paul_atreides/sources/jaeger_ai/assets/card-320x420.png",
+        "paul_atreides/sources/jaeger_ai/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/reliability_auditor.png",
+      "sha": "0a9c504f6fc71f33dac976f7ef1ba4a163a508c9",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "assistant/sources/jaeger_ai/assets/card-320x420.png",
+        "assistant/sources/jaeger_ai/card.png",
+        "reliability_auditor/sources/jaeger_ai/card.png",
+        "research_strategist/sources/jaeger_ai/card.png",
+        "robotics_architect/sources/jaeger_ai/card.png",
+        "systems_principal/sources/jaeger_ai/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/research_strategist.png",
+      "sha": "0a9c504f6fc71f33dac976f7ef1ba4a163a508c9",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "assistant/sources/jaeger_ai/assets/card-320x420.png",
+        "assistant/sources/jaeger_ai/card.png",
+        "reliability_auditor/sources/jaeger_ai/card.png",
+        "research_strategist/sources/jaeger_ai/card.png",
+        "robotics_architect/sources/jaeger_ai/card.png",
+        "systems_principal/sources/jaeger_ai/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/robotics_architect.png",
+      "sha": "0a9c504f6fc71f33dac976f7ef1ba4a163a508c9",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "assistant/sources/jaeger_ai/assets/card-320x420.png",
+        "assistant/sources/jaeger_ai/card.png",
+        "reliability_auditor/sources/jaeger_ai/card.png",
+        "research_strategist/sources/jaeger_ai/card.png",
+        "robotics_architect/sources/jaeger_ai/card.png",
+        "systems_principal/sources/jaeger_ai/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/simon.png",
+      "sha": "a57dbdee386d42784661c603eeb0e38e7b6e08df",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "simon/sources/jaeger_ai/assets/card-320x420.png",
+        "simon/sources/jaeger_ai/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/systems_principal.png",
+      "sha": "0a9c504f6fc71f33dac976f7ef1ba4a163a508c9",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "assistant/sources/jaeger_ai/assets/card-320x420.png",
+        "assistant/sources/jaeger_ai/card.png",
+        "reliability_auditor/sources/jaeger_ai/card.png",
+        "research_strategist/sources/jaeger_ai/card.png",
+        "robotics_architect/sources/jaeger_ai/card.png",
+        "systems_principal/sources/jaeger_ai/card.png"
+      ]
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/src/assets/characters/tars.png",
+      "sha": "f16c106e932fe1d792d6888d28fbb8a9b3bf5e66",
+      "refs": [
+        "refs/remotes/origin/HEAD",
+        "refs/remotes/origin/audit/hermes-suite-20261101",
+        "refs/remotes/origin/dependabot/github_actions/actions/checkout-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-node-7",
+        "refs/remotes/origin/dependabot/github_actions/actions/setup-python-7",
+        "refs/remotes/origin/dependabot/github_actions/softprops/action-gh-release-3",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/dev-dependencies-aa2b39941c",
+        "refs/remotes/origin/dependabot/npm_and_yarn/jaeger_ai/interfaces/ui/production-dependencies-1dc0817a35",
+        "refs/remotes/origin/dependabot/pip/dev-dependencies-222a843cd6",
+        "refs/remotes/origin/dependabot/pip/production-dependencies-96e48b9c2e",
+        "refs/remotes/origin/fix/core-flows",
+        "refs/remotes/origin/fix/j063-muse-confinement",
+        "refs/remotes/origin/master",
+        "refs/remotes/origin/ui/codex-style-shell"
+      ],
+      "disposition": "already_imported",
+      "existing_files": [
+        "tars/sources/jaeger_ai/assets/card-320x420.png",
+        "tars/sources/jaeger_ai/card.png",
+        "tars/sources/mochi/assets/card-320x420.png",
+        "tars/sources/mochi/assets/tars.png",
+        "tars/sources/mochi/card.png"
+      ]
+    },
+    {
+      "path": "packages/jaeger-design-tokens/assets/avatar-bronze-face-1024.png",
+      "sha": "0726d812490afe7eb32bc0bbdda8e4cd981352a2",
+      "refs": [
+        "refs/remotes/origin/wip/design-tokens-20261021"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_bronze"
+    },
+    {
+      "path": "packages/jaeger-design-tokens/assets/avatar-bronze-face-128.png",
+      "sha": "fdcb5df7628097597d2bec1c7403d4b93dd4eb31",
+      "refs": [
+        "refs/remotes/origin/wip/design-tokens-20261021"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_bronze"
+    },
+    {
+      "path": "packages/jaeger-design-tokens/assets/avatar-bronze-face-24.png",
+      "sha": "cda557bf7ffbca8afb45c67e5e2231fd769c0632",
+      "refs": [
+        "refs/remotes/origin/wip/design-tokens-20261021"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_bronze"
+    },
+    {
+      "path": "packages/jaeger-design-tokens/assets/avatar-bronze-face-32.png",
+      "sha": "0d1902c57caffc488b21692b1a465b964493ff53",
+      "refs": [
+        "refs/remotes/origin/wip/design-tokens-20261021"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_bronze"
+    },
+    {
+      "path": "packages/jaeger-design-tokens/assets/avatar-bronze-face-64.png",
+      "sha": "69c8948f6b7e4ef3535d52468114851430409410",
+      "refs": [
+        "refs/remotes/origin/wip/design-tokens-20261021"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_bronze"
+    },
+    {
+      "path": "packages/jaeger-design-tokens/assets/avatar-bronze-full-1024.png",
+      "sha": "662f57c914b0a3dcbce7f202c1e81392109c0aec",
+      "refs": [
+        "refs/remotes/origin/wip/design-tokens-20261021"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_bronze"
+    },
+    {
+      "path": "packages/jaeger-design-tokens/assets/avatar-bronze-full-128.png",
+      "sha": "4cb65a7544af694323043033bf1381c288f24fe7",
+      "refs": [
+        "refs/remotes/origin/wip/design-tokens-20261021"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_bronze"
+    },
+    {
+      "path": "packages/jaeger-design-tokens/assets/avatar-bronze-full-24.png",
+      "sha": "904edafb248c198c1ff6164584a9a4f1c7411418",
+      "refs": [
+        "refs/remotes/origin/wip/design-tokens-20261021"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_bronze"
+    },
+    {
+      "path": "packages/jaeger-design-tokens/assets/avatar-bronze-full-32.png",
+      "sha": "95befe097ad14857277a746a0a2cb62ca57f8c9b",
+      "refs": [
+        "refs/remotes/origin/wip/design-tokens-20261021"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_bronze"
+    },
+    {
+      "path": "packages/jaeger-design-tokens/assets/avatar-bronze-full-512.png",
+      "sha": "3b79d4822fd42e8b4c15aa68923717c03b2dc5b4",
+      "refs": [
+        "refs/remotes/origin/wip/design-tokens-20261021"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_bronze"
+    },
+    {
+      "path": "packages/jaeger-design-tokens/assets/avatar-bronze-full-64.png",
+      "sha": "e8c3aebaa81529d3c60b8a9bdbf98eff537d3eef",
+      "refs": [
+        "refs/remotes/origin/wip/design-tokens-20261021"
+      ],
+      "disposition": "imported",
+      "avatar": "jaeger_bronze"
+    }
+  ],
+  "external_model": {
+    "status": "unavailable",
+    "name": "VRM1_Constraint_Twist_Sample.vrm",
+    "evidence": "assistant/sources/jaeger_ai_vrm_experiment/jaeger_ai/features/webui/static/vendor/VENDOR-avatar.md"
+  },
+  "clanker": {
+    "status": "already_imported",
+    "manifest_blob_variants": [
+      "73d4b894b2109ef7e6c903b83b9ff9f7570cbf83",
+      "541d900733cd2bcaa27771be310e8532b53e5a02",
+      "ade0b9c4b2cf2993f0d459f486e08e0b7671cc16"
+    ],
+    "persona_fields_identical": true,
+    "additional_animation_or_model_files": []
+  },
+  "historical_asset_aliases": [
+    {
+      "path": "jaeger_ai/interfaces/ui/public/avatars/bot-atlas.jpg",
+      "sha": "cc9f24cdc6c72d38ac12258bb605482f6052ded9",
+      "commit": "fe37e43a83c0e168f04adbdec8858a68c56226fe",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/avatars/bot-relay.jpg",
+      "sha": "4d350f288d56a5b7153efc8e64eb264175b44bf7",
+      "commit": "fe37e43a83c0e168f04adbdec8858a68c56226fe",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/avatars/char-nova.jpg",
+      "sha": "fbbe3a861afa479be6d3976ff0dd176fd7ad1d04",
+      "commit": "fe37e43a83c0e168f04adbdec8858a68c56226fe",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/anakin_skywalker.png",
+      "sha": "fd817046e91adc9826bdb17d1894fae2603b1dd1",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/assistant.png",
+      "sha": "0a9c504f6fc71f33dac976f7ef1ba4a163a508c9",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/bender.png",
+      "sha": "ebf7e29f90b8adb05e541a116a8d210d37cdc2af",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/clanker.png",
+      "sha": "6fd8d5422d66de1ecedeffb03f1f1aafe459f732",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/eren_yeager.png",
+      "sha": "c0610a0c76962193552922057a51ff71a61e4441",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/glados.png",
+      "sha": "2a542088f0b8c5d540d70b877998b363e1536795",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/hal_9000.png",
+      "sha": "397e57c57c9715ac45543cd98d3bab5b6c3a9e6e",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/helldiver.png",
+      "sha": "4dcb8b6816c756726468116d878188cfb3cbfaa7",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/jarvis.png",
+      "sha": "70e819eac9def54cde987f96921a6fae48c928a9",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/kamina.png",
+      "sha": "50b2983e03cc2216d48f44a6aaeabe8be2789b6b",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/lelouch.png",
+      "sha": "3f8fb2101ab80b4e322347eb0e0ee8d601c5d3df",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/lilith.png",
+      "sha": "0deaa258b9be1f0439b56f53a22a93bd90bab870",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/mochi.png",
+      "sha": "261443be8c951c9cba84d86a57bd0b6c2ab6ebbe",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/paul_atreides.png",
+      "sha": "110032b0ed16cc26e4b3226f42a357860ee69199",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/reliability_auditor.png",
+      "sha": "0a9c504f6fc71f33dac976f7ef1ba4a163a508c9",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/research_strategist.png",
+      "sha": "0a9c504f6fc71f33dac976f7ef1ba4a163a508c9",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/robotics_architect.png",
+      "sha": "0a9c504f6fc71f33dac976f7ef1ba4a163a508c9",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/simon.png",
+      "sha": "a57dbdee386d42784661c603eeb0e38e7b6e08df",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/systems_principal.png",
+      "sha": "0a9c504f6fc71f33dac976f7ef1ba4a163a508c9",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/characters/tars.png",
+      "sha": "f16c106e932fe1d792d6888d28fbb8a9b3bf5e66",
+      "commit": "a0910784925277e0811b7ae31afd1ee8b6a745c5",
+      "disposition": "historical_duplicate"
+    },
+    {
+      "path": "jaeger_ai/interfaces/ui/public/icons/avatar-bronze-face-128.png",
+      "sha": "fdcb5df7628097597d2bec1c7403d4b93dd4eb31",
+      "commit": "2c248429242517dfb7141a270c4187202c526b2c",
+      "disposition": "historical_duplicate"
+    }
+  ]
+}

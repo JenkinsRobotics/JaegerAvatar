@@ -1,0 +1,142 @@
+schema: avatar/v1
+avatar: jaeger_sculpted
+name: Jaeger (Sculpted)
+version: 0.1.0
+description: 'The white grinning Jaeger companion: original artwork, six activity clips, and archived
+  rig experiments. Visual identity only; no fictional persona is inferred.'
+default_profile: null
+default_representation: activity_clips
+profiles: {}
+representations:
+  portrait:
+    source: jaeger_ai_ui
+    format: character/v1
+    root: sources/jaeger_ai_ui/jaeger_ai/interfaces/ui
+    status: media_available
+    notes: Original sculpted artwork.
+    presentation:
+      kind: clip_set
+      assets:
+        primary:
+          file: src/assets/characters/jaeger-sculpted.png
+          type: image
+          adapter: image
+      default_asset: primary
+      render:
+        adapter: image
+        asset: src/assets/characters/jaeger-sculpted.png
+        framing: fit
+        scaling: smooth
+      expressions:
+        idle:
+          clips: src/assets/characters/jaeger-sculpted.png
+          loop: false
+      default_expression: idle
+      default_mouth: ''
+  activity_clips:
+    source: jaeger_ai_ui
+    format: character/v1
+    root: sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public/assets/avatar/jaeger
+    status: media_available
+    notes: Six silent pre-rendered 2.5D activity clips. Their inclusion does not claim the original laptop/smile
+      composition is corrected or that agent state wiring is implemented here. Milestone is configured
+      as a one-shot expression.
+    presentation:
+      kind: clip_set
+      assets:
+        clips:
+          root: .
+          type: clip_set
+          adapter: video
+        poster:
+          file: portrait.png
+          type: image
+          adapter: image
+      default_asset: clips
+      render:
+        adapter: video
+        asset: idle.mp4
+        ideal_size:
+        - 420
+        - 720
+        framing: fit
+        scaling: smooth
+      expressions:
+        idle:
+          clips: idle.mp4
+          loop: true
+        working:
+          clips: working.mp4
+          loop: true
+        making_something:
+          clips: making_something.mp4
+          loop: true
+        waiting:
+          clips: waiting.mp4
+          loop: true
+        connecting:
+          clips: connecting.mp4
+          loop: true
+        milestone_level_up:
+          clips: milestone.mp4
+          loop: false
+      default_expression: idle
+      default_mouth: ''
+sources:
+  jaeger_ai_ui:
+    commit: e42e98872e68a5b88cac595140a2e9a4034ac216
+    declared_license: Unspecified
+    status: media_and_prototype_source
+    notes: Media is available. Cutout/SVG components and the offline clip generator are archived source,
+      not installed renderers. Source status text describes UI activity, not a fictional persona.
+    repository: https://github.com/JenkinsRobotics/JaegerAI
+    working_tree_modified: false
+    files:
+      sources/jaeger_ai_ui/LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/src/assets/characters/jaeger-sculpted.png: d79d549da2458cb366fa14f0246e18b403c7217dd4ff375f54f938341261c723
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/portrait.png: 59ef78bc95f23f6252a99e944f2ccd4e01adfa109404f36eddadf0457c1a8238
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/idle.mp4: e876448c2e8513e8b8487333bbb593ca2a87a41f49f6dcc5c598fd5391b62042
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/working.mp4: 93073a08620542c3ca4e984d05aebcb7ca41864df88d686b1b75fad483417b73
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/making_something.mp4: a116d60519a0121152f86e31c30fde1ff46e0bafbd62eab5384ddbbeaf12a17f
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/waiting.mp4: 7e2baa0c1513ae442d4522643c7a906c16fd98194b039136c822c4da41e0b315
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/connecting.mp4: bb33b873a732b6c214061515dc53d95a842c09cf38ef7744f339b29708c22805
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/milestone.mp4: b9a84d210b5f26549448403bc935056ac0381432bebb6bc7b164ca481f51b16c
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/src/avatar/JaegerAvatar.tsx: 052b8f922d09d444adb3bff30ab9f5c26fa3b67be3981ce1b96fa030826df554
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/src/avatar/jaegerAvatar.css: f0cb5b498cd1aacec363d2d61d606d2ffc62ef171ae114e34e866a36da801a51
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/src/avatar/ClipAvatar.tsx: 5ce23979a8768065a6ae7eda2ea9da15caa0c7978bd5e63e6b8087cd30c7bdc9
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/src/avatar/clipAvatar.css: b1c16f373e02ef694fe1462c3fcbe4bdf8471daa4455c80ddd8ba865ab9e0fa3
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/src/avatar/avatar.ts: 9ebc03128f7e29ccaeef5db53475af9140038e223312a2b5b96bc0f6548ca134
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/src/agents/JaegerCharacter.tsx: 8c01a389d6642602b3e0df8d835a4bdb4e41388180ea10fc91d1dd953b78f519
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/src/agents/jaegerCharacter.css: f026e75d0d65465d70d518c125ab22bf545c407f0e007e5dd4547b9b69672469
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/scripts/render-avatar-loops.mjs: 474a09b130846d1806c9d14f62d5f0bfa9411fef3e097bfb6d423438145d49c0
+      sources/jaeger_ai_ui/docs/COMPANION_UI_REDESIGN.md: f959a2451ee52c2c71d61702b90b4281b8080f09ab168ad398f21519d545eee8
+    repository_license: sources/jaeger_ai_ui/LICENSE
+  jaeger_ai_3d_experiment:
+    commit: 5be1d1e98c42f563a38b18113f74e321fee99c27
+    declared_license: Unspecified
+    status: archived_prototype
+    notes: Historical procedural Three.js reconstruction, replaced upstream by the artwork cutout. No
+      external 3D model. React/Three.js and host integration are not bundled; no active representation
+      is declared.
+    repository: https://github.com/JenkinsRobotics/JaegerAI
+    working_tree_modified: false
+    files:
+      sources/jaeger_ai_3d_experiment/LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/jaeger_ai_3d_experiment/jaeger_ai/interfaces/ui/src/avatar/JaegerAvatar.tsx: 4d5543554e647321c5f2986c9fe254513416783a7e4a518c52caa3bb8c084c42
+      sources/jaeger_ai_3d_experiment/jaeger_ai/interfaces/ui/src/avatar/jaegerAvatar.css: 20963ab1405d115474f345324592d148adf609377b978f32507f6c76fa7d1a99
+      sources/jaeger_ai_3d_experiment/jaeger_ai/interfaces/ui/src/avatar/jaegerStage.ts: 1f4ce9ee3fc2d84294354592db6bc74ccfb8b7a0d334535fa0b95acdd2edce14
+      sources/jaeger_ai_3d_experiment/jaeger_ai/interfaces/ui/src/avatar/avatar.ts: 9ebc03128f7e29ccaeef5db53475af9140038e223312a2b5b96bc0f6548ca134
+    repository_license: sources/jaeger_ai_3d_experiment/LICENSE
+  jaeger_ai_svg_experiment:
+    commit: b8623d4cc21c7e2ae44e879e64d52194b8bb37ae
+    declared_license: Unspecified
+    status: archived_prototype
+    notes: Earlier hand-drawn SVG Jaeger character before the sculpted image. Retained for future adaptation;
+      not registered as a runnable renderer.
+    repository: https://github.com/JenkinsRobotics/JaegerAI
+    working_tree_modified: false
+    files:
+      sources/jaeger_ai_svg_experiment/LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/jaeger_ai_svg_experiment/jaeger_ai/interfaces/ui/src/agents/JaegerCharacter.tsx: e9124f0287950274b76031c169a0039ff8d458072b56f4132c43b970cebdbde1
+      sources/jaeger_ai_svg_experiment/jaeger_ai/interfaces/ui/src/agents/jaegerCharacter.css: 712bc1838c37fd5a52d54685958130cf6ace8571a9062bc20db708e3f4bd93dc
+    repository_license: sources/jaeger_ai_svg_experiment/LICENSE

@@ -4,9 +4,16 @@
 
 - `avatar/v1` foundation owned by Jaeger Avatar, superseding character packs for
   new authoring. Loader, validator, path resolver and repeatable source importer.
-- 34 avatars with 39 persona profiles and 38 representations: Mochi's 18 packs,
+- 39 avatars with 39 persona profiles and 45 representations: Mochi's 18 packs,
   JaegerAI's 20 packs and JaegerAgent's default assistant persona. Shared characters
   preserve independent source variants. No agent engine is copied.
+- Five additional visual packs recovered from UI assets and branch history:
+  sculpted Jaeger, Atlas, Nova, Relay and bronze Jaeger. Six source MP4s decode
+  successfully. Earlier renderer experiments are retained as archives, not plugins.
+- Clanker already includes its persona, lore and card; its UI portrait is a
+  byte-identical duplicate. No additional Clanker model/animation was found.
+- A reviewed, commit-pinned Git importer expands a copy of the seed catalog
+  without modifying source checkouts or overwriting existing authoring.
 - Original assets, persona text, traits, SOUL/lore, scripts, license declarations
   and hashed provenance. Fifteen Mochi folders were imported from locally modified
   working trees; their provenance records this rather than claiming clean commits.
@@ -31,11 +38,12 @@ Importing a procedural file does not qualify its execution in Jaeger Avatar.
 
 ## Verification
 
-`python3 -m jaeger_avatar.packs validate` checks all 34 packs, declared resource
+`python3 -m jaeger_avatar.packs validate` checks all 39 packs, declared resource
 paths and source SHA-256 hashes. `python3 -m unittest discover -s tests -v` passes
-11 tests covering real imported variants, source lore precedence, historical
+17 tests covering real imported variants, source lore precedence, historical
 MScript paths, missing models, repeatable import, overwrite refusal, unsupported
-schemas, source tampering and paths escaping a pack.
+schemas, source tampering, paths escaping a pack, additive import failure cleanup,
+duplicate-card detection and the distinction between media and archived prototypes.
 
 Run `python3 scripts/check_site.py` and `git diff --check` for site/docs changes.
 The updated website passed Chromium checks at 1440, 1024, 768, 390 and 320 px,

@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: assistant
 name: Assistant
-version: 0.1.0
+version: 0.2.0
 description: The plain default — professional, clear, no character overlay.
 default_profile: jaeger_agent
 default_representation: jaeger_ai
@@ -138,3 +138,45 @@ sources:
     files:
       sources/jaeger_agent/REPOSITORY_LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
       sources/jaeger_agent/default_persona.json: 217fe067088606a270f4559b26179103d43f604c28bfe37a3ea33dd06bb5c0a5
+  jaeger_ai_shapes_experiment:
+    commit: e42e98872e68a5b88cac595140a2e9a4034ac216
+    declared_license: Unspecified
+    status: archived_prototype
+    notes: Original deterministic circle/blob/hexagon/cloud/pill/squircle faces and robot presets. UI
+      components retain host imports; no standalone adapter or new persona is declared.
+    repository: https://github.com/JenkinsRobotics/JaegerAI
+    working_tree_modified: false
+    files:
+      sources/jaeger_ai_shapes_experiment/LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/jaeger_ai_shapes_experiment/jaeger_ai/interfaces/ui/src/agents/AgentAvatar.tsx: d3159e050a7b114905b7033d84b148c8c435f48975365f2e18c43f679bed5295
+      sources/jaeger_ai_shapes_experiment/jaeger_ai/interfaces/ui/src/agents/avatarColor.ts: a757c33b9f691c6fb6350a0bc09e178709234e1d0ca3136896dd8bdba3a82e66
+      sources/jaeger_ai_shapes_experiment/jaeger_ai/interfaces/ui/src/agents/avatarMotion.ts: 793809603c9bed2cd2f238ab69a9a05627bd1201edaa1524355c633faf8ea1c3
+      sources/jaeger_ai_shapes_experiment/jaeger_ai/interfaces/ui/src/agents/agents.css: 4934c5653b08d5e5778e1aefaf254b7ad3925ad93cd4a98a96f73e246a796153
+      sources/jaeger_ai_shapes_experiment/jaeger_ai/interfaces/ui/src/shell/tokens.jaeger.css: 2b176110b227505ad0d254ecdb5fc1ecaad646e39a78f3f570d5c64a93c03134
+    repository_license: sources/jaeger_ai_shapes_experiment/LICENSE
+  jaeger_ai_canvas_experiment:
+    commit: 6a632d6137a6e201a63d7b099888dbae0647e2a6
+    declared_license: Unspecified
+    status: archived_prototype
+    notes: Historical canvas face with presence expressions and a speech-level input. Source is preserved
+      but is not executed by pack tooling.
+    repository: https://github.com/JenkinsRobotics/JaegerAI
+    working_tree_modified: false
+    files:
+      sources/jaeger_ai_canvas_experiment/LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/jaeger_ai_canvas_experiment/jaeger_ai/features/webui/static/jaeger_avatar.js: b07a33127efb10421b8c17166046d875defa88981b3bd9dee9635511e13a2447
+    repository_license: sources/jaeger_ai_canvas_experiment/LICENSE
+  jaeger_ai_vrm_experiment:
+    commit: 4024ca00dc02ab7716c6fb5e34b8f8d281c06ad2
+    declared_license: Unspecified
+    status: archived_prototype
+    notes: VRM adapter research only. The model was an external runtime asset, absent from the repository
+      and local avatar asset directory. No model is fabricated, downloaded or represented as included;
+      dependency/model attribution is preserved.
+    repository: https://github.com/JenkinsRobotics/JaegerAI
+    working_tree_modified: false
+    files:
+      sources/jaeger_ai_vrm_experiment/LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/jaeger_ai_vrm_experiment/jaeger_ai/features/webui/static/jaeger_avatar_vrm.js: 1514b64b35852b8ba19ead4701ee9211cb30f18f55eaaf182398e3ac31f2eb84
+      sources/jaeger_ai_vrm_experiment/jaeger_ai/features/webui/static/vendor/VENDOR-avatar.md: e5a9c99df852933eb6554d3c56efd669d9193fa7027192022c761daef9191303
+    repository_license: sources/jaeger_ai_vrm_experiment/LICENSE

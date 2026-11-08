@@ -91,6 +91,12 @@ if archived files are silently edited.
 
 ## Import decisions
 
+The [UI experiment recovery](EXPERIMENT_IMPORT.md) extends the original seed to
+39 avatars, 39 profiles and 45 representations. It adds sculpted Jaeger, three
+placeholder portraits and a bronze design study, plus archived renderer sources.
+Those archives are not executable pack adapters. Clanker's existing persona and
+portrait are preserved; duplicate UI cards are recorded without duplicating packs.
+
 The initial catalog contains 18 Mochi sources, 20 JaegerAI sources and one
 JaegerAgent persona. Four shared IDs are consolidated, giving 34 distinct avatars.
 Profiles are never merged field by field: both source identities remain selectable.

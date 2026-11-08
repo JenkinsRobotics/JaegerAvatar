@@ -1,0 +1,452 @@
+{
+  "schema": "avatar-experiment-import/v1",
+  "repository": "https://github.com/JenkinsRobotics/JaegerAI",
+  "packs": [
+    {
+      "avatar": "jaeger_sculpted",
+      "name": "Jaeger (Sculpted)",
+      "description": "The white grinning Jaeger companion: original artwork, six activity clips, and archived rig experiments. Visual identity only; no fictional persona is inferred.",
+      "sources": {
+        "jaeger_ai_ui": {
+          "commit": "e42e98872e68a5b88cac595140a2e9a4034ac216",
+          "declared_license": "Unspecified",
+          "status": "media_and_prototype_source",
+          "notes": "Media is available. Cutout/SVG components and the offline clip generator are archived source, not installed renderers. Source status text describes UI activity, not a fictional persona.",
+          "files": [
+            "LICENSE",
+            "jaeger_ai/interfaces/ui/src/assets/characters/jaeger-sculpted.png",
+            "jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/portrait.png",
+            "jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/idle.mp4",
+            "jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/working.mp4",
+            "jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/making_something.mp4",
+            "jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/waiting.mp4",
+            "jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/connecting.mp4",
+            "jaeger_ai/interfaces/ui/public/assets/avatar/jaeger/milestone.mp4",
+            "jaeger_ai/interfaces/ui/src/avatar/JaegerAvatar.tsx",
+            "jaeger_ai/interfaces/ui/src/avatar/jaegerAvatar.css",
+            "jaeger_ai/interfaces/ui/src/avatar/ClipAvatar.tsx",
+            "jaeger_ai/interfaces/ui/src/avatar/clipAvatar.css",
+            "jaeger_ai/interfaces/ui/src/avatar/avatar.ts",
+            "jaeger_ai/interfaces/ui/src/agents/JaegerCharacter.tsx",
+            "jaeger_ai/interfaces/ui/src/agents/jaegerCharacter.css",
+            "jaeger_ai/interfaces/ui/scripts/render-avatar-loops.mjs",
+            "docs/COMPANION_UI_REDESIGN.md"
+          ]
+        },
+        "jaeger_ai_3d_experiment": {
+          "commit": "5be1d1e98c42f563a38b18113f74e321fee99c27",
+          "declared_license": "Unspecified",
+          "status": "archived_prototype",
+          "notes": "Historical procedural Three.js reconstruction, replaced upstream by the artwork cutout. No external 3D model. React/Three.js and host integration are not bundled; no active representation is declared.",
+          "files": [
+            "LICENSE",
+            "jaeger_ai/interfaces/ui/src/avatar/JaegerAvatar.tsx",
+            "jaeger_ai/interfaces/ui/src/avatar/jaegerAvatar.css",
+            "jaeger_ai/interfaces/ui/src/avatar/jaegerStage.ts",
+            "jaeger_ai/interfaces/ui/src/avatar/avatar.ts"
+          ]
+        },
+        "jaeger_ai_svg_experiment": {
+          "commit": "b8623d4cc21c7e2ae44e879e64d52194b8bb37ae",
+          "declared_license": "Unspecified",
+          "status": "archived_prototype",
+          "notes": "Earlier hand-drawn SVG Jaeger character before the sculpted image. Retained for future adaptation; not registered as a runnable renderer.",
+          "files": [
+            "LICENSE",
+            "jaeger_ai/interfaces/ui/src/agents/JaegerCharacter.tsx",
+            "jaeger_ai/interfaces/ui/src/agents/jaegerCharacter.css"
+          ]
+        }
+      },
+      "default_representation": "activity_clips",
+      "representations": {
+        "portrait": {
+          "source": "jaeger_ai_ui",
+          "format": "character/v1",
+          "root": "sources/jaeger_ai_ui/jaeger_ai/interfaces/ui",
+          "status": "media_available",
+          "notes": "Original sculpted artwork.",
+          "presentation": {
+            "kind": "clip_set",
+            "assets": {
+              "primary": {
+                "file": "src/assets/characters/jaeger-sculpted.png",
+                "type": "image",
+                "adapter": "image"
+              }
+            },
+            "default_asset": "primary",
+            "render": {
+              "adapter": "image",
+              "asset": "src/assets/characters/jaeger-sculpted.png",
+              "framing": "fit",
+              "scaling": "smooth"
+            },
+            "expressions": {
+              "idle": {
+                "clips": "src/assets/characters/jaeger-sculpted.png",
+                "loop": false
+              }
+            },
+            "default_expression": "idle",
+            "default_mouth": ""
+          }
+        },
+        "activity_clips": {
+          "source": "jaeger_ai_ui",
+          "format": "character/v1",
+          "root": "sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public/assets/avatar/jaeger",
+          "status": "media_available",
+          "notes": "Six silent pre-rendered 2.5D activity clips. Their inclusion does not claim the original laptop/smile composition is corrected or that agent state wiring is implemented here. Milestone is configured as a one-shot expression.",
+          "presentation": {
+            "kind": "clip_set",
+            "assets": {
+              "clips": {
+                "root": ".",
+                "type": "clip_set",
+                "adapter": "video"
+              },
+              "poster": {
+                "file": "portrait.png",
+                "type": "image",
+                "adapter": "image"
+              }
+            },
+            "default_asset": "clips",
+            "render": {
+              "adapter": "video",
+              "asset": "idle.mp4",
+              "ideal_size": [
+                420,
+                720
+              ],
+              "framing": "fit",
+              "scaling": "smooth"
+            },
+            "expressions": {
+              "idle": {
+                "clips": "idle.mp4",
+                "loop": true
+              },
+              "working": {
+                "clips": "working.mp4",
+                "loop": true
+              },
+              "making_something": {
+                "clips": "making_something.mp4",
+                "loop": true
+              },
+              "waiting": {
+                "clips": "waiting.mp4",
+                "loop": true
+              },
+              "connecting": {
+                "clips": "connecting.mp4",
+                "loop": true
+              },
+              "milestone_level_up": {
+                "clips": "milestone.mp4",
+                "loop": false
+              }
+            },
+            "default_expression": "idle",
+            "default_mouth": ""
+          }
+        }
+      }
+    },
+    {
+      "avatar": "atlas",
+      "name": "Atlas (Portrait prototype)",
+      "description": "Atlas placeholder portrait from JaegerAI UI experiments. No rig, personality or agent instance is supplied.",
+      "sources": {
+        "jaeger_ai_ui": {
+          "commit": "e42e98872e68a5b88cac595140a2e9a4034ac216",
+          "declared_license": "Unspecified",
+          "status": "portrait_prototype",
+          "notes": "Source filename explicitly labels this artwork as a placeholder. No animation or personality is inferred.",
+          "files": [
+            "LICENSE",
+            "jaeger_ai/interfaces/ui/public/avatar-placeholder-atlas.jpg"
+          ]
+        }
+      },
+      "default_representation": "portrait",
+      "representations": {
+        "portrait": {
+          "source": "jaeger_ai_ui",
+          "format": "character/v1",
+          "root": "sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public",
+          "status": "media_available",
+          "notes": "Static placeholder portrait; not an animated model.",
+          "presentation": {
+            "kind": "clip_set",
+            "assets": {
+              "primary": {
+                "file": "avatar-placeholder-atlas.jpg",
+                "type": "image",
+                "adapter": "image"
+              }
+            },
+            "default_asset": "primary",
+            "render": {
+              "adapter": "image",
+              "asset": "avatar-placeholder-atlas.jpg",
+              "framing": "fit",
+              "scaling": "smooth"
+            },
+            "expressions": {
+              "idle": {
+                "clips": "avatar-placeholder-atlas.jpg",
+                "loop": false
+              }
+            },
+            "default_expression": "idle",
+            "default_mouth": ""
+          }
+        }
+      }
+    },
+    {
+      "avatar": "nova",
+      "name": "Nova (Portrait prototype)",
+      "description": "Nova placeholder portrait from JaegerAI UI experiments. No rig, personality or agent instance is supplied.",
+      "sources": {
+        "jaeger_ai_ui": {
+          "commit": "e42e98872e68a5b88cac595140a2e9a4034ac216",
+          "declared_license": "Unspecified",
+          "status": "portrait_prototype",
+          "notes": "Source filename explicitly labels this artwork as a placeholder. No animation or personality is inferred.",
+          "files": [
+            "LICENSE",
+            "jaeger_ai/interfaces/ui/public/avatar-placeholder-nova.jpg"
+          ]
+        }
+      },
+      "default_representation": "portrait",
+      "representations": {
+        "portrait": {
+          "source": "jaeger_ai_ui",
+          "format": "character/v1",
+          "root": "sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public",
+          "status": "media_available",
+          "notes": "Static placeholder portrait; not an animated model.",
+          "presentation": {
+            "kind": "clip_set",
+            "assets": {
+              "primary": {
+                "file": "avatar-placeholder-nova.jpg",
+                "type": "image",
+                "adapter": "image"
+              }
+            },
+            "default_asset": "primary",
+            "render": {
+              "adapter": "image",
+              "asset": "avatar-placeholder-nova.jpg",
+              "framing": "fit",
+              "scaling": "smooth"
+            },
+            "expressions": {
+              "idle": {
+                "clips": "avatar-placeholder-nova.jpg",
+                "loop": false
+              }
+            },
+            "default_expression": "idle",
+            "default_mouth": ""
+          }
+        }
+      }
+    },
+    {
+      "avatar": "relay",
+      "name": "Relay (Portrait prototype)",
+      "description": "Relay placeholder portrait from JaegerAI UI experiments. No rig, personality or agent instance is supplied.",
+      "sources": {
+        "jaeger_ai_ui": {
+          "commit": "e42e98872e68a5b88cac595140a2e9a4034ac216",
+          "declared_license": "Unspecified",
+          "status": "portrait_prototype",
+          "notes": "Source filename explicitly labels this artwork as a placeholder. No animation or personality is inferred.",
+          "files": [
+            "LICENSE",
+            "jaeger_ai/interfaces/ui/public/avatar-placeholder-relay.jpg"
+          ]
+        }
+      },
+      "default_representation": "portrait",
+      "representations": {
+        "portrait": {
+          "source": "jaeger_ai_ui",
+          "format": "character/v1",
+          "root": "sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public",
+          "status": "media_available",
+          "notes": "Static placeholder portrait; not an animated model.",
+          "presentation": {
+            "kind": "clip_set",
+            "assets": {
+              "primary": {
+                "file": "avatar-placeholder-relay.jpg",
+                "type": "image",
+                "adapter": "image"
+              }
+            },
+            "default_asset": "primary",
+            "render": {
+              "adapter": "image",
+              "asset": "avatar-placeholder-relay.jpg",
+              "framing": "fit",
+              "scaling": "smooth"
+            },
+            "expressions": {
+              "idle": {
+                "clips": "avatar-placeholder-relay.jpg",
+                "loop": false
+              }
+            },
+            "default_expression": "idle",
+            "default_mouth": ""
+          }
+        }
+      }
+    },
+    {
+      "avatar": "jaeger_bronze",
+      "name": "Jaeger (Bronze)",
+      "description": "Bronze Jaeger design study preserved from the design-tokens branch, including full and face crops at the original resolutions.",
+      "sources": {
+        "jaeger_ai_design": {
+          "commit": "fc9f4695cd7ac905237cf128566fcf3996b34cbf",
+          "declared_license": "Unspecified",
+          "status": "portrait_prototype",
+          "notes": "Recovered from wip/design-tokens-20261021. The current UI icon duplicates the 128px face asset. Original variants are preserved; no animated rig or persona is supplied.",
+          "files": [
+            "LICENSE",
+            "packages/jaeger-design-tokens/assets/avatar-bronze-face-1024.png",
+            "packages/jaeger-design-tokens/assets/avatar-bronze-face-128.png",
+            "packages/jaeger-design-tokens/assets/avatar-bronze-face-24.png",
+            "packages/jaeger-design-tokens/assets/avatar-bronze-face-32.png",
+            "packages/jaeger-design-tokens/assets/avatar-bronze-face-64.png",
+            "packages/jaeger-design-tokens/assets/avatar-bronze-full-1024.png",
+            "packages/jaeger-design-tokens/assets/avatar-bronze-full-128.png",
+            "packages/jaeger-design-tokens/assets/avatar-bronze-full-24.png",
+            "packages/jaeger-design-tokens/assets/avatar-bronze-full-32.png",
+            "packages/jaeger-design-tokens/assets/avatar-bronze-full-512.png",
+            "packages/jaeger-design-tokens/assets/avatar-bronze-full-64.png"
+          ]
+        }
+      },
+      "default_representation": "full",
+      "representations": {
+        "full": {
+          "source": "jaeger_ai_design",
+          "format": "character/v1",
+          "root": "sources/jaeger_ai_design/packages/jaeger-design-tokens/assets",
+          "status": "media_available",
+          "notes": "Static full artwork from the design study.",
+          "presentation": {
+            "kind": "clip_set",
+            "assets": {
+              "primary": {
+                "file": "avatar-bronze-full-1024.png",
+                "type": "image",
+                "adapter": "image"
+              }
+            },
+            "default_asset": "primary",
+            "render": {
+              "adapter": "image",
+              "asset": "avatar-bronze-full-1024.png",
+              "framing": "fit",
+              "scaling": "smooth"
+            },
+            "expressions": {
+              "idle": {
+                "clips": "avatar-bronze-full-1024.png",
+                "loop": false
+              }
+            },
+            "default_expression": "idle",
+            "default_mouth": ""
+          }
+        },
+        "face": {
+          "source": "jaeger_ai_design",
+          "format": "character/v1",
+          "root": "sources/jaeger_ai_design/packages/jaeger-design-tokens/assets",
+          "status": "media_available",
+          "notes": "Static face artwork from the design study.",
+          "presentation": {
+            "kind": "clip_set",
+            "assets": {
+              "primary": {
+                "file": "avatar-bronze-face-1024.png",
+                "type": "image",
+                "adapter": "image"
+              }
+            },
+            "default_asset": "primary",
+            "render": {
+              "adapter": "image",
+              "asset": "avatar-bronze-face-1024.png",
+              "framing": "fit",
+              "scaling": "smooth"
+            },
+            "expressions": {
+              "idle": {
+                "clips": "avatar-bronze-face-1024.png",
+                "loop": false
+              }
+            },
+            "default_expression": "idle",
+            "default_mouth": ""
+          }
+        }
+      }
+    },
+    {
+      "avatar": "assistant",
+      "extend_existing": true,
+      "version": "0.2.0",
+      "sources": {
+        "jaeger_ai_shapes_experiment": {
+          "commit": "e42e98872e68a5b88cac595140a2e9a4034ac216",
+          "declared_license": "Unspecified",
+          "status": "archived_prototype",
+          "notes": "Original deterministic circle/blob/hexagon/cloud/pill/squircle faces and robot presets. UI components retain host imports; no standalone adapter or new persona is declared.",
+          "files": [
+            "LICENSE",
+            "jaeger_ai/interfaces/ui/src/agents/AgentAvatar.tsx",
+            "jaeger_ai/interfaces/ui/src/agents/avatarColor.ts",
+            "jaeger_ai/interfaces/ui/src/agents/avatarMotion.ts",
+            "jaeger_ai/interfaces/ui/src/agents/agents.css",
+            "jaeger_ai/interfaces/ui/src/shell/tokens.jaeger.css"
+          ]
+        },
+        "jaeger_ai_canvas_experiment": {
+          "commit": "6a632d6137a6e201a63d7b099888dbae0647e2a6",
+          "declared_license": "Unspecified",
+          "status": "archived_prototype",
+          "notes": "Historical canvas face with presence expressions and a speech-level input. Source is preserved but is not executed by pack tooling.",
+          "files": [
+            "LICENSE",
+            "jaeger_ai/features/webui/static/jaeger_avatar.js"
+          ]
+        },
+        "jaeger_ai_vrm_experiment": {
+          "commit": "4024ca00dc02ab7716c6fb5e34b8f8d281c06ad2",
+          "declared_license": "Unspecified",
+          "status": "archived_prototype",
+          "notes": "VRM adapter research only. The model was an external runtime asset, absent from the repository and local avatar asset directory. No model is fabricated, downloaded or represented as included; dependency/model attribution is preserved.",
+          "files": [
+            "LICENSE",
+            "jaeger_ai/features/webui/static/jaeger_avatar_vrm.js",
+            "jaeger_ai/features/webui/static/vendor/VENDOR-avatar.md"
+          ]
+        }
+      },
+      "representations": {}
+    }
+  ]
+}

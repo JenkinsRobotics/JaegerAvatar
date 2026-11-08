@@ -1,0 +1,48 @@
+schema: avatar/v1
+avatar: nova
+name: Nova (Portrait prototype)
+version: 0.1.0
+description: Nova placeholder portrait from JaegerAI UI experiments. No rig, personality or agent instance
+  is supplied.
+default_profile: null
+default_representation: portrait
+profiles: {}
+representations:
+  portrait:
+    source: jaeger_ai_ui
+    format: character/v1
+    root: sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public
+    status: media_available
+    notes: Static placeholder portrait; not an animated model.
+    presentation:
+      kind: clip_set
+      assets:
+        primary:
+          file: avatar-placeholder-nova.jpg
+          type: image
+          adapter: image
+      default_asset: primary
+      render:
+        adapter: image
+        asset: avatar-placeholder-nova.jpg
+        framing: fit
+        scaling: smooth
+      expressions:
+        idle:
+          clips: avatar-placeholder-nova.jpg
+          loop: false
+      default_expression: idle
+      default_mouth: ''
+sources:
+  jaeger_ai_ui:
+    commit: e42e98872e68a5b88cac595140a2e9a4034ac216
+    declared_license: Unspecified
+    status: portrait_prototype
+    notes: Source filename explicitly labels this artwork as a placeholder. No animation or personality
+      is inferred.
+    repository: https://github.com/JenkinsRobotics/JaegerAI
+    working_tree_modified: false
+    files:
+      sources/jaeger_ai_ui/LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public/avatar-placeholder-nova.jpg: a9d2924fafce884c8c60d70dade76407e8c4cd9239b9cfd443315d550b5b44af
+    repository_license: sources/jaeger_ai_ui/LICENSE

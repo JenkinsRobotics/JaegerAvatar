@@ -7,8 +7,8 @@
   <a href="LICENSE">Apache-2.0</a>
 </p>
 
-> **Early development.** The avatar-pack foundation is implemented: **34 avatars,
-> 39 persona profiles and 38 visual representations**, imported from Mochi,
+> **Early development.** The avatar-pack foundation is implemented: **39 avatars,
+> 39 persona profiles and 45 visual representations**, imported from Mochi,
 > JaegerAI and JaegerAgent, with a loader, validator and repeatable importer.
 > The avatar application, embedded agent, pack editor and JaegerAI connection are
 > **planned**, not installed or runnable here yet. See [current status](dev/docs/reality/STATUS.md).
@@ -50,6 +50,9 @@ The [starter library](avatar-packs/README.md) brings together Mochi's 18 visual
 packs, JaegerAI's 20 persona/card packs and JaegerAgent's default assistant persona.
 Shared identities are consolidated, preserving each source's profile and appearance.
 TARS, for example, defaults to its JaegerAI persona and Mochi face.
+The [recovered UI experiments](dev/docs/packs/EXPERIMENT_IMPORT.md) also include
+sculpted Jaeger, Atlas, Nova, Relay and bronze Jaeger.
+[Clanker](avatar-packs/clanker/README.md) is already included with its persona and card.
 
 Every imported pack includes source provenance, asset hashes and original license
 declarations. SOUL text, lore, traits, voice preferences, images, procedural faces

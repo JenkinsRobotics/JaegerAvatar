@@ -73,6 +73,8 @@ def main():
             errors.append(f'Missing website anchor: {value}')
     maintained = [ROOT / 'README.md', ROOT / 'AGENTS.md', SITE / 'SITE.md']
     maintained.extend((ROOT / 'dev/docs').rglob('*.md'))
+    maintained.extend((ROOT / 'avatar-packs').glob('README.md'))
+    maintained.extend((ROOT / 'avatar-packs').glob('*/README.md'))
     for source in maintained:
         text = source.read_text()
         if re.search(r'\{\{(?:REPO_NAME|DESCRIPTION|DATE)\}\}', text):
