@@ -29,5 +29,8 @@ reduced-motion behavior and no-JavaScript content were exercised; no browser
 errors were observed. Desktop and mobile screenshots were reviewed. This is
 website verification only; runtime qualification requires separate tests.
 
-The publishing target is the existing `gh-pages` branch. Live deployment status
-must be verified after the branch update; the source check alone does not prove it.
+Published through the existing `gh-pages` branch at commit `f5295b1`.
+GitHub's Pages deployment and the source documentation/site CI both passed.
+The public HTML, CSS, JavaScript and SVG each returned HTTP 200 and matched the
+checked source byte-for-byte at https://jenkinsrobotics.github.io/JaegerAvatar/ .
+This verification covers the initial project website, not the planned app.
