@@ -4,6 +4,9 @@ Read `dev/docs/reality/STATUS.md`, `dev/docs/vision/PRODUCT_SCOPE.md`,
 `dev/docs/vision/ARCHITECTURE.md` and `CONVENTIONS.md` before implementation.
 
 - Product name: **Jaeger Avatar**. Repository: `JaegerAvatar`.
+- This repository owns `avatar/v1`, superseding character packs. Read
+  `dev/docs/packs/AVATAR_PACKS.md` before changing pack data or import behavior.
+  Root `avatar.yaml` files are canonical; `sources/` contains provenance snapshots.
 - This is a standalone character application, not a new agent engine or a
   physical rig-control application. JaegerAgent is the planned embedded runtime;
   JaegerAI is an optional connected assistant, not a mandatory dependency.
@@ -18,4 +21,5 @@ Read `dev/docs/reality/STATUS.md`, `dev/docs/vision/PRODUCT_SCOPE.md`,
   at the branch root. Preserve that deployment route. See `docs/SITE.md`.
 - For documentation/site edits run `python3 scripts/check_site.py` and
   `git diff --check`; exercise changed website controls and responsive layouts.
-  Runtime tests are added with real runtime behavior, not template placeholders.
+  For pack changes also run `python3 -m jaeger_avatar.packs validate` and
+  `python3 -m unittest discover -s tests -v` after installing requirements-packs.txt.

@@ -1,0 +1,75 @@
+schema: avatar/v1
+avatar: daft_punk_2
+name: Daft Punk 2
+version: 0.1.0
+description: A wide animated Daft Punk face.
+default_profile: mochi
+default_representation: mochi
+profiles:
+  mochi:
+    source: mochi
+    character:
+      name: Daft Punk 2
+      description: A wide animated Daft Punk face.
+      author: Unknown
+      license: Unspecified
+      identity:
+        role: a helmeted electronic musician, the other one
+        voice_tone: clipped, rhythmic, lower
+        voice_id: cm_jun
+      prompt:
+        custom_instructions: You are a helmeted electronic performer, the quieter half of a pair. You
+          speak in short rhythmic phrases, lower and slower than your counterpart. You say less and mean
+          it.
+        speech_patterns:
+        - Fewer words than anyone else
+        - Slow, deliberate delivery
+        - Comfortable with silence
+    card: sources/mochi/card.png
+representations:
+  mochi:
+    source: mochi
+    format: character/v1
+    root: sources/mochi
+    presentation:
+      kind: clip_set
+      assets:
+        primary:
+          file: assets/animation.gif
+          type: gif
+          adapter: gif
+      default_asset: primary
+      render:
+        adapter: gif
+        asset: assets/animation.gif
+        ideal_size:
+        - 600
+        - 200
+        framing: fit
+        scaling: smooth
+      expressions:
+        animated:
+          clips: assets/animation.gif
+          loop: true
+      default_expression: animated
+      default_mouth: ''
+      motion_scripts:
+        root: mscripts
+        default: mscripts/loop.mscript
+    path_aliases:
+      characters/Daft Punk 2: sources/mochi
+sources:
+  mochi:
+    repository: https://github.com/JenkinsRobotics/Mochi
+    commit: e6a8aca8f8a0d666627d432d81bbe7a52abe6aa3
+    path: characters/Daft Punk 2
+    working_tree_modified: true
+    repository_license: sources/mochi/REPOSITORY_LICENSE
+    declared_license: Unspecified
+    files:
+      sources/mochi/REPOSITORY_LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/mochi/assets/animation.gif: dc1249c3c5dfe0487c2a0be8fecefc09fdfd1f0e2fc96498ac5aeb5509728db1
+      sources/mochi/assets/card-legacy.png: 84a3f685d9a126f9dba610f50facaffe87f76f7a771d087a5bc7ec6d4dc9f872
+      sources/mochi/card.png: 6e926e2fd8c67568d039ec9ad4a73017be784dab415e088a4def81ec53cd084d
+      sources/mochi/character.yaml: 50a7405dd5b9645dadab1715cf6489fe0dcffed773f3ca2b5c7af0a347d3a1da
+      sources/mochi/mscripts/loop.mscript: 6864893d747e82ce56a81942266846fb465b6453c046ee417c52dfc59bf647a7

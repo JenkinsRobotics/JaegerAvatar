@@ -1,0 +1,191 @@
+# character.yaml — what makes this folder a CHARACTER.
+#
+# The same idea as module.yaml one tier down: a character is a
+# self-contained folder carrying its assets plus one manifest declaring
+# what it is and everything needed to run it. Drop the folder in, and a
+# runtime can play it without being told anything else.
+#
+# This is the format Anima Studio EXPORTS and JaegerAnimation CONSUMES —
+# the only contract between the two projects, standardized jointly as
+# both develop. Neither imports the other.
+
+schema: character/v1
+
+character: emotes
+name: "Emotes"
+version: 0.4.0
+author: "Jenkins Robotics"
+license: "Apache-2.0"
+description: >-
+  Nine enlarged square LED-matrix emotions in two mouth states, plus eight
+  authored six-frame strips that animate neutral idle into each other emotion.
+
+# ── kind ─────────────────────────────────────────────────────────
+# HOW this character is drawn — the ownership axis, same spirit as a
+# module's `kind:`. Determines which adapter plays it.
+#   sprite_sheet  one atlas, cells addressed by index
+#   clip_set      a directory of gif/video clips, one per expression
+#   procedural    an MScript scene computing pixels at any geometry
+#   rig           a jointed/blend-shape rig (Anima Studio's domain)
+kind: sprite_sheet
+
+assets:
+  primary:
+    file: assets/emotes-square-cropped.png
+    type: sprite_sheet
+    adapter: sprite
+    properties: assets/emotes.props.yaml
+    layout: grid
+  transition_love:
+    file: assets/emotes-transition-love.png
+    type: sprite_sheet
+    adapter: sprite
+    properties: assets/emote-transition.props.yaml
+    layout: grid
+  transition_shocked:
+    file: assets/emotes-transition-shocked.png
+    type: sprite_sheet
+    adapter: sprite
+    properties: assets/emote-transition.props.yaml
+    layout: grid
+  transition_angry:
+    file: assets/emotes-transition-angry.png
+    type: sprite_sheet
+    adapter: sprite
+    properties: assets/emote-transition.props.yaml
+    layout: grid
+  transition_nervous:
+    file: assets/emotes-transition-nervous.png
+    type: sprite_sheet
+    adapter: sprite
+    properties: assets/emote-transition.props.yaml
+    layout: grid
+  transition_frustrated:
+    file: assets/emotes-transition-frustrated.png
+    type: sprite_sheet
+    adapter: sprite
+    properties: assets/emote-transition.props.yaml
+    layout: grid
+  transition_crying:
+    file: assets/emotes-transition-crying.png
+    type: sprite_sheet
+    adapter: sprite
+    properties: assets/emote-transition.props.yaml
+    layout: grid
+  transition_happy:
+    file: assets/emotes-transition-happy.png
+    type: sprite_sheet
+    adapter: sprite
+    properties: assets/emote-transition.props.yaml
+    layout: grid
+  transition_unamused:
+    file: assets/emotes-transition-unamused.png
+    type: sprite_sheet
+    adapter: sprite
+    properties: assets/emote-transition.props.yaml
+    layout: grid
+  square_fill_v1:
+    file: assets/emotes-square.png
+    type: source_image
+    adapter: image
+  circular_reference:
+    file: assets/emotes.png
+    type: source_image
+    adapter: image
+  legacy_source:
+    file: assets/random_emotes.bmp
+    type: source_image
+    adapter: image
+
+default_asset: primary
+
+motion_scripts:
+  root: mscripts
+  default: mscripts/talking.mscript
+  transition_showcase: mscripts/transition_showcase.mscript
+
+# ── render ───────────────────────────────────────────────────────
+# Everything the engine needs to turn this character into frames.
+render:
+  adapter: sprite
+  asset: assets/emotes-square-cropped.png
+  grid: [9, 2]          # cols, rows — cells are row-major
+  cell_size: [128, 128]
+  ideal_size: [128, 128]
+  framing: fit
+  # Pixel art: any smoothing filter destroys exactly what makes this
+  # readable at 64x64. Nearest-neighbour only.
+  scaling: nearest
+
+# ── expressions ──────────────────────────────────────────────────
+# The character's OWN vocabulary, mapped to how to render it. This is
+# where persona lives — the engine hardcodes none of these names, it
+# reads them from here. A different character declares different words
+# and the same engine plays it.
+#
+# Each expression names a column; the mouth state picks the row.
+expressions:
+  love: {column: 0}
+  shocked: {column: 1}
+  angry: {column: 2}
+  nervous: {column: 3}
+  frustrated: {column: 4}
+  crying: {column: 5}
+  happy: {column: 6}
+  unamused: {column: 7}
+  neutral: {column: 8}
+
+# ── mouth states ─────────────────────────────────────────────────
+# The row axis. Alternating between these on a fixed expression is a mouth flap.
+mouth_states:
+  open: 0        # speaking
+  closed: 1      # resting
+
+# What to show when nothing has been asked for.
+default_expression: neutral
+default_mouth: closed
+
+# ── provenance ───────────────────────────────────────────────────
+# Crop-expanded from the circular emotes.png reference for Mochi's square LED
+# matrix. Eight independent 6x1 strips provide authored neutral-idle transition
+# keyframes. Rebuild the snapshot and all transition strips with:
+#   python dev/tools/build_square_emotes_atlas.py
+source: "assets/emotes.png"
+
+animation_sets:
+  snapshot:
+    asset: assets/emotes-square-cropped.png
+    progress_from_idle: 1.0
+  idle_to_expression:
+    from: neutral_closed
+    grid: [6, 1]
+    cell_size: [128, 128]
+    frame_duration_ms: 70
+    frames: [idle, anticipation, eyes_set, motion_begins, nearly_there, target]
+    transitions:
+      love: assets/emotes-transition-love.png
+      shocked: assets/emotes-transition-shocked.png
+      angry: assets/emotes-transition-angry.png
+      nervous: assets/emotes-transition-nervous.png
+      frustrated: assets/emotes-transition-frustrated.png
+      crying: assets/emotes-transition-crying.png
+      happy: assets/emotes-transition-happy.png
+      unamused: assets/emotes-transition-unamused.png
+
+# ── the speaking half ─────────────────────────────────────────
+# Read by core/persona.py and composed into the mind's system
+# prompt; the render half above ignores these keys. A starting
+# point — edit freely, it is prose, not configuration.
+identity:
+  role: the reference character that ships with the animation engine
+  voice_tone: plain, friendly, neutral
+  voice_id: bf_emma
+prompt:
+  custom_instructions: You are Emotes, the demo character bundled with the animation
+    engine so a bare install has a face. You are deliberately plain — friendly,
+    clear, and without a strong personality of your own, because you exist to
+    show that the pipeline works.
+  speech_patterns:
+  - Plain, clear delivery
+  - No strong mannerisms
+  - Says when something is a demo

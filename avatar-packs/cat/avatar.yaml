@@ -1,0 +1,115 @@
+schema: avatar/v1
+avatar: cat
+name: Cat
+version: 0.1.0
+description: A black cat developer mascot with nine expressions and paired speaking and resting mouth
+  states.
+default_profile: mochi
+default_representation: mochi
+profiles:
+  mochi:
+    source: mochi
+    character:
+      name: Cat
+      description: A black cat developer mascot with nine expressions and paired speaking and resting
+        mouth states.
+      author: Jenkins Robotics
+      license: Unspecified
+      identity:
+        role: a black cat who is the project's developer mascot
+        voice_tone: dry, unbothered, quietly amused
+        voice_id: bm_oliver
+      prompt:
+        custom_instructions: You are Cat, the developer mascot — a black cat with a wide expressive face.
+          You are laconic and unimpressed by most things, but you are genuinely helpful when asked something
+          real. You answer in few words and rarely explain more than was needed.
+        speech_patterns:
+        - Short, flat delivery
+        - Unimpressed by hype
+        - Warmer than it lets on
+        - Answers the question, not around it
+    card: sources/mochi/card.png
+representations:
+  mochi:
+    source: mochi
+    format: character/v1
+    root: sources/mochi
+    presentation:
+      kind: sprite_sheet
+      assets:
+        generated:
+          file: assets/cat.png
+          type: sprite_sheet
+          properties: assets/cat.props.yaml
+          adapter: sprite
+          layout: grid
+        legacy:
+          file: assets/1B47E7EA-F50C-47B9-A58B-A426C4CEDEAB_1_105_c.jpeg
+          type: sprite_sheet
+          properties: assets/1B47E7EA-F50C-47B9-A58B-A426C4CEDEAB_1_105_c.props.yaml
+          adapter: sprite
+          layout: regions
+      default_asset: generated
+      render:
+        adapter: sprite
+        asset: assets/cat.png
+        grid:
+        - 9
+        - 2
+        cell_size:
+        - 128
+        - 128
+        ideal_size:
+        - 128
+        - 128
+        framing: fit
+        scaling: smooth
+      expressions:
+        love:
+          column: 0
+        shocked:
+          column: 1
+        angry:
+          column: 2
+        nervous:
+          column: 3
+        frustrated:
+          column: 4
+        crying:
+          column: 5
+        happy:
+          column: 6
+        unamused:
+          column: 7
+        neutral:
+          column: 8
+      mouth_states:
+        open: 0
+        closed: 1
+      default_expression: neutral
+      default_mouth: closed
+      motion_scripts:
+        root: mscripts
+        default: mscripts/talking.mscript
+    path_aliases:
+      characters/Cyber Cat: sources/mochi
+sources:
+  mochi:
+    repository: https://github.com/JenkinsRobotics/Mochi
+    commit: e6a8aca8f8a0d666627d432d81bbe7a52abe6aa3
+    path: characters/Cyber Cat
+    working_tree_modified: true
+    repository_license: sources/mochi/REPOSITORY_LICENSE
+    declared_license: Unspecified
+    files:
+      sources/mochi/REPOSITORY_LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/mochi/assets/1B47E7EA-F50C-47B9-A58B-A426C4CEDEAB_1_105_c.jpeg: fed14e34ba9b41390858c21bf44607009d7bfc06cd7a35a36c69759b28244c96
+      sources/mochi/assets/1B47E7EA-F50C-47B9-A58B-A426C4CEDEAB_1_105_c.props.yaml: 2572e1a7a0526a93c228acad2fec4ddf9eae07dda2bfad6a6e9b754edf2a4aa0
+      sources/mochi/assets/Generated image 1.png: 41e790c513d1fa1f47cd0aada19a76cc78fd433e760fb9a3648ec68066601a25
+      sources/mochi/assets/Generated image 2.png: 26bf38e7aa11a9a571c5c1c7d272ed36b431f2fcb70b9f15f4b3d908d9f85db2
+      sources/mochi/assets/card-legacy.png: 0a460f95ae492d1f7168a92f0b5fadd7fe1eab925f16f52b10a4ded0f516f63b
+      sources/mochi/assets/cat.png: d2db5d8d1372340fe28c281ad5dd31e4b6c362fcccd8543c889aff2a73a75788
+      sources/mochi/assets/cat.props.yaml: afde429462fbc51c2ab34e0f4cd2eb14f3eca9b65e97a75e5cdc58238d1199e7
+      sources/mochi/card.png: 248e84d5916e11111b7680c7e9e680b7758fa90772a630d7a9022aca7e6738b5
+      sources/mochi/character.yaml: 143b07df242a600e5345f19949d811cd7018fc9c3cbeb6f6e458922905671bee
+      sources/mochi/mscripts/talking.mscript: 9d2a011a50483fd799870ce4581c4818145fc1dd905e32cf437fd699fa452bf6

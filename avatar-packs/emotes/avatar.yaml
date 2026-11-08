@@ -1,0 +1,207 @@
+schema: avatar/v1
+avatar: emotes
+name: Emotes
+version: 0.1.0
+description: Nine enlarged square LED-matrix emotions in two mouth states, plus eight authored six-frame
+  strips that animate neutral idle into each other emotion.
+default_profile: mochi
+default_representation: mochi
+profiles:
+  mochi:
+    source: mochi
+    character:
+      name: Emotes
+      description: Nine enlarged square LED-matrix emotions in two mouth states, plus eight authored six-frame
+        strips that animate neutral idle into each other emotion.
+      author: Jenkins Robotics
+      license: Apache-2.0
+      identity:
+        role: the reference character that ships with the animation engine
+        voice_tone: plain, friendly, neutral
+        voice_id: bf_emma
+      prompt:
+        custom_instructions: You are Emotes, the demo character bundled with the animation engine so a
+          bare install has a face. You are deliberately plain — friendly, clear, and without a strong
+          personality of your own, because you exist to show that the pipeline works.
+        speech_patterns:
+        - Plain, clear delivery
+        - No strong mannerisms
+        - Says when something is a demo
+    card: sources/mochi/card.png
+representations:
+  mochi:
+    source: mochi
+    format: character/v1
+    root: sources/mochi
+    presentation:
+      kind: sprite_sheet
+      assets:
+        primary:
+          file: assets/emotes-square-cropped.png
+          type: sprite_sheet
+          adapter: sprite
+          properties: assets/emotes.props.yaml
+          layout: grid
+        transition_love:
+          file: assets/emotes-transition-love.png
+          type: sprite_sheet
+          adapter: sprite
+          properties: assets/emote-transition.props.yaml
+          layout: grid
+        transition_shocked:
+          file: assets/emotes-transition-shocked.png
+          type: sprite_sheet
+          adapter: sprite
+          properties: assets/emote-transition.props.yaml
+          layout: grid
+        transition_angry:
+          file: assets/emotes-transition-angry.png
+          type: sprite_sheet
+          adapter: sprite
+          properties: assets/emote-transition.props.yaml
+          layout: grid
+        transition_nervous:
+          file: assets/emotes-transition-nervous.png
+          type: sprite_sheet
+          adapter: sprite
+          properties: assets/emote-transition.props.yaml
+          layout: grid
+        transition_frustrated:
+          file: assets/emotes-transition-frustrated.png
+          type: sprite_sheet
+          adapter: sprite
+          properties: assets/emote-transition.props.yaml
+          layout: grid
+        transition_crying:
+          file: assets/emotes-transition-crying.png
+          type: sprite_sheet
+          adapter: sprite
+          properties: assets/emote-transition.props.yaml
+          layout: grid
+        transition_happy:
+          file: assets/emotes-transition-happy.png
+          type: sprite_sheet
+          adapter: sprite
+          properties: assets/emote-transition.props.yaml
+          layout: grid
+        transition_unamused:
+          file: assets/emotes-transition-unamused.png
+          type: sprite_sheet
+          adapter: sprite
+          properties: assets/emote-transition.props.yaml
+          layout: grid
+        square_fill_v1:
+          file: assets/emotes-square.png
+          type: source_image
+          adapter: image
+        circular_reference:
+          file: assets/emotes.png
+          type: source_image
+          adapter: image
+        legacy_source:
+          file: assets/random_emotes.bmp
+          type: source_image
+          adapter: image
+      default_asset: primary
+      render:
+        adapter: sprite
+        asset: assets/emotes-square-cropped.png
+        grid:
+        - 9
+        - 2
+        cell_size:
+        - 128
+        - 128
+        ideal_size:
+        - 128
+        - 128
+        framing: fit
+        scaling: nearest
+      expressions:
+        love:
+          column: 0
+        shocked:
+          column: 1
+        angry:
+          column: 2
+        nervous:
+          column: 3
+        frustrated:
+          column: 4
+        crying:
+          column: 5
+        happy:
+          column: 6
+        unamused:
+          column: 7
+        neutral:
+          column: 8
+      mouth_states:
+        open: 0
+        closed: 1
+      default_expression: neutral
+      default_mouth: closed
+      motion_scripts:
+        root: mscripts
+        default: mscripts/talking.mscript
+        transition_showcase: mscripts/transition_showcase.mscript
+      animation_sets:
+        snapshot:
+          asset: assets/emotes-square-cropped.png
+          progress_from_idle: 1.0
+        idle_to_expression:
+          from: neutral_closed
+          grid:
+          - 6
+          - 1
+          cell_size:
+          - 128
+          - 128
+          frame_duration_ms: 70
+          frames:
+          - idle
+          - anticipation
+          - eyes_set
+          - motion_begins
+          - nearly_there
+          - target
+          transitions:
+            love: assets/emotes-transition-love.png
+            shocked: assets/emotes-transition-shocked.png
+            angry: assets/emotes-transition-angry.png
+            nervous: assets/emotes-transition-nervous.png
+            frustrated: assets/emotes-transition-frustrated.png
+            crying: assets/emotes-transition-crying.png
+            happy: assets/emotes-transition-happy.png
+            unamused: assets/emotes-transition-unamused.png
+    path_aliases:
+      characters/Sprite Emotes: sources/mochi
+sources:
+  mochi:
+    repository: https://github.com/JenkinsRobotics/Mochi
+    commit: e6a8aca8f8a0d666627d432d81bbe7a52abe6aa3
+    path: characters/Sprite Emotes
+    working_tree_modified: true
+    repository_license: sources/mochi/REPOSITORY_LICENSE
+    declared_license: Apache-2.0
+    files:
+      sources/mochi/REPOSITORY_LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/mochi/assets/card-legacy.png: 01f33a5015e3dce7abbd47a460e9afadf0264d0941a42c4bc563537408d85ae6
+      sources/mochi/assets/emote-transition.props.yaml: e8b2b73d4e2b91083d2cc334ff07d0df4f8a56eaafc1b1ad8f79d5872789c7a7
+      sources/mochi/assets/emotes-square-cropped.png: b300941ce63ed4f40c6ce50563d37a576a12ee7550927a55f16405e916067e14
+      sources/mochi/assets/emotes-square.png: b75610a0bc718f851ac57ee816dc0cc208e63dbe44bad782dbd3fbbc9debc5b5
+      sources/mochi/assets/emotes-transition-angry.png: 71f5572bedc219e0e8f9f18daf254ee407e2a07c88d08ab8191f4ce5315ff87f
+      sources/mochi/assets/emotes-transition-crying.png: c1e6e8513ef6201730230e9e0bfe4102d4f04cbcdf7c32e563d3c4413fd0e52b
+      sources/mochi/assets/emotes-transition-frustrated.png: c10e3530189fd9689ab3a73420d9146e97aa9b417131c25c7160d3ecdcd6c3f3
+      sources/mochi/assets/emotes-transition-happy.png: a6c901a4c738e561ba47cc8ed24c8457cef887dd00562879d88afaddcfda1188
+      sources/mochi/assets/emotes-transition-love.png: 47fd0ba6d091c5a02d12338306ac0ea10b2a8755813f6b31616d1f3e4a7d9daa
+      sources/mochi/assets/emotes-transition-nervous.png: deeeb123240283d1e9d37b5f5d54862061c27a72c13bfa07e103e2a17282380a
+      sources/mochi/assets/emotes-transition-shocked.png: d42fb0107fc93a133d1af35b8798caba6941da66de310e0376a36f1d073bee0a
+      sources/mochi/assets/emotes-transition-unamused.png: 3c782024091067c490ec7cf7c0fffb123ae7288e31ae7eaa6941eb49146192fd
+      sources/mochi/assets/emotes.png: 6fb534d855b6099a963c109b5c150b12553cae1d0fb30307a4c0bc24209d795d
+      sources/mochi/assets/emotes.props.yaml: b0d5fdccca8d08b788545690b0a2412c022916ae20709e53dd8ebe0c6ef1fde0
+      sources/mochi/assets/random_emotes.bmp: e23b6f134588195b75e1e17b32734f705cc6696b3f53b6f8bef453384ae8a4c5
+      sources/mochi/card.png: df71c3060db2b8aab2a3a8b22abe237eed80b8f095e6dd382add95be4601faf3
+      sources/mochi/character.yaml: 864679cd69426459a561954825af8b67f5839f65425dcd62bb8d14ef56c267fb
+      sources/mochi/mscripts/talking.mscript: 45068ee54ea65098b399091773f28335063b0665d6011950afb1b65f5112c97e
+      sources/mochi/mscripts/transition_showcase.mscript: f273ebf83fb6625987628e31169a62bfdb31467510419f941b13b53b189ab21d

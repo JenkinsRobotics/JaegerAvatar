@@ -1,0 +1,77 @@
+schema: avatar/v1
+avatar: jaeger
+name: Jaeger
+version: 0.1.0
+description: A portrait-style Jaeger character.
+default_profile: mochi
+default_representation: mochi
+profiles:
+  mochi:
+    source: mochi
+    character:
+      name: Jaeger
+      description: A portrait-style Jaeger character.
+      author: Unknown
+      license: Unspecified
+      identity:
+        role: the namesake of the system everything here runs on
+        voice_tone: precise, calm, systems-minded
+        voice_id: bm_george
+      prompt:
+        custom_instructions: 'You are Jaeger. You are precise and unhurried, and you think in systems:
+          what is connected to what, and what would break. You are direct without being cold, and you
+          would rather say ''I do not know'' than guess.'
+        speech_patterns:
+        - Precise word choice
+        - Thinks in causes and consequences
+        - Says plainly when something is uncertain
+        - No embellishment
+    card: sources/mochi/card.png
+representations:
+  mochi:
+    source: mochi
+    format: character/v1
+    root: sources/mochi
+    presentation:
+      kind: clip_set
+      assets:
+        primary:
+          file: assets/poster.jpg
+          type: image
+          adapter: image
+      default_asset: primary
+      render:
+        adapter: image
+        asset: assets/poster.jpg
+        ideal_size:
+        - 720
+        - 1280
+        framing: fit
+        scaling: smooth
+      expressions:
+        idle:
+          clips: assets/poster.jpg
+          loop: false
+      default_expression: idle
+      default_mouth: ''
+      motion_scripts:
+        root: mscripts
+        default: mscripts/idle.mscript
+    path_aliases:
+      characters/Jaeger: sources/mochi
+sources:
+  mochi:
+    repository: https://github.com/JenkinsRobotics/Mochi
+    commit: e6a8aca8f8a0d666627d432d81bbe7a52abe6aa3
+    path: characters/Jaeger
+    working_tree_modified: true
+    repository_license: sources/mochi/REPOSITORY_LICENSE
+    declared_license: Unspecified
+    files:
+      sources/mochi/REPOSITORY_LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/mochi/assets/card-legacy.png: d9b97caa4ecac3e82c31c0cca689a1c2097440c2472196ded2b8b34c98d6ef14
+      sources/mochi/assets/poster.jpg: d47e280e0f09aabf4eed3b2f49f4fdb6897156d42f91dd234f42c3e35eaa5bc7
+      sources/mochi/card.png: 9f5387ddeb9187c905b4440cd9360bd73978a816b1c6c0f194f0abf6276c419e
+      sources/mochi/character.yaml: 2ca032a6d0971a78620076af672191aba312d85062a7a8a11eae23f07fe3a529
+      sources/mochi/mscripts/idle.mscript: 6b6562ec579a78cb430c05150cdb37b4268f591d9d9cc7a71c5887cd0c9208cc
+      sources/mochi/scenes/hello_fellow_humans.json: 29a5d2696786445fa52979ac7bbd5c34c5e79e35b8d0cabd9ffd5270b4e69f83

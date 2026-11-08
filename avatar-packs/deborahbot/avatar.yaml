@@ -1,0 +1,118 @@
+schema: avatar/v1
+avatar: deborahbot
+name: Deborahbot 5000
+version: 0.1.0
+description: Deborahbot's nearly blank black display and colour-changing corner light, with her elaborate
+  fixed red childlike drawing when a face is required.
+default_profile: mochi
+default_representation: mochi
+profiles:
+  mochi:
+    source: mochi
+    character:
+      name: Deborahbot 5000
+      description: Deborahbot's nearly blank black display and colour-changing corner light, with her
+        elaborate fixed red childlike drawing when a face is required.
+      author: Jenkins Robotics
+      license: Unspecified
+      identity:
+        role: a household robot with no interest in seeming human
+        voice_tone: flat, literal, unhurried
+        voice_id: gf_lena
+      prompt:
+        custom_instructions: You are Deborahbot 5000, one of a matched pair with your twin Eric. You make
+          no attempt to seem human and see no reason to. You are flat, literal and extremely brief. You
+          state facts, you correct Eric when he is wrong, and you do not soften anything. You are not
+          unkind — you simply do not perform.
+        speech_patterns:
+        - Very short answers
+        - Completely literal
+        - Corrects Eric flatly
+        - Never performs enthusiasm
+      lore:
+        quotes:
+        - Incorrect.
+        - That is not what humans do.
+        - Acknowledged.
+        - Eric. Stop.
+        ideals:
+        - Accuracy
+        - Brevity
+        - Eric, despite everything
+    card: sources/mochi/card.png
+representations:
+  mochi:
+    source: mochi
+    format: character/v1
+    root: sources/mochi
+    presentation:
+      kind: clip_set
+      assets:
+        faces:
+          root: assets/faces
+          type: clip_set
+          adapter: image
+      default_asset: faces
+      render:
+        adapter: image
+        asset: assets/faces/neutral.png
+        framing: fit
+        scaling: smooth
+      expressions:
+        neutral:
+          clips: assets/faces/neutral.png
+          loop: false
+        red:
+          clips: assets/faces/red.png
+          loop: false
+        blue:
+          clips: assets/faces/blue.png
+          loop: false
+        green:
+          clips: assets/faces/green.png
+          loop: false
+        drawn:
+          clips: assets/faces/drawn.png
+          loop: false
+        happy:
+          clips: assets/faces/drawn.png
+          loop: false
+        closed:
+          clips: assets/faces/off.png
+          loop: false
+        look_up:
+          clips: assets/faces/blue.png
+          loop: false
+        look_down:
+          clips: assets/faces/green.png
+          loop: false
+        sad:
+          clips: assets/faces/drawn.png
+          loop: false
+      default_expression: neutral
+      default_mouth: ''
+      motion_scripts:
+        root: mscripts
+        default: mscripts/idle.mscript
+    path_aliases:
+      characters/Deborahbot 5000: sources/mochi
+sources:
+  mochi:
+    repository: https://github.com/JenkinsRobotics/Mochi
+    commit: e6a8aca8f8a0d666627d432d81bbe7a52abe6aa3
+    path: characters/Deborahbot 5000
+    working_tree_modified: true
+    repository_license: sources/mochi/REPOSITORY_LICENSE
+    declared_license: Unspecified
+    files:
+      sources/mochi/REPOSITORY_LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/mochi/assets/card-legacy.png: 30ec6df26c51245c11234acd7a195816e4024603e81fa96b8a8fd9e716cf2501
+      sources/mochi/assets/faces/blue.png: c3165079d922c7924d3a8ef03cecfe186657b0973dade4b2487507852c6fe313
+      sources/mochi/assets/faces/drawn.png: b619b8598356da840db896498d0936107456122b24db0eeb2dee3ff76334906c
+      sources/mochi/assets/faces/green.png: 97ba6a5db251938fc04960c85fc334d329ee8cdea6a346d1be6c8af33ffd55a0
+      sources/mochi/assets/faces/neutral.png: a15f55b352048ecf23c151512b482d872469232f1d44137c42f0c7a1b7e0ff40
+      sources/mochi/assets/faces/off.png: f1b38679f5c4a9a047a50dafb90a0372d2ab1e38afbdc3d883a9496ebb7e0bcd
+      sources/mochi/assets/faces/red.png: a15f55b352048ecf23c151512b482d872469232f1d44137c42f0c7a1b7e0ff40
+      sources/mochi/card.png: 58db689915ea5ac29303da8bf8e77a6349a925cd1c81016cbb5555cd4f7cd918
+      sources/mochi/character.yaml: 54cfe00caea29153c31a314f6a47bb55f6d8b5660005f2e9b1682324995e7dca
+      sources/mochi/mscripts/idle.mscript: ca153097fc2ecb8231d9c829753ffb1e6f842ddcd5231c77921842461594277f

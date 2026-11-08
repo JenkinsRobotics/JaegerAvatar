@@ -1,0 +1,21 @@
+[Header start]
+! EVE, awake. The original CRT eyes stay level with an occasional blink
+! and glance. The mouth is completely dark unless voice amplitude lights it.
+[Header end]
+
+[Resources start]
+K[1]: 'characters/eve/eve.py'
+[Resources end]
+
+[Main start]
+LBL[1]
+MATH K[1] STATE[idle] D[3.4]
+MATH K[1] STATE[idle] LOOK[left] D[1.6]
+MATH K[1] STATE[idle] BLINK[1.0] D[0.12]
+MATH K[1] STATE[idle] D[2.2]
+MATH K[1] STATE[curious] D[2.0]
+MATH K[1] STATE[idle] LOOK[right] D[1.6]
+MATH K[1] STATE[idle] BLINK[1.0] D[0.12]
+MATH K[1] STATE[idle] D[3.0]
+JMP LBL[1]
+[Main end]

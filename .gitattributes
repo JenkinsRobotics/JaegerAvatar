@@ -1,0 +1,2 @@
+# Provenance snapshots must retain their original bytes and source formatting.
+avatar-packs/**/sources/** -text -whitespace

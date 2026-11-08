@@ -1,0 +1,19 @@
+[Header start]
+! Eric — mostly blank, cycling his corner status lamp. Every so often
+! he remembers the red face drawing he uses to look human.
+[Header end]
+
+[Resources start]
+K[1]: 'characters/Eric/assets/faces/neutral.png'
+[Resources end]
+
+[Main start]
+LBL[1:loop]
+FACE EXPR[neutral]  D[3.2]
+FACE EXPR[blue]     D[0.8]
+FACE EXPR[neutral]  D[2.2]
+FACE EXPR[green]    D[0.8]
+FACE EXPR[drawn]    D[2.8]
+FACE EXPR[neutral]  D[3.4]
+JMP LBL[1]
+[Main end]

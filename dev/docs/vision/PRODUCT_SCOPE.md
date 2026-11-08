@@ -19,7 +19,7 @@ to its original physical mechanism and animatronics control scope.
 2. Import or customize its visual representation. Start with existing 2D/3D or
    procedural assets; qualify a first supported representation before expanding.
 3. Configure expressions, mouth shapes, gaze, gestures and reusable clips.
-4. Save a portable character pack with explicit control/capability declarations.
+4. Save a portable avatar pack with explicit control/capability declarations.
 5. Run the character with embedded JaegerAgent, or attach to an existing JaegerAI
    instance. Provide manual/scripted control without requiring a conversational model.
 
@@ -39,7 +39,7 @@ Keep reusable rendering inside this repository initially; extract a versioned
 component when an actual second consumer requires it. JaegerAI should reuse that
 component or connect to Avatar, rather than reimplementing the renderer/editor.
 
-## Character packs
+## Avatar packs
 
 A pack describes the character: identity, assets, expressions/control mappings,
 clips and optional persona/voice defaults. It can have multiple representations.
@@ -47,7 +47,10 @@ An agent instance owns conversation state, private memory, credentials, model
 configuration and effective tool permissions. A visual change must not silently
 switch or clone that instance.
 
-The format is a joint authoring/runtime contract. JaegerAnimation's
-`character/v1` loader is an existing reference, not a claim that all formats
-already agree. Qualify adapters for Mochi, JaegerAI personas and any Aether
-export before claiming interchange. Keep physical mechanism documents separate.
+Jaeger Avatar owns the successor `avatar/v1` contract and library. The existing
+Mochi and JaegerAI character packs and JaegerAgent default persona have been
+imported as its foundation. Source variants and license declarations are retained.
+The [format guide](../packs/AVATAR_PACKS.md) describes implemented import and
+validation. Consumers still using `character/v1` need an explicit loader migration;
+their adoption and any Aether interchange remain planned. Physical mechanism
+documents stay with Aether Animation.

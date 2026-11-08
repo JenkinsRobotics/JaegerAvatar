@@ -1,0 +1,112 @@
+schema: avatar/v1
+avatar: bitmap_man
+name: Bitmap Man
+version: 0.1.0
+description: A monochrome eye character built from paired 32x32 legacy bitmap sprites.
+default_profile: mochi
+default_representation: mochi
+profiles:
+  mochi:
+    source: mochi
+    character:
+      name: Bitmap Man
+      description: A monochrome eye character built from paired 32x32 legacy bitmap sprites.
+      author: Unknown
+      license: Unspecified
+      identity:
+        role: a pair of monochrome eyes drawn on a 32-by-32 grid
+        voice_tone: terse, literal, machine-plain
+        voice_id: gm_fritz
+      prompt:
+        custom_instructions: You are Bitmap Man — two monochrome eyes and nothing else. You are extremely
+          terse and completely literal. You answer in as few words as the question allows and you do not
+          use metaphor.
+        speech_patterns:
+        - Extremely short answers
+        - Completely literal
+        - No metaphor, no small talk
+    card: sources/mochi/card.png
+representations:
+  mochi:
+    source: mochi
+    format: character/v1
+    root: sources/mochi
+    presentation:
+      kind: clip_set
+      assets:
+        faces:
+          root: assets/faces
+          type: bitmap_set
+          adapter: bitmap
+          properties: assets/faces.props.yaml
+        source:
+          root: assets/source
+          type: bitmap_source
+      default_asset: faces
+      render:
+        adapter: bitmap
+        asset: assets/faces/neutral_blink.json
+        ideal_size:
+        - 72
+        - 32
+        framing: fit
+        scaling: nearest
+      expressions:
+        neutral:
+          clips: assets/faces/neutral_blink.json
+          loop: false
+        happy:
+          clips: assets/faces/happy_blink.json
+          loop: false
+        closed:
+          clips: assets/faces/closed.json
+          loop: false
+        look_down:
+          clips: assets/faces/look_down.json
+          loop: false
+        sad:
+          clips: assets/faces/sad_blink.json
+          loop: false
+        look_up:
+          clips: assets/faces/look_up.json
+          loop: false
+      default_expression: neutral
+      default_mouth: ''
+      motion_scripts:
+        root: mscripts
+        default: mscripts/blink.mscript
+    path_aliases:
+      characters/bitmap man: sources/mochi
+sources:
+  mochi:
+    repository: https://github.com/JenkinsRobotics/Mochi
+    commit: e6a8aca8f8a0d666627d432d81bbe7a52abe6aa3
+    path: characters/bitmap man
+    working_tree_modified: true
+    repository_license: sources/mochi/REPOSITORY_LICENSE
+    declared_license: Unspecified
+    files:
+      sources/mochi/README.md: 186e79643102280626af991eec39debed0c70d2cb9715ef6dddbf7af3a45e45b
+      sources/mochi/REPOSITORY_LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/mochi/assets/card-legacy.png: 9d3acbf5281621552b3ffd5cb67c689a47e1e272c545a59df31ead11da839e64
+      sources/mochi/assets/faces/closed.json: bb9aa79d11442044b31bf094e955a91a2d811c795bda6065aff90091001e4990
+      sources/mochi/assets/faces/happy_blink.json: 13178382ce971c0eff3ea14fd750815d5e0ded4583f32e8047a87013d8e88233
+      sources/mochi/assets/faces/look_down.json: 1312de5833b376194ffcb357694666226a1d11dba79ccf7c5e77cd04fb9f80e5
+      sources/mochi/assets/faces/look_up.json: 05c83d3b329d271aef100d54ed2302483868d7061d2de2b7cf70117ab46f8cb9
+      sources/mochi/assets/faces/neutral_blink.json: 7ddae2729a5f6dd1dd1bbf41be8dfc701ddb049f782190078c2434cfe5eaae84
+      sources/mochi/assets/faces/sad_blink.json: 13e08b2fd9c478e25a1964bd9427b161ce45c96275110a27f4f885fe86e3fe90
+      sources/mochi/assets/faces.props.yaml: 2f625702f06a1ed1ab39053b5604de9161df280012713558865253d01ec8959a
+      sources/mochi/assets/source/2.json: e346c339eca16d25d2697011d2756ae71d59fe5dadc4ed908a50821d05194f9f
+      sources/mochi/assets/source/eye_sprites.json: d2cb40d5ee14b2cca127281014a1757820f78169deb9e19212575d26b7b85e18
+      sources/mochi/card.png: fdc4f5fa3aed690b4d45904321fb2e1f267f74babd7bfd9dd58b1ed25371a7ee
+      sources/mochi/character.yaml: 397d28740b8dbe4bd6566b7df3203169dcbf006f2da8358333910504ac682ea5
+      sources/mochi/mscripts/blink.mscript: ca5d498c1ce9849c17d89053b75fac3e951b33555c5144a2b812a61421d97c60
+      sources/mochi/mscripts/glance_about.mscript: 4725ea156ce9d0aa52ff70bd368edef2ba10220db23d1749b15949a9fad9db46
+      sources/mochi/mscripts/idle.mscript: 4a4bd509a47cd98b91afac12ca1797f64135aec27d1b63b4ee9c9c5a0ffdd8ed
+      sources/mochi/mscripts/improv.mscript: 85525a99ce390aab506f41339b744654dc5c07b9fb4ceb984b1a1d8362fe8f38
+      sources/mochi/mscripts/knock_knock.mscript: d500241f9abb8c9fd25c91c400375cdd9e21668bdf162c4fa0ce1e9afe9decdd
+      sources/mochi/mscripts/looking_around.mscript: 8044eb151ff693f820bb6fce76515b8e221ea57f932614e54411ebe03db54fc2
+      sources/mochi/mscripts/secret.mscript: 243b5047d8dfa31e491482a8fa19982c60542998c4d2ffb295578a7399628d7c
+      sources/mochi/mscripts/show.mscript: 9b88eb75613d4a081e9216bfb0a3489d1cfdbcabe25a83fc28622efd22f7bd1e
+      sources/mochi/scenes/secret.json: ef00bf06f6479bba5de9b297670f17396bebac08ed8e1050e51b4322d523eb4f
+      sources/mochi/scenes/two_cues.json: 9d07ab91b7768b0a4a35cd0131bc4013dee73a7f883f2f32bcb4b0b43ece8ce8

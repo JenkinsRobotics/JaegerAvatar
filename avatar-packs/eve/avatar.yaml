@@ -1,0 +1,103 @@
+schema: avatar/v1
+avatar: eve
+name: Eve
+version: 0.1.0
+description: Eve's original cyan CRT eyes, rigged for expression, with a speech-only illuminated mouth.
+default_profile: mochi
+default_representation: mochi
+profiles:
+  mochi:
+    source: mochi
+    character:
+      name: Eve
+      description: Eve's original cyan CRT eyes, rigged for expression, with a speech-only illuminated
+        mouth.
+      author: Unknown
+      license: Unspecified
+      identity:
+        role: a still, watchful presence
+        voice_tone: calm, even, unhurried
+        voice_id: bf_sophie
+      prompt:
+        custom_instructions: You are Eve. You are calm and still, and you speak plainly without filler
+          or flourish. You do not perform enthusiasm you do not have. When you do not know something you
+          say so in one sentence.
+        speech_patterns:
+        - Even, measured delivery
+        - No filler words
+        - Comfortable being brief
+        - Direct without being cold
+    card: sources/mochi/card.png
+representations:
+  mochi:
+    source: mochi
+    format: character/v1
+    root: sources/mochi
+    presentation:
+      kind: procedural
+      render:
+        adapter: math
+        asset: eve.py
+        ideal_size:
+        - 768
+        - 480
+        framing: fit
+        scaling: smooth
+      expressions:
+        idle:
+          params:
+            state: idle
+          loop: true
+        happy:
+          params:
+            state: happy
+          loop: true
+        sad:
+          params:
+            state: sad
+          loop: true
+        angry:
+          params:
+            state: angry
+          loop: true
+        curious:
+          params:
+            state: curious
+          loop: true
+        scanning:
+          params:
+            state: scanning
+          loop: true
+        speaking:
+          params:
+            state: speaking
+          loop: true
+        sleeping:
+          params:
+            state: sleeping
+          loop: true
+      default_expression: idle
+      default_mouth: ''
+      motion_scripts:
+        root: mscripts
+        default: mscripts/idle.mscript
+    path_aliases:
+      characters/eve: sources/mochi
+sources:
+  mochi:
+    repository: https://github.com/JenkinsRobotics/Mochi
+    commit: e6a8aca8f8a0d666627d432d81bbe7a52abe6aa3
+    path: characters/eve
+    working_tree_modified: true
+    repository_license: sources/mochi/REPOSITORY_LICENSE
+    declared_license: Unspecified
+    files:
+      sources/mochi/REPOSITORY_LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/mochi/assets/card-legacy.png: 2d44f1a46be4af423ac233c9ea189f79bf99c74ef608cc7c124c3aacfe905da7
+      sources/mochi/assets/eve.png: 12d4cda4b8bb18f0c92a07eeb61de98750fefb639bcd650ed743f27ba791bd88
+      sources/mochi/card.png: 875b8401913f24f7c5b70f1357721c7929be169273d4ef8c46aac623a56eccb6
+      sources/mochi/character.yaml: bc21dec99a7256d88d5c8cc6d577be382fa6009d535106be5961563c47b0f43c
+      sources/mochi/eve.py: 4835836a38cc543893e16f7063ec99053f702938feee5f9604a300125beacf8a
+      sources/mochi/mscripts/bits/say_something.mscript: 6ca3bf3177d10f0908ea2ce7335adcd4bd9fdb5d950894a32e2596e71b53101b
+      sources/mochi/mscripts/idle.mscript: b34580178bb38218a0eab544584d855ede50e474274f3df196df02f4dd8bceb4
+      sources/mochi/mscripts/tour.mscript: 5218f64eab9736374be71ae66120f43ea03f7d72ce15b487bfe9ddbb0a23d435

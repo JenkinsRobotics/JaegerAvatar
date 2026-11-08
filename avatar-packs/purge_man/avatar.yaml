@@ -1,0 +1,71 @@
+schema: avatar/v1
+avatar: purge_man
+name: Purge Man
+version: 0.1.0
+description: A wide Purge Man character image.
+default_profile: mochi
+default_representation: mochi
+profiles:
+  mochi:
+    source: mochi
+    character:
+      name: Purge Man
+      description: A wide Purge Man character image.
+      author: Unknown
+      license: Unspecified
+      identity:
+        role: a wide-format character portrait
+        voice_tone: low, steady, deliberate
+        voice_id: fm_lucas
+      prompt:
+        custom_instructions: ''
+        speech_patterns:
+        - (unwritten — describe how this character speaks)
+    card: sources/mochi/card.png
+representations:
+  mochi:
+    source: mochi
+    format: character/v1
+    root: sources/mochi
+    presentation:
+      kind: clip_set
+      assets:
+        primary:
+          file: assets/purge-man.jpg
+          type: image
+          adapter: image
+      default_asset: primary
+      render:
+        adapter: image
+        asset: assets/purge-man.jpg
+        ideal_size:
+        - 960
+        - 423
+        framing: fit
+        scaling: smooth
+      expressions:
+        idle:
+          clips: assets/purge-man.jpg
+          loop: false
+      default_expression: idle
+      default_mouth: ''
+      motion_scripts:
+        root: mscripts
+        default: mscripts/idle.mscript
+    path_aliases:
+      characters/purge man: sources/mochi
+sources:
+  mochi:
+    repository: https://github.com/JenkinsRobotics/Mochi
+    commit: e6a8aca8f8a0d666627d432d81bbe7a52abe6aa3
+    path: characters/purge man
+    working_tree_modified: true
+    repository_license: sources/mochi/REPOSITORY_LICENSE
+    declared_license: Unspecified
+    files:
+      sources/mochi/REPOSITORY_LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/mochi/assets/card-legacy.png: b27bbd17b9a0aa615dec31f9f3d86576116f80f997db9d35f3c8937e3cd172a1
+      sources/mochi/assets/purge-man.jpg: aa7e567497503b42c4dc182465b868341c4614b7e56191de73849d5314f3c7f7
+      sources/mochi/card.png: 26f55dc13149c52ece380d1d49b04ebb932a05b51876c713dc8039c9cd1bb000
+      sources/mochi/character.yaml: 36619efc4f4e9a5290d66852ccd53db6a2218ff20593761919791e1d7e67b5c7
+      sources/mochi/mscripts/idle.mscript: d26d9d258fcdf2a0cb85942b5858f3817f41e99cab870c5c0085b994bd3ed63d

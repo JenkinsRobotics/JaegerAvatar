@@ -1,4 +1,4 @@
-name: Documentation and site
+name: Avatar packs, documentation and site
 
 on:
   push:
@@ -18,5 +18,11 @@ jobs:
           python-version: "3.11"
       - name: Check documentation and website
         run: python3 scripts/check_site.py
+      - name: Install pack tooling dependencies
+        run: python3 -m pip install -r requirements-packs.txt
+      - name: Validate imported avatar packs and source integrity
+        run: python3 -m jaeger_avatar.packs validate
+      - name: Exercise pack loading and import
+        run: python3 -m unittest discover -s tests -v
       - name: Check whitespace
         run: git diff --check

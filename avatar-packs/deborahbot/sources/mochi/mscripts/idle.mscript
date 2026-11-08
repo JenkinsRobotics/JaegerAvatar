@@ -1,0 +1,19 @@
+[Header start]
+! Deborahbot 5000 — mostly blank, cycling her corner status lamp. The
+! red drawing is a fixed image on the display, not an animated face.
+[Header end]
+
+[Resources start]
+K[1]: 'characters/Deborahbot 5000/assets/faces/neutral.png'
+[Resources end]
+
+[Main start]
+LBL[1:loop]
+FACE EXPR[neutral]  D[3.6]
+FACE EXPR[green]    D[0.8]
+FACE EXPR[neutral]  D[2.4]
+FACE EXPR[blue]     D[0.8]
+FACE EXPR[drawn]    D[2.8]
+FACE EXPR[neutral]  D[3.8]
+JMP LBL[1]
+[Main end]

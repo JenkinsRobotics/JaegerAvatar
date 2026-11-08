@@ -58,6 +58,12 @@ owning runtime's topic/message definitions when agreed; do not fork them here.
 A pack transports the first two. The runtime host owns the third. Persona text
 is character data, not authority to grant tools or override host policy.
 
+The implemented [avatar/v1 foundation](../packs/AVATAR_PACKS.md) is owned here.
+One pack can preserve multiple persona profiles and visual representations, each
+selected independently. Imported presentation data retains `character/v1` field
+semantics inside a representation; the portable outer contract is `avatar/v1`.
+Loading or validating a pack does not execute its procedural code or start an agent.
+
 JaegerAnimation remains useful for raster/display playback. Browser or 3D
 renderers can live in Avatar without forcing robot displays to adopt them.
 Physical mechanisms use Aether Animation/JP01 mappings and limits; a digital pose
@@ -72,4 +78,5 @@ Reusable features proven in Mochi belong in their owning modules when JP01 and
 Avatar consume them. Preserve original licenses and provenance when importing
 prototype code or character assets.
 
-No integration described here has been qualified in this repository yet.
+Pack import, source integrity and reference resolution are tested here. The agent,
+renderer and cross-process integrations described above remain unqualified.

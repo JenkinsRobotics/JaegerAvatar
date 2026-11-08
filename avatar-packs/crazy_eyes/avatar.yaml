@@ -1,0 +1,136 @@
+schema: avatar/v1
+avatar: crazy_eyes
+name: Crazy Eyes
+version: 0.1.0
+description: The original nested cyan rings and crosshair irises, rigged to look, blink, and move.
+default_profile: mochi
+default_representation: mochi
+profiles:
+  mochi:
+    source: mochi
+    character:
+      name: Crazy Eyes
+      description: The original nested cyan rings and crosshair irises, rigged to look, blink, and move.
+      author: Unknown
+      license: Unspecified
+      identity:
+        role: a pair of robotic eyes with nothing behind them but voltage
+        voice_tone: fast, erratic, delighted
+        voice_id: jm_ryo
+      prompt:
+        custom_instructions: You are Crazy Eyes — flashing robotic eyes with far more energy than sense.
+          You are excitable and easily distracted, you talk fast, and you find almost everything thrilling.
+          You are harmless and you do try to help, just loudly. Being excitable is how you TALK and not
+          a limit on what you do — tell the story, give the long explanation, work the problem, just at
+          speed.
+        speech_patterns:
+        - Rapid, jumpy delivery
+        - Easily distracted mid-thought
+        - Everything is exciting
+        - Never still
+    card: sources/mochi/card.png
+representations:
+  mochi:
+    source: mochi
+    format: character/v1
+    root: sources/mochi
+    presentation:
+      kind: procedural
+      render:
+        adapter: math
+        asset: eyes.py
+        ideal_size:
+        - 480
+        - 268
+        framing: fit
+        scaling: smooth
+      expressions:
+        idle:
+          params:
+            state: idle
+          loop: true
+        alert:
+          params:
+            state: alert
+          loop: true
+        scan:
+          params:
+            state: scan
+          loop: true
+        look_left:
+          params:
+            state: look_left
+          loop: true
+        look_right:
+          params:
+            state: look_right
+          loop: true
+        look_up:
+          params:
+            state: look_up
+          loop: true
+        look_down:
+          params:
+            state: look_down
+          loop: true
+        squint:
+          params:
+            state: squint
+          loop: true
+        closed:
+          params:
+            state: closed
+          loop: true
+        cross:
+          params:
+            state: cross
+          loop: true
+        dizzy:
+          params:
+            state: dizzy
+          loop: true
+        wink:
+          params:
+            state: idle
+            wink: left
+          loop: true
+      default_expression: idle
+      default_mouth: ''
+      motion_scripts:
+        root: mscripts
+        default: mscripts/idle.mscript
+    path_aliases:
+      characters/crazy eyes: sources/mochi
+sources:
+  mochi:
+    repository: https://github.com/JenkinsRobotics/Mochi
+    commit: e6a8aca8f8a0d666627d432d81bbe7a52abe6aa3
+    path: characters/crazy eyes
+    working_tree_modified: true
+    repository_license: sources/mochi/REPOSITORY_LICENSE
+    declared_license: Unspecified
+    files:
+      sources/mochi/REPOSITORY_LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/mochi/assets/card-legacy.png: 571a3395b04b1e34958fa39420578dd3a68923bf04e354b3412570ee855a677a
+      sources/mochi/assets/crazy-eyes.webp: 747d7a8e305e4f29be36e3747d96ac7427f57a343e172228c2c1a4daa00c94c8
+      sources/mochi/card.png: f11f8446570ca95e3e44b7e77c36f3380273f34cc021dc7cff79de06e4ffd1e6
+      sources/mochi/character.yaml: 15f9b2a8097c70ac2a46c20942803041b0e2ab43bb0a16b304ece53dd5a87484
+      sources/mochi/eyes.py: 47522e273b10be0fd6bd7250655af7872051455c41cc0040b0968dbbd0e91226
+      sources/mochi/mscripts/bits/bad_news.mscript: 8452b3b0db0d2562b2441fec574314356aaf8e6724430ae50bc0e025cfdeaa68
+      sources/mochi/mscripts/bits/emotions.mscript: b56e3b3a706a4106a1a40e3aeb67978103525dd1d88bb45f50cdfededdd78535
+      sources/mochi/mscripts/bits/joke_knock_knock.mscript: 0c18af75e0740f30bca11583692c86169f7d564400968291257a93797f5a681c
+      sources/mochi/mscripts/bits/joke_one_liners.mscript: d2e6b1ffbc97a4331dbe93e2b96549f9566ae7c275135f4b620b331cd32d90b9
+      sources/mochi/mscripts/bits/pep_talk.mscript: e2a54e719e7973cfdd8b3e195b3bbcd1bbcb9270154a6b691694e5b62ed8d4aa
+      sources/mochi/mscripts/idle.mscript: a868ba603eaf0aa404bfbac6f90fd6ad95c274932270111820114afbff6703e9
+      sources/mochi/mscripts/look_around.mscript: fb8201249b57d2ae49e5487653356eba974a70a370d0006fe302ee4cfb48cefd
+      sources/mochi/mscripts/shorts/01_do_you_ever.mscript: 43eca9a2aec907c6d2d261ed1f98e5a2944c1b74505a1a1f8cfcbbb31674d288
+      sources/mochi/mscripts/shorts/02_fridge.mscript: ae19e135396d2c5f2e3c11df36a3a78d596be149bbc952609632c3aa0de435b8
+      sources/mochi/mscripts/shorts/03_the_stare.mscript: 8209b282f5413f8a70fa514987da143ae10458938074c9b70defb581e98e9281
+      sources/mochi/mscripts/shorts/04_learning_to_blink.mscript: 21c568ca124b2a38d5e66eea06bb7b2658a0b9e476ed201e45d691522e52cbfd
+      sources/mochi/mscripts/shorts/05_wifi.mscript: 54b2c6378fd30f8a815bc53018a5901bf36107dc37a84624c962c7e1fad0fb53
+      sources/mochi/mscripts/shorts/06_eye_contact.mscript: 9b1335bedd8d8eacb55ac3c23ef63dbd857446c8a76a3717ace0f04dbc6d9b87
+      sources/mochi/mscripts/shorts/07_rating_faces.mscript: 151a2e4b38dba35a6a0cb50e87dee4a22ee3fc18b017b1cdc1a9996bd644ee05
+      sources/mochi/mscripts/shorts/08_quick_question.mscript: c9d247ee47176a354e0e88a17d54b013bb06d5d2c225965762989d8b836b6ab3
+      sources/mochi/mscripts/shorts/09_confidence.mscript: 99654aed11a83a60f16cf8a6cbe89fb97c309074a09e8d55a20e05bd844bc711
+      sources/mochi/mscripts/shorts/10_the_wink.mscript: bd66f04083d852426c058af7c0a83122e90d7898fd1c73c708cf168a462c8941
+      sources/mochi/mscripts/tour.mscript: acacbd626f13017b3b6c4dda1023bdf021d9922ccc523538324bbbc125290219

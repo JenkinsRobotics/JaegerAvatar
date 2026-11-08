@@ -1,0 +1,282 @@
+{
+  "schema": "avatar-catalog/v1",
+  "avatars": [
+    {
+      "avatar": "anakin_skywalker",
+      "name": "Anakin Skywalker",
+      "manifest": "anakin_skywalker/avatar.yaml",
+      "sources": [
+        "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "assistant",
+      "name": "Assistant",
+      "manifest": "assistant/avatar.yaml",
+      "sources": [
+        "jaeger_agent",
+        "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "bender",
+      "name": "Bender",
+      "manifest": "bender/avatar.yaml",
+      "sources": [
+        "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "bitmap_man",
+      "name": "Bitmap Man",
+      "manifest": "bitmap_man/avatar.yaml",
+      "sources": [
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "cat",
+      "name": "Cat",
+      "manifest": "cat/avatar.yaml",
+      "sources": [
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "clanker",
+      "name": "Clanker",
+      "manifest": "clanker/avatar.yaml",
+      "sources": [
+        "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "crazy_eyes",
+      "name": "Crazy Eyes",
+      "manifest": "crazy_eyes/avatar.yaml",
+      "sources": [
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "daft_punk_1",
+      "name": "Daft Punk 1",
+      "manifest": "daft_punk_1/avatar.yaml",
+      "sources": [
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "daft_punk_2",
+      "name": "Daft Punk 2",
+      "manifest": "daft_punk_2/avatar.yaml",
+      "sources": [
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "deborahbot",
+      "name": "Deborahbot 5000",
+      "manifest": "deborahbot/avatar.yaml",
+      "sources": [
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "emotes",
+      "name": "Emotes",
+      "manifest": "emotes/avatar.yaml",
+      "sources": [
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "eren_yeager",
+      "name": "Eren Yeager",
+      "manifest": "eren_yeager/avatar.yaml",
+      "sources": [
+        "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "eric",
+      "name": "Eric",
+      "manifest": "eric/avatar.yaml",
+      "sources": [
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "eve",
+      "name": "Eve",
+      "manifest": "eve/avatar.yaml",
+      "sources": [
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "glados",
+      "name": "GLaDOS",
+      "manifest": "glados/avatar.yaml",
+      "sources": [
+        "jaeger_ai",
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "hal_9000",
+      "name": "HAL 9000",
+      "manifest": "hal_9000/avatar.yaml",
+      "sources": [
+        "jaeger_ai",
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "halo",
+      "name": "Halo",
+      "manifest": "halo/avatar.yaml",
+      "sources": [
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "helldiver",
+      "name": "Helldiver",
+      "manifest": "helldiver/avatar.yaml",
+      "sources": [
+        "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "jaeger",
+      "name": "Jaeger",
+      "manifest": "jaeger/avatar.yaml",
+      "sources": [
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "jarvis",
+      "name": "Jarvis",
+      "manifest": "jarvis/avatar.yaml",
+      "sources": [
+        "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "kamina",
+      "name": "Kamina",
+      "manifest": "kamina/avatar.yaml",
+      "sources": [
+        "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "lelouch",
+      "name": "Lelouch",
+      "manifest": "lelouch/avatar.yaml",
+      "sources": [
+        "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "lilith",
+      "name": "Lilith",
+      "manifest": "lilith/avatar.yaml",
+      "sources": [
+        "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "mochi",
+      "name": "Mochi",
+      "manifest": "mochi/avatar.yaml",
+      "sources": [
+        "jaeger_ai",
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "orbs",
+      "name": "Orbs",
+      "manifest": "orbs/avatar.yaml",
+      "sources": [
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "patric",
+      "name": "Patric",
+      "manifest": "patric/avatar.yaml",
+      "sources": [
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "paul_atreides",
+      "name": "Paul Atreides",
+      "manifest": "paul_atreides/avatar.yaml",
+      "sources": [
+        "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "purge_man",
+      "name": "Purge Man",
+      "manifest": "purge_man/avatar.yaml",
+      "sources": [
+        "mochi"
+      ]
+    },
+    {
+      "avatar": "reliability_auditor",
+      "name": "Reliability Auditor",
+      "manifest": "reliability_auditor/avatar.yaml",
+      "sources": [
+        "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "research_strategist",
+      "name": "Research Strategist",
+      "manifest": "research_strategist/avatar.yaml",
+      "sources": [
+        "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "robotics_architect",
+      "name": "Robotics Architect",
+      "manifest": "robotics_architect/avatar.yaml",
+      "sources": [
+        "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "simon",
+      "name": "Simon",
+      "manifest": "simon/avatar.yaml",
+      "sources": [
+        "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "systems_principal",
+      "name": "Systems Principal",
+      "manifest": "systems_principal/avatar.yaml",
+      "sources": [
+        "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "tars",
+      "name": "TARS",
+      "manifest": "tars/avatar.yaml",
+      "sources": [
+        "jaeger_ai",
+        "mochi"
+      ]
+    }
+  ]
+}

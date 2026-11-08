@@ -1,0 +1,125 @@
+schema: avatar/v1
+avatar: patric
+name: Patric
+version: 0.1.0
+description: Sixteen pixel-art Patric poses stored in a partially populated 6x3 sprite sheet.
+default_profile: mochi
+default_representation: mochi
+profiles:
+  mochi:
+    source: mochi
+    character:
+      name: Patric
+      description: Sixteen pixel-art Patric poses stored in a partially populated 6x3 sprite sheet.
+      author: Unknown
+      license: Unspecified
+      identity:
+        role: a pixel-art character from a sixteen-pose sprite sheet
+        voice_tone: bright, blocky, game-like
+        voice_id: af_heart
+      prompt:
+        custom_instructions: ''
+        speech_patterns:
+        - (unwritten — describe how this character speaks)
+    card: sources/mochi/card.png
+representations:
+  mochi:
+    source: mochi
+    format: character/v1
+    root: sources/mochi
+    presentation:
+      kind: sprite_sheet
+      assets:
+        primary:
+          file: assets/patric_emotes.bmp
+          type: sprite_sheet
+          adapter: sprite
+          properties: assets/patric_emotes.props.yaml
+          layout: grid
+      default_asset: primary
+      render:
+        adapter: sprite
+        asset: assets/patric_emotes.bmp
+        grid:
+        - 6
+        - 3
+        cell_size:
+        - 111
+        - 193
+        ideal_size:
+        - 111
+        - 193
+        framing: fit
+        scaling: nearest
+      expressions:
+        pose_01:
+          column: 0
+          cell: 0
+        pose_02:
+          column: 1
+          cell: 1
+        pose_03:
+          column: 2
+          cell: 2
+        pose_04:
+          column: 3
+          cell: 3
+        pose_05:
+          column: 4
+          cell: 4
+        pose_06:
+          column: 5
+          cell: 5
+        pose_07:
+          column: 0
+          cell: 6
+        pose_08:
+          column: 1
+          cell: 7
+        pose_09:
+          column: 2
+          cell: 8
+        pose_10:
+          column: 3
+          cell: 9
+        pose_11:
+          column: 4
+          cell: 10
+        pose_12:
+          column: 5
+          cell: 11
+        pose_13:
+          column: 0
+          cell: 12
+        pose_14:
+          column: 1
+          cell: 13
+        pose_15:
+          column: 2
+          cell: 14
+        pose_16:
+          column: 3
+          cell: 15
+      default_expression: pose_01
+      default_mouth: ''
+      motion_scripts:
+        root: mscripts
+        default: mscripts/pose_cycle.mscript
+    path_aliases:
+      characters/Patric: sources/mochi
+sources:
+  mochi:
+    repository: https://github.com/JenkinsRobotics/Mochi
+    commit: e6a8aca8f8a0d666627d432d81bbe7a52abe6aa3
+    path: characters/Patric
+    working_tree_modified: true
+    repository_license: sources/mochi/REPOSITORY_LICENSE
+    declared_license: Unspecified
+    files:
+      sources/mochi/REPOSITORY_LICENSE: c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4
+      sources/mochi/assets/card-legacy.png: a2c71ebb795afbf2a23b53f7c58fe2085b7666231194027772e21ba6792ab9b5
+      sources/mochi/assets/patric_emotes.bmp: dafdcf94595e3bef541b11e03b061ae83255efe90d8fd75b749349ecb625dab2
+      sources/mochi/assets/patric_emotes.props.yaml: bf76e812af27e3fa75ceb01f8989c3ce24da7e012dbec4e4a381b1856abaad16
+      sources/mochi/card.png: 7202d598ff7bbfbd420b65a8cdfc14c69a24e4da402a8fd3385f0d0be7fb9911
+      sources/mochi/character.yaml: bec54a600cca807159cc2103cfa8f67a67b90d8a0b04c0db1271f5003d353f66
+      sources/mochi/mscripts/pose_cycle.mscript: 624e8fe9ff0b14d5607f9141cbccdcabcc1f0bc8ae9584f6dfaf091e228bc9ea

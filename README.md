@@ -7,8 +7,9 @@
   <a href="LICENSE">Apache-2.0</a>
 </p>
 
-> **Early development.** This repository currently contains the product documentation,
-> an interactive project website and retained application-template references.
+> **Early development.** The avatar-pack foundation is implemented: **34 avatars,
+> 39 persona profiles and 38 visual representations**, imported from Mochi,
+> JaegerAI and JaegerAgent, with a loader, validator and repeatable importer.
 > The avatar application, embedded agent, pack editor and JaegerAI connection are
 > **planned**, not installed or runnable here yet. See [current status](dev/docs/reality/STATUS.md).
 
@@ -16,7 +17,7 @@
 
 Jaeger Avatar is a planned standalone application for creating, customizing and
 interacting with animated AI characters. Configure a character's appearance,
-expressions, gestures, personality and voice; save it as a portable character
+expressions, gestures, personality and voice; save it as a portable avatar
 pack; then bring it into a conversation or a performance.
 
 An **avatar** is the visual representation. A **character** combines that
@@ -39,14 +40,38 @@ These are separate objects: sharing a character does not share private memories.
 - **Perform in other modes:** human puppeteering and scripted playback, with
   recording and streaming outputs in later milestones.
 
-A character pack does not require an agent. A person, a script or an AI can drive
+An avatar pack does not require an agent. A person, a script or an AI can drive
 its declared controls. The default product experience will be conversational.
+
+## Avatar packs — available now
+
+**Jaeger Avatar owns `avatar/v1`, the successor to the existing character packs.**
+The [starter library](avatar-packs/README.md) brings together Mochi's 18 visual
+packs, JaegerAI's 20 persona/card packs and JaegerAgent's default assistant persona.
+Shared identities are consolidated, preserving each source's profile and appearance.
+TARS, for example, defaults to its JaegerAI persona and Mochi face.
+
+Every imported pack includes source provenance, asset hashes and original license
+declarations. SOUL text, lore, traits, voice preferences, images, procedural faces
+and motion scripts are preserved. JaegerAgent contributes persona data; its engine
+is not copied. Packs carry no agent instance, private memory or tool permissions.
+
+```sh
+python3 -m pip install -r requirements-packs.txt
+python3 -m jaeger_avatar.packs list
+python3 -m jaeger_avatar.packs validate
+python3 -m unittest discover -s tests -v
+```
+
+These are repository-local pack tools, not an app launcher. The older applications
+still read `character/v1`; their switch to `avatar/v1` is a separate integration.
+See the [format and migration guide](dev/docs/packs/AVATAR_PACKS.md).
 
 ## Where it fits
 
 | Project | Responsibility |
 | --- | --- |
-| **Jaeger Avatar** | Character creation/customization, rendering and the avatar interaction experience. |
+| **Jaeger Avatar** | Owns avatar packs and the starter library; character editing, rendering and interaction are planned. |
 | [JaegerAgent](https://github.com/JenkinsRobotics/jaeger-agent) | Reusable headless agent engine: models, turns, tools, skills and multimodal processing. Planned embedded runtime for Avatar. |
 | [JaegerAI](https://github.com/JenkinsRobotics/JaegerAI) | Complete general-purpose assistant application. Avatar can become an optional interface for an existing instance. |
 | [JaegerOS](https://github.com/JenkinsRobotics/JaegerOS) | Runtime composition, messaging, modules, supervision and capability contracts. |
@@ -61,8 +86,8 @@ configuration and storage. JaegerAI is not a required second application.
 and voices that session through an explicit client adapter. It does not create
 an additional agent or independent memory for the same conversation.
 
-The pack format and visual integration require compatibility work. Existing
-JaegerAI personas, Mochi packs and Aether formats are not automatically interchangeable.
+The seed import is implemented. Playback, downstream loader adoption and Aether
+interchange still require integration work.
 See [architecture](dev/docs/vision/ARCHITECTURE.md).
 
 ## Development
@@ -90,8 +115,8 @@ control concept, not the finished avatar runtime.
 
 The inherited `workspace/`, `examples/`, `{{package_name}}/` and
 `pyproject.toml.example` are retained template references. They are not an
-implemented Jaeger Avatar package. Runtime packaging and dependency pins will
-be selected and verified during implementation.
+application runtime. `jaeger_avatar/` currently implements pack tools only;
+application packaging and runtime dependencies remain planned.
 
 ## License
 
