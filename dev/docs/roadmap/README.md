@@ -1,5 +1,10 @@
 # Roadmap — planned work
 
+> November 8: the local Nori-based app, pack library, KIN lip comparison, Singer A
+> and JaegerAgent worker are implemented. This roadmap predates that migration;
+> [STATUS](../reality/STATUS.md) distinguishes completed work from remaining bus,
+> editor and connected-assistant milestones.
+
 Milestones are acceptance gates, not release dates. None of the runtime features
 below is implemented in this repository yet.
 

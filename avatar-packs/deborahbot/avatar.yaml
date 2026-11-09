@@ -96,6 +96,22 @@ representations:
         default: mscripts/idle.mscript
     path_aliases:
       characters/Deborahbot 5000: sources/mochi
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-led
+        preset: mochi
+        look:
+          filter:
+            hue: 150
+      defaults:
+        tag: mochi rig, own look
+        kokoro: af_heart
+        library: true
+        pack: deborahbot
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi

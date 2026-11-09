@@ -1,0 +1,215 @@
+{
+  "method": "Actual Mochi loader/dispatcher and JaegerAnimation OfflineRenderer, 128x128 RGBA, at 0 and 500 ms. Capture bus only; no network/hardware commands.",
+  "mochi": "/Users/jonathanjenkins/GITHUB/Mochi",
+  "animation": "/Users/jonathanjenkins/GITHUB/JaegerAnimation",
+  "hardware_verified": false,
+  "rows": [
+    {
+      "pack": "mochi--classic",
+      "checks": [
+        {
+          "expression": "scene_0",
+          "mouth": "primary",
+          "passed": true,
+          "frame_sha256": [
+            "89874ff0bfc864638a0d1369b2be6b7c6d5e0e94264242d1984088757c1a5d34",
+            "7f7c6564c3aa09203469dd55e6686fd3be10391a986840db56db59c034716d7f"
+          ]
+        },
+        {
+          "expression": "scene_0",
+          "mouth": "alternate",
+          "passed": true,
+          "frame_sha256": [
+            "908831a4aad452bdae7c8e7e9ee38f9c25841a0bb41ea52fcd3af9e42215aa6d",
+            "aa72bf0b5e87f4383ae96b7feace74b330813c31f8b011ca7aba20feb8f33afe"
+          ]
+        },
+        {
+          "expression": "scene_1",
+          "mouth": "primary",
+          "passed": true,
+          "frame_sha256": [
+            "5588f066c55a6f6d1f4cc810a7c9136b59c73340a291ae4eae9e72b11095d250",
+            "6b1c04d92d783eff89900b6606617e8563b76bad360001bc83a880d37a8d4d8f"
+          ]
+        },
+        {
+          "expression": "scene_1",
+          "mouth": "alternate",
+          "passed": true,
+          "frame_sha256": [
+            "593efe0d84aaadf2652fc57f418795213029a2c1c724d7e7f684df8add6f8b1b",
+            "66c99f069b2a6c62517837c972fd493bc316f74dd9e24f24f5ae12096a95e917"
+          ]
+        },
+        {
+          "expression": "scene_2",
+          "mouth": "primary",
+          "passed": true,
+          "frame_sha256": [
+            "11ec1911053a66610cf5c1f0a8b8fedad2992dc332e8d2140f17f5a3567a52a3",
+            "e70795476063a723a8a665e1c6b38464a914ff86dc36a24335aea4929ce83136"
+          ]
+        },
+        {
+          "expression": "scene_2",
+          "mouth": "alternate",
+          "passed": true,
+          "frame_sha256": [
+            "b4de2cba6be110252a7e6f0b3d5f662d62e730611def760dfc910223cf3135e9",
+            "1088429f7bbc7c2cebf9010f7b16dcedcf2c06bea80cb9ad1972985fd8c5e193"
+          ]
+        },
+        {
+          "expression": "scene_3",
+          "mouth": "primary",
+          "passed": true,
+          "frame_sha256": [
+            "b54683a0d95d6e00315a885950800695eabac105efa91e2baf32efc764834b19",
+            "33a85c7b2837556c924ad9734ffb09990aacd95ae9d017b16a63a9ce7ce370c4"
+          ]
+        },
+        {
+          "expression": "scene_3",
+          "mouth": "alternate",
+          "passed": true,
+          "frame_sha256": [
+            "a5be5ee22c88d76b9c8d16f3d65b1f8e1f16f4d3df35a24ec556c97e0ce8ca11",
+            "a1047eaf8cca90f7309a9183851cf41de7ebbfd318f36e9c36f35fecc59ad942"
+          ]
+        },
+        {
+          "expression": "scene_4",
+          "mouth": "primary",
+          "passed": true,
+          "frame_sha256": [
+            "3ac2209c3b274d3ed69a70a24247acc6f74fdf9b2660bdbc5844d1154fc01b8a",
+            "64ccecf1378ee8d048ff607e3f69f138c438f8e2ba9d99c2d5457709a6400c50"
+          ]
+        },
+        {
+          "expression": "scene_4",
+          "mouth": "alternate",
+          "passed": true,
+          "frame_sha256": [
+            "8379567e2e0ad4e4a8ce866e7728d4aec00f602e9fd9c07e72cb25d2f6f185fc",
+            "bb88de16e1ca792c29398fb10d32a1b67414ba6474d3fbdc241ea81d86245b4e"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "pack": "mochi--jaeger_ai",
+      "checks": [
+        {
+          "expression": "idle",
+          "mouth": "",
+          "passed": true,
+          "frame_sha256": [
+            "2bc85f3a0357b9331d30e1a84a156c136b33e51c47f496c47e368491e7625246",
+            "2bc85f3a0357b9331d30e1a84a156c136b33e51c47f496c47e368491e7625246"
+          ]
+        }
+      ],
+      "passed": true
+    },
+    {
+      "pack": "mochi--mochi",
+      "checks": [
+        {
+          "expression": "scene_0",
+          "mouth": "primary",
+          "passed": true,
+          "frame_sha256": [
+            "137f2057365014320f80b44a75a32879129ac758daede14e64b11255e68d2208",
+            "4b11d799912559c89b86c234c4dc9697c6b835003037c2eb38cc9b6fc6a90dbd"
+          ]
+        },
+        {
+          "expression": "scene_0",
+          "mouth": "alternate",
+          "passed": true,
+          "frame_sha256": [
+            "89c23aff9dec395018f9021ecf70848ed53b36812da700a8625ad8b908120f21",
+            "bdf220c126591b17525afcc007da1a3a0d788d258b0b3a963896bdbe66d283ba"
+          ]
+        },
+        {
+          "expression": "scene_1",
+          "mouth": "primary",
+          "passed": true,
+          "frame_sha256": [
+            "b8d991c34df4cb086effe0443724277c280cd4dae12c0d1bfcafa26b6193aec5",
+            "e785a86d725908d8eb5ac5ae8936b89a9d84708a8a35dec646b7e069d590ca56"
+          ]
+        },
+        {
+          "expression": "scene_1",
+          "mouth": "alternate",
+          "passed": true,
+          "frame_sha256": [
+            "c5ca521168ad12e250078bf94e13227b72821f5e530929f05d68275d0fd9cce2",
+            "0d13b4e93d806665266b40a573e521a7f7abb5343c11c4d6ce760cd60ffaddbc"
+          ]
+        },
+        {
+          "expression": "scene_2",
+          "mouth": "primary",
+          "passed": true,
+          "frame_sha256": [
+            "89d53ba85774002a613e43a8902c6c317ab09c0f4ec9b1e7614dcd80f4e551b5",
+            "c36366142bd793b106d714c38c487522dbae0a3185c300e5db3b68288f865755"
+          ]
+        },
+        {
+          "expression": "scene_2",
+          "mouth": "alternate",
+          "passed": true,
+          "frame_sha256": [
+            "7926b6146507e04982f5c2f6d95eda97691522d95b4667d1d53b14aa87a56645",
+            "68ca8e0acde3b7ede4cf1db57e697e49258116d902fe2b9c4701d8856cef2fd7"
+          ]
+        },
+        {
+          "expression": "scene_3",
+          "mouth": "primary",
+          "passed": true,
+          "frame_sha256": [
+            "71f440ac0d7efffa2b3a65d7f64d007a49e135db703521edecb2ddf2e40cc803",
+            "0575a193bfcfe37cbc589dcd65d89a874bc3cff7f32c2e77c02166a2f2a9367f"
+          ]
+        },
+        {
+          "expression": "scene_3",
+          "mouth": "alternate",
+          "passed": true,
+          "frame_sha256": [
+            "ead5ace944ff461ee383ecec355096544dd45a9d6185a74a748af9d5687dc85c",
+            "b4106648f268ce3647b7e408d11ca2aaa655b7277d68bf6f22baf0cfb6328eb7"
+          ]
+        },
+        {
+          "expression": "scene_4",
+          "mouth": "primary",
+          "passed": true,
+          "frame_sha256": [
+            "6836174820925f1627fb4226ce7d0ad4a57600c7b7a72bc02bacc152aa65f07e",
+            "ad45f14837992f871439e0f837be14efa80ce6fb1e1ff67fdf4cc9b2a1f13052"
+          ]
+        },
+        {
+          "expression": "scene_4",
+          "mouth": "alternate",
+          "passed": true,
+          "frame_sha256": [
+            "4d3d73ac45658ae53ea2e5a08661d44c1067dffc38f824f642a7f374756cb692",
+            "0dc503088764170be026edf95fcca679aeb716b43fc74698648be510e38a679e"
+          ]
+        }
+      ],
+      "passed": true
+    }
+  ]
+}

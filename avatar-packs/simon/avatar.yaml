@@ -138,6 +138,20 @@ representations:
       default_mouth: ''
     path_aliases:
       characters/simon: sources/jaeger_ai
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: jaeger-study
+        preset: simon
+      defaults:
+        tag: animated fan study · rights unspecified
+        kokoro: bm_george
+        library: true
+        pack: simon
+    name: Simon · vector study
 sources:
   jaeger_ai:
     repository: https://github.com/JenkinsRobotics/JaegerAI

@@ -107,6 +107,20 @@ representations:
         default: mscripts/pose_cycle.mscript
     path_aliases:
       characters/Patric: sources/mochi
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: jaeger-study
+        preset: patric
+      defaults:
+        tag: animated fan study · rights unspecified
+        kokoro: af_heart
+        library: true
+        pack: patric
+    name: Patric · vector study
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi

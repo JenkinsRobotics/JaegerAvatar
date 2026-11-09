@@ -1,0 +1,10 @@
+{
+  "JaegerOS": {
+    "commit": "949edcd828e998ca912d4933f6e8666632140130",
+    "dirty": true
+  },
+  "jaeger-agent": {
+    "commit": "3d0266401b6b58b3112bd8d472b632d8cf09c27d",
+    "dirty": false
+  }
+}

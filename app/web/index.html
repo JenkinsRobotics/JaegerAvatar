@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jaeger Avatar Studio</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23141726'/%3E%3Crect x='14' y='20' width='13' height='24' rx='6' fill='%235fe0d0'/%3E%3Crect x='37' y='20' width='13' height='24' rx='6' fill='%235fe0d0'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="./theme.css">
+<style>
+  * { box-sizing:border-box; }
+  html,body { height:100%; margin:0; background:var(--bg); color:var(--ink); font:14px/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
+  button,.btn { font:inherit; color:var(--ink); background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:6px 11px; cursor:pointer; transition:background .15s,border-color .15s,transform .1s; }
+  button:hover,.btn:hover { background:#272c45; border-color:#3b4263; }
+  button:active { transform:scale(.97); }
+  button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,summary:focus-visible,label:focus-within .btn { outline:2px solid var(--accent); outline-offset:2px; }
+  [hidden] { display:none !important; }
+  kbd { font:11px ui-monospace,Menlo,monospace; color:var(--dim); border:1px solid var(--line); border-radius:4px; padding:0 4px; margin-left:auto; }
+  .tiny { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
+
+  #app { display:grid; grid-template-columns:minmax(0,1fr) 352px; grid-template-rows:auto minmax(0,1fr) auto auto; gap:10px; height:100%; padding:0 12px 12px; }
+  header { grid-column:1/-1; display:flex; align-items:center; gap:14px; padding:10px 2px 0; min-width:0; }
+  .brand { display:flex; align-items:center; gap:8px; font-size:17px; font-weight:700; letter-spacing:-.01em; }
+  .brand svg { width:26px; height:26px; }
+  #tabs { display:flex; gap:3px; padding:3px; background:var(--panel); border:1px solid var(--line); border-radius:11px; overflow-x:auto; scrollbar-width:none; min-width:0; }
+  #tabs button { border:0; background:transparent; color:var(--dim); padding:4px 10px; border-radius:8px; white-space:nowrap; }
+  #tabs button:hover { color:var(--ink); background:var(--panel2); }
+  #tabs button[aria-selected=true] { background:var(--ink); color:#0d0f18; font-weight:600; }
+  .conn { margin-left:auto; display:flex; align-items:center; gap:7px; color:var(--dim); font-size:12px; white-space:nowrap; }
+  #light { width:7px; height:7px; border-radius:50%; background:var(--warm); }
+  #light.on { background:var(--accent); box-shadow:0 0 0 3px #5fe0d022; }
+  #privacy { padding-left:10px; border-left:1px solid var(--line); }
+  #privacy.live { color:var(--accent); }
+  #abVoice { white-space:nowrap; padding:4px 9px; font-size:13px; }
+  #level { width:44px; height:6px; flex:none; border-radius:3px; background:var(--panel2); overflow:hidden; }
+  #level i { display:block; width:0; height:100%; background:var(--accent); }
+  #mute { padding:4px 8px; font-size:13px; white-space:nowrap; }
+  #mute[aria-pressed=true] { color:var(--hot); }
+
+  main { position:relative; min-height:0; min-width:0; display:grid; border-radius:16px; overflow:hidden; border:1px solid var(--line); background:#000; }
+  main.single { grid-template:1fr / 1fr; }
+  main.all { grid-template:repeat(4,1fr) / repeat(4,1fr); gap:2px; }
+  .pane { position:relative; min-width:0; min-height:0; overflow:hidden; display:none; background:#000; }
+  .pane.on { display:block; }
+  .pane canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .pane .tag { position:absolute; left:10px; top:8px; font-size:11px; color:#fff; background:rgba(0,0,0,.5); padding:2px 7px; border-radius:6px; z-index:2; display:none; }
+  main.all .tag { display:block; }
+  #sub { position:absolute; left:50%; bottom:18px; transform:translateX(-50%); max-width:min(82%,640px); padding:7px 14px; border-radius:10px; background:rgba(8,9,14,.76); backdrop-filter:blur(6px); color:#fff; font-size:15px; text-align:center; opacity:0; transition:opacity .18s; pointer-events:none; z-index:3; }
+  #sub.on { opacity:1; }
+  #streamBtn { position:absolute; right:12px; top:12px; z-index:4; background:rgba(10,12,20,.6); backdrop-filter:blur(8px); border-color:#ffffff22; color:#fff; }
+  #views { position:absolute; right:12px; top:50%; transform:translateY(-50%); z-index:4; display:flex; flex-direction:column; gap:5px; }
+  #views button { min-width:38px; min-height:30px; padding:4px 6px; background:rgba(10,12,20,.55); backdrop-filter:blur(8px); border-color:#ffffff22; color:#fff; font-size:12.5px; }
+  #views button[aria-pressed=true] { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:650; }
+  #recBadge { position:absolute; left:12px; top:12px; z-index:4; padding:3px 10px; border-radius:8px; background:rgba(10,12,20,.72); color:#fff; font-size:12.5px; font-variant-numeric:tabular-nums; }
+  #recBadge::before { content:""; display:inline-block; width:8px; height:8px; margin-right:7px; border-radius:50%; background:var(--hot); }
+  #soundGate { position:absolute; left:50%; top:14px; transform:translateX(-50%); z-index:5; background:var(--warm); border-color:var(--warm); color:#2b1a05; font-weight:650; white-space:nowrap; }
+  #soundGate:hover { background:#ffd49c; }
+  #loading { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:4; padding:9px 15px; border-radius:10px; background:rgba(10,12,20,.8); color:var(--dim); font-size:13px; }
+  #toast { position:fixed; left:50%; top:66px; transform:translateX(-50%) translateY(8px); z-index:20; max-width:min(90vw,520px); padding:9px 15px; border-radius:10px; background:var(--ink); color:#0d0f18; font-size:13.5px; opacity:0; transition:opacity .2s,transform .2s; pointer-events:none; }
+  #toast.on { opacity:1; transform:translateX(-50%); }
+
+  #bar { grid-column:1; display:flex; align-items:center; gap:12px; min-width:0; padding:7px 10px; background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+  #mood { display:flex; align-items:center; gap:8px; min-width:0; flex:0 1 170px; }
+  #moodIcon { font-size:18px; width:22px; text-align:center; color:var(--accent); }
+  #moodLabel { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #quick { display:flex; gap:5px; min-width:0; overflow-x:auto; scrollbar-width:none; }
+  #quick button { white-space:nowrap; border-radius:18px; font-size:13px; padding:4px 11px; }
+  #chapter { display:flex; align-items:center; gap:9px; flex:1; min-width:0; }
+  #chapter span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:13px; }
+  #chapter progress { flex:1; min-width:30px; height:5px; accent-color:var(--accent); }
+  .actions { margin-left:auto; display:flex; gap:5px; flex-shrink:0; }
+  #reel { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:650; white-space:nowrap; }
+  #reel:hover { filter:brightness(1.08); background:var(--accent); }
+  #recBtn { white-space:nowrap; }
+  #recBtn[aria-pressed=true] { color:var(--hot); border-color:var(--hot); }
+
+  #dock { grid-column:1; display:none; }   /* the message box lives in the conversation; stream mode borrows it */
+  #log { font-size:12.5px; line-height:18px; height:18px; color:var(--dim); overflow:hidden; margin:0 4px 6px; white-space:nowrap; text-overflow:ellipsis; }
+  form { display:flex; gap:7px; margin:0; }
+  #cloneName { font:inherit; padding:6px 9px; color:var(--ink); background:var(--panel2); border:1px solid var(--line); border-radius:9px; min-width:0; }
+  #lyrics { width:100%; resize:vertical; font:inherit; padding:9px 12px; color:var(--ink); background:var(--panel); border:1px solid var(--line); border-radius:10px; }
+  #lyrics:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  #form { flex-shrink:0; display:flex; flex-direction:column; gap:6px; padding:9px 10px 8px; background:var(--panel2); border:1px solid var(--line); border-radius:14px; }
+  #form:focus-within { border-color:var(--accent); }
+  #input { width:100%; min-height:42px; max-height:140px; resize:none; font:inherit; font-size:14px; line-height:1.45; padding:2px 2px; color:var(--ink); background:transparent; border:0; outline:0; }
+  #formRow { display:flex; align-items:center; gap:8px; }
+  #formRow .note { flex:1; text-align:center; font-size:11.5px; }
+  #send { width:36px; height:36px; padding:0; border-radius:50%; font-size:17px; background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:700; }
+  #send:hover { filter:brightness(1.1); }
+  #mic { min-width:104px; }
+  #mic[data-state=on] { border-color:var(--accent); color:var(--accent); }
+  #mic[data-state=hearing] { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600; }
+  #mic[data-state=working] { border-color:var(--accent); }
+
+  aside { grid-row:2/5; grid-column:2; min-height:0; display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+  #panelTabs { display:flex; gap:4px; padding:6px; border-bottom:1px solid var(--line); flex-shrink:0; }
+  #panelTabs button { flex:1; border:0; background:transparent; color:var(--dim); border-radius:9px; padding:7px; }
+  #panelTabs button:hover { background:var(--panel2); color:var(--ink); }
+  #panelTabs button[aria-selected=true] { background:var(--panel2); color:var(--ink); font-weight:600; }
+  .panel { flex:1; min-height:0; overflow:auto; padding:12px; display:flex; flex-direction:column; gap:14px; scrollbar-width:thin; }
+  .panel h2 { font-size:11px; margin:0 0 7px; color:var(--dim); font-weight:600; letter-spacing:.08em; text-transform:uppercase; }
+  #energyRow { display:flex; align-items:center; gap:9px; }
+  #energyRow input { flex:1; min-width:0; accent-color:var(--accent); }
+  #energyRow output { width:40px; text-align:right; font-variant-numeric:tabular-nums; color:var(--dim); }
+  #emo { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:5px; }
+  #emo button { display:flex; flex-direction:column; align-items:center; gap:1px; padding:6px 1px; font-size:12px; }
+  #emo button span { font-size:16px; line-height:20px; color:var(--dim); }
+  #emo button.on { background:#16302f; border-color:var(--accent); }
+  #emo button.on span { color:var(--accent); }
+  #moves { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px; }
+  #moves button { display:flex; align-items:center; gap:6px; padding:6px 8px; text-align:left; font-size:13px; }
+  .chips { display:flex; flex-wrap:wrap; gap:4px; }
+  .chips button { padding:3px 9px; font-size:12.5px; border-radius:8px; }
+
+  #talkPanel { padding-bottom:10px; overflow:hidden; gap:10px; }
+  #talkHead { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  #messages { flex:1; min-height:60px; overflow:auto; display:flex; flex-direction:column; gap:7px; scrollbar-width:thin; }
+  .msg { max-width:88%; padding:9px 13px 10px; border:1px solid var(--line); border-radius:14px; overflow-wrap:anywhere; font-size:14px; line-height:1.45; }
+  .msg small { display:block; font-size:10.5px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin-bottom:3px; }
+  .msg.user { align-self:flex-end; background:#22304a; }
+  .msg.assistant { align-self:flex-start; background:var(--panel2); }
+  #empty { color:var(--dim); margin:auto; text-align:center; max-width:250px; }
+  #suggest { display:flex; flex-wrap:wrap; gap:5px; }
+  #suggest button { font-size:13px; border-radius:18px; padding:4px 11px; }
+
+  .row { display:flex; align-items:center; justify-content:space-between; gap:9px; }
+  .row > span { color:var(--dim); font-size:13px; white-space:nowrap; }
+  .row > button,.row > label,.row > select { flex:0 1 62%; min-width:0; }
+  .row > label .btn { display:block; text-align:center; }
+  select { font:inherit; color:var(--ink); background:var(--panel2); border:1px solid var(--line); border-radius:9px; padding:6px 8px; }
+  .stack { display:flex; flex-direction:column; gap:6px; }
+  .stack > h2 { margin-bottom:1px; }
+  .note { font-size:12.5px; color:var(--dim); overflow-wrap:anywhere; }
+  .links a { color:var(--accent); }
+  #stream { width:100%; }
+  #keys { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:3px 12px; font-size:12.5px; color:var(--dim); }
+  #keys span { display:flex; align-items:center; gap:5px; }
+  details summary { cursor:pointer; color:var(--dim); font-size:13px; }
+  #hud { font:12px/1.65 ui-monospace,Menlo,monospace; color:var(--dim); margin-top:8px; }
+  #hud b { color:var(--ink); font-weight:500; }
+  #bars { display:grid; grid-template-columns:48px 1fr; gap:3px 7px; font:10.5px ui-monospace,Menlo,monospace; color:var(--dim); align-items:center; margin-top:8px; }
+  .bar { height:7px; background:#23262e; border-radius:3px; position:relative; overflow:hidden; }
+  .bar i { position:absolute; top:0; bottom:0; background:var(--accent); }
+
+  #chat { position:absolute; left:14px; bottom:14px; width:min(34%,340px); display:none; flex-direction:column; gap:4px; font-size:13px; z-index:3; pointer-events:none; }
+  #chat div { padding:5px 9px; border-radius:9px; background:rgba(8,9,12,.62); color:#fff; overflow-wrap:anywhere; }
+  #chat b { color:var(--accent); font-weight:600; }
+  #exit { position:absolute; right:12px; top:12px; display:none; z-index:4; background:rgba(8,9,12,.6); color:#fff; }
+  #plate { position:absolute; left:14px; top:12px; display:none; z-index:3; padding:4px 11px; border-radius:8px; background:rgba(8,9,12,.6); color:#fff; font-weight:650; font-size:14px; }
+  body.stream #app { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) auto; padding:0; gap:0; }
+  body.stream header, body.stream aside, body.stream #log, body.stream #bar, body.stream #streamBtn, body.stream #views { display:none; }
+  body.stream main { border:0; border-radius:0; }
+  body.stream #chat { display:flex; }
+  body.stream #exit, body.stream #plate { display:block; }
+  body.stream #sub { font-size:22px; bottom:26px; max-width:min(58%,820px); }
+  body.stream #dock { grid-column:1; padding:8px 14px; display:block; }
+  body.obs #dock, body.obs #exit, body.obs #recBadge, body.obs #loading, body.obs #toast { display:none; }
+  body[data-bg=green], body[data-bg=green] #app, body[data-bg=green] main, body[data-bg=green] .pane { background:#00b140; }
+  body[data-bg=clear], html:has(body[data-bg=clear]), body[data-bg=clear] #app, body[data-bg=clear] main, body[data-bg=clear] .pane { background:transparent; }
+  body[data-bg=green] .bgl, body[data-bg=clear] .bgl { display:none !important; }
+  @media (max-width:800px) {
+    html,body { height:auto; }
+    #app { display:flex; flex-direction:column; height:auto; min-height:100dvh; padding:0 16px 16px; }
+    header { flex-wrap:wrap; gap:8px 12px; }
+    #tabs { order:3; width:100%; }
+    .conn { font-size:11.5px; min-width:0; }
+    #status { overflow:hidden; text-overflow:ellipsis; min-width:0; }
+    #privacy, #level { display:none; }
+    main { position:sticky; top:0; z-index:10; height:48dvh; flex:none; }
+    #bar { flex-wrap:wrap; }
+    #mood { flex:1 1 40%; }
+    #quick { order:3; width:100%; }
+    #chapter { order:3; flex-basis:100%; }
+    aside { min-height:420px; }
+    .panel { overflow:visible; }
+    #messages { overflow:visible; }
+    #mic { min-width:0; }
+    #keys, kbd, #streamBtn { display:none; }
+    #views { flex-direction:row; top:auto; bottom:10px; right:10px; transform:none; }
+    #views button { min-width:34px; }
+    body.stream #app { display:flex; min-height:100dvh; padding:0; }
+    body.stream main { flex:1; position:relative; height:auto; }
+  }
+  @media (max-width:1240px) and (min-width:801px) { #privacy { display:none; } }
+  @media (prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; } }
+
+  #libraryOpen {margin-bottom:0;white-space:nowrap} .brand{white-space:nowrap} #tabs {overflow-x:auto;flex-wrap:nowrap} #tabs button{flex-shrink:0}
+  #library{width:min(900px,94vw);max-height:88vh;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:20px} #library::backdrop{background:#000a}
+  #librarySearch{width:100%;margin:16px 0;padding:12px} #libraryGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px} #libraryGrid article{padding:12px;background:var(--bg);border:1px solid var(--line);border-radius:12px} #libraryGrid img{width:100%;height:130px;object-fit:contain} #libraryGrid button{display:block;width:100%;margin-top:6px;text-align:left;font-size:12px} #libraryGrid h3{margin:4px 0 10px} .reel-singer{font-size:11px;display:flex;align-items:center;gap:4px} #packProfile{max-width:180px}
+  @media(max-width:800px){#bar .actions{width:100%;flex-wrap:wrap;justify-content:flex-end}.reel-singer{margin-right:auto}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#1c2034"/><rect x="14" y="20" width="13" height="24" rx="6" fill="#5fe0d0"/><rect x="37" y="20" width="13" height="24" rx="6" fill="#5fe0d0"/></svg>Jaeger Avatar</div>
+    <a href="/demo-packs.html" style="white-space:nowrap">Demo packs</a><button id="libraryOpen">Avatar library · 50</button><div id="tabs" role="tablist" aria-label="Character"></div>
+    <div class="conn"><i id="light"></i><span id="status" aria-live="polite"></span><span id="privacy">Mic off · Camera off</span></div>
+    <button id="abVoice" title="Switch between Kokoro and the original voice pipeline (V)">Voice: Kokoro</button>
+    <span id="level" title="The sound leaving the app. If this moves and you hear nothing, check your output device and the browser tab." aria-hidden="true"><i></i></span>
+    <button id="mute" aria-pressed="false" aria-label="Mute her voice" title="Mute her voice">Sound on</button>
+  </header>
+  <main id="stage" class="single">
+    <div id="sub"></div>
+    <div id="chat" aria-live="polite"></div>
+    <div id="plate"></div>
+    <div id="recBadge" hidden>Rec 0:00</div>
+    <div id="loading" hidden></div>
+    <button id="soundGate" hidden>Sound is blocked. Click to turn it on.</button>
+    <button id="streamBtn" title="Stream mode (F)">Stream mode</button>
+    <div id="views" role="group" aria-label="Turn the character" hidden>
+      <button data-turn="0" title="Front" aria-label="Front view">F</button>
+      <button data-turn="0.65" title="Three-quarter" aria-label="Three-quarter view">¾</button>
+      <button data-turn="1.5708" title="Side" aria-label="Side view">S</button>
+      <button data-turn="3.14159" title="Back" aria-label="Back view">B</button>
+      <button id="viewFull" title="Full body" aria-label="Full body framing" aria-pressed="false">Full</button>
+    </div>
+    <button id="exit" aria-label="Exit stream mode">Exit stream mode</button>
+  </main>
+  <div id="bar">
+    <div id="mood" aria-live="polite"><span id="moodIcon" aria-hidden="true">○</span><span id="moodLabel">Here with you</span></div>
+    <div id="quick"></div>
+    <div id="chapter" hidden><span id="chapterText"></span><progress id="chapterBar" max="1" value="0" aria-label="Reel progress"></progress><button id="reelPause" title="Pause or resume (Space)">Pause</button></div>
+    <div class="actions">
+      <button id="recBtn" aria-pressed="false" title="Record the stage with her voice (R)">Record</button>
+      <button id="stop" title="Stop everything (Esc)">Stop</button>
+      <label class="reel-singer"><input type="checkbox" id="reelSinger" checked> Singer A finale</label><button id="reel">Play reel</button>
+    </div>
+  </div>
+  <div id="dock"><div id="log"></div></div>
+  <aside>
+    <div id="panelTabs" role="tablist" aria-label="Controls">
+      <button id="performTab" role="tab" aria-controls="performPanel" data-panel="perform" aria-selected="true">Perform</button>
+      <button id="talkTab" role="tab" aria-controls="talkPanel" data-panel="talk" aria-selected="false" tabindex="-1">Conversation</button>
+      <button id="studioTab" role="tab" aria-controls="studioPanel" data-panel="studio" aria-selected="false" tabindex="-1">Studio</button>
+    </div>
+    <section class="panel" id="performPanel" role="tabpanel" aria-labelledby="performTab">
+      <div id="energyRow"><label for="energy" class="tiny">Expression</label><input id="energy" type="range" min="0.5" max="1.5" step="0.05" value="1"><output id="energyVal" for="energy">100%</output></div>
+      <div><h2>Feelings</h2><div id="emo"></div></div>
+      <div id="movesBox" hidden><h2 id="movesTitle">Full-body moves</h2><div id="moves"></div></div>
+      <div><h2>Sounds and gestures</h2><div class="chips" id="act"></div></div>
+    </section>
+    <section class="panel" id="talkPanel" role="tabpanel" aria-labelledby="talkTab" hidden>
+      <div id="talkHead"><h2 id="talkTitle" style="margin:0">Conversation</h2><button id="fresh" title="Start this conversation over">Start over</button></div>
+      <div id="messages" role="log" aria-label="Conversation"></div>
+      <div id="suggest"></div>
+      <form id="form">
+        <textarea id="input" rows="2" aria-label="Message the character" autocomplete="off"></textarea>
+        <div id="formRow">
+          <button id="mic" type="button" aria-pressed="false" title="Talk to her hands-free (M)">Mic</button>
+          <span class="note">On this machine</span>
+          <button id="send" aria-label="Send" title="Send (Enter)">↑</button>
+        </div>
+      </form>
+    </section>
+    <section class="panel" id="studioPanel" role="tabpanel" aria-labelledby="studioTab" hidden>
+      <div class="stack" id="voiceSection">
+        <h2>Character</h2><div id="representationInfo" class="note"></div><label class="row">Persona <select id="packProfile" aria-label="Persona profile"></select></label>
+        <h2>Lip sync</h2><select id="lipSync" aria-label="Lip sync method"><option value="nori">Nori · original</option><option value="kin">KIN vowels + Nori smoothing</option></select><button id="compareLips">Play the same comparison line</button><p class="note">Same recording in both modes. Nori remains the default until you choose.</p>
+        <h2>Voice</h2>
+        <div id="voiceBox" class="stack"></div>
+      </div>
+      <div class="stack" id="singSection">
+        <h2>Singing</h2><button id="singerSample">♪ Play Singer A · prepared sample</button>
+        <textarea id="lyrics" rows="3" maxlength="180" aria-label="Lyrics">Little lights are shining
+Here with you tonight</textarea>
+        <div class="row"><span>Method</span><select id="singMethod" aria-label="Singing method"><option value="soulx">Experimental singer · SoulX</option><option value="spoken">Her voice, on the beat</option><option value="sung">Her voice, half-sung</option></select></div>
+        <div class="row soulx"><span>Reference</span><select id="singRef" aria-label="Voice reference"><option value="speech">Kokoro speaking</option><option value="sung">Kokoro singing</option></select></div>
+        <div class="row soulx"><span>Melody</span><select id="singMelody" aria-label="Melody"><option value="glow">Little glow</option><option value="lullaby">Lullaby</option></select></div>
+        <div class="row soulx"><span>Pitch</span><select id="singPitch" aria-label="Melody pitch"><option value="0">Original range</option><option value="5">Higher</option><option value="-5">Lower</option><option value="-12">An octave lower</option></select></div>
+        <div class="row soulx"><span>Tempo</span><select id="singTempo" aria-label="Tempo"><option value="88">Gentle · 88 BPM</option><option value="104" selected>Flowing · 104 BPM</option><option value="120">Bright · 120 BPM</option></select></div>
+        <div class="row"><button id="singGo" style="flex:1">♪ Sing these lyrics</button><button id="singStop" style="flex:0 0 auto">Stop</button></div>
+        <div class="note" id="singInfo" aria-live="polite">The experimental singer sings in her Kokoro voice from a short reference. It takes about half a minute and plays when the whole song is ready. Likeness and clarity vary. One to four short English lines.</div>
+      </div>
+      <div class="stack">
+        <h2>Go live</h2>
+        <button id="stream">Stream mode</button>
+        <div class="note links">Output window, for OBS or a second screen: <a href="?obs=1&amp;bg=green" target="_blank" rel="noopener">green</a> · <a href="?obs=1&amp;bg=clear" target="_blank" rel="noopener">transparent</a></div>
+        <div class="note links">Prefer the earlier layout? <a href="/classic/">Open the classic demo</a></div>
+        <div class="row"><span>Background</span><button id="bgBtn">Room</button></div>
+        <div class="row"><span>Mood backdrop</span><button id="backdropBtn">On</button></div>
+        <div class="row"><span>Camera</span><button id="calmBtn">Moves with the mood</button></div>
+      </div>
+      <div class="stack">
+        <h2>Character</h2>
+        <div class="row"><span>Your model</span><label id="pick"><input id="file" type="file" accept=".vrm,.glb,.gltf" style="position:absolute;opacity:0;width:0"><span class="btn">Load .vrm or .glb</span></label></div>
+        <div id="modelInfo" class="note" aria-live="polite"></div>
+        <button id="resetModel" hidden>Back to Vita</button>
+        <div class="row"><span>Animation</span><button id="timing">Anime, on twos</button></div>
+        <div class="row" id="displayRow" hidden><span>Display</span><button id="display">Eyes and mouth</button></div>
+      </div>
+      <div class="stack">
+        <h2>Tracking</h2>
+        <button id="camBtn" aria-pressed="false">Webcam tracking</button>
+        <button id="lipBtn" aria-pressed="false">Live mic lip sync</button>
+        <div id="camInfo" class="note" aria-live="polite"></div>
+      </div>
+      <div class="stack">
+        <h2>Shortcuts</h2>
+        <div id="keys">
+          <span>Stop <kbd>Esc</kbd></span><span>Stream <kbd>F</kbd></span>
+          <span>Mic <kbd>M</kbd></span><span>Record <kbd>R</kbd></span>
+          <span>Voice A/B <kbd>V</kbd></span><span>Celebrate <kbd>E</kbd></span>
+          <span>Pause reel <kbd>Space</kbd></span><span>Wink <kbd>W</kbd></span>
+          <span>Spin <kbd>S</kbd></span><span>Dance <kbd>D</kbd></span>
+          <span>Hop <kbd>J</kbd></span><span>Clap <kbd>C</kbd></span>
+          <span>Bow <kbd>B</kbd></span><span>Heart <kbd>H</kbd></span>
+        </div>
+      </div>
+      <details id="under"><summary>Under the hood</summary><div id="hud"></div><div id="bars"></div></details>
+    </section>
+  </aside>
+</div>
+<div id="toast" role="status"></div>
+<dialog id="library"><div class="row"><h2>Avatar library</h2><button id="libraryClose">Close</button></div><input id="librarySearch" type="search" placeholder="Find a character…" aria-label="Find a character"><div id="libraryGrid"></div></dialog>
+<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/","@pixiv/three-vrm":"./vendor/three-vrm.module.min.js"}}</script>
+<script type="module" src="app.js"></script>
+</body>
+</html>

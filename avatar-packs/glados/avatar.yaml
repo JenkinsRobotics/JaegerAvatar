@@ -199,6 +199,20 @@ representations:
       default_mouth: ''
     path_aliases:
       characters/glados: sources/jaeger_ai
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: jaeger-study
+        preset: glados
+      defaults:
+        tag: animated fan study · rights unspecified
+        kokoro: bf_emma
+        library: true
+        pack: glados
+    name: GLaDOS · vector study
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi

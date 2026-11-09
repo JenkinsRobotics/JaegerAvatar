@@ -3,10 +3,11 @@
 Jaeger Avatar owns this library and its `avatar/v1` format, the successor to the
 earlier character packs. [Format, ownership and migration](../dev/docs/packs/AVATAR_PACKS.md).
 
-The library contains **39 avatars, 39 persona profiles and 45 representations**:
+The library contains **51 avatars, 57 persona profiles and 98 representations**:
 
 | Source | Imported foundation |
 | --- | --- |
+| Nori + KIN demos | Twelve character identities and thirteen live representations, including two Vita appearances. Existing Mochi gains a separate rig variant. |
 | Mochi | 18 visual character packs with personas, sprites, clips, procedural faces and motion scripts. |
 | JaegerAI | 20 persona/card packs, including traits, SOUL text, backstory and lore. |
 | JaegerAgent | Default Assistant persona as data; no agent engine or visual model. |

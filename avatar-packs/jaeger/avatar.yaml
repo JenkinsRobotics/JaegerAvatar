@@ -59,6 +59,24 @@ representations:
         default: mscripts/idle.mscript
     path_aliases:
       characters/Jaeger: sources/mochi
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-led
+        preset: visor
+        look:
+          filter:
+            hue: 20
+            brightness: 0.55
+            contrast: 1.3
+      defaults:
+        tag: visor rig, own look
+        kokoro: bm_george
+        library: true
+        pack: jaeger
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi

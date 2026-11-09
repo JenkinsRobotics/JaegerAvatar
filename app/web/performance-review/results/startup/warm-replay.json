@@ -1,0 +1,869 @@
+{
+  "date": "2026-11-08T04:50:28.950Z",
+  "events": [
+    {
+      "ms": 388.1000003814697,
+      "type": "reel-click",
+      "character": "vita",
+      "voice": "kokoro:af_heart",
+      "cachedClips": 0
+    },
+    {
+      "ms": 389.19999980926514,
+      "type": "request-start",
+      "request": 1,
+      "text": "Hi, I'm Vita!",
+      "emotion": "joy",
+      "origin": "playback"
+    },
+    {
+      "ms": 389.5,
+      "type": "request-start",
+      "request": 2,
+      "text": "Let me show you what this rig can do.",
+      "emotion": "joy",
+      "origin": "playback"
+    },
+    {
+      "ms": 389.69999980926514,
+      "type": "request-start",
+      "request": 3,
+      "text": "When I'm excited, everything lifts, and I just can't help spinning around!",
+      "emotion": "excited",
+      "origin": "playback"
+    },
+    {
+      "ms": 389.69999980926514,
+      "type": "request-start",
+      "request": 4,
+      "text": "When I'm sad, it all sinks down.",
+      "emotion": "sad",
+      "origin": "playback"
+    },
+    {
+      "ms": 390.1000003814697,
+      "type": "request-start",
+      "request": 5,
+      "text": "And I can get really grumpy!",
+      "emotion": "angry",
+      "origin": "playback"
+    },
+    {
+      "ms": 390.30000019073486,
+      "type": "request-start",
+      "request": 6,
+      "text": "Oh!",
+      "emotion": "surprised",
+      "origin": "playback"
+    },
+    {
+      "ms": 390.5,
+      "type": "request-start",
+      "request": 7,
+      "text": "What was that?",
+      "emotion": "scared",
+      "origin": "playback"
+    },
+    {
+      "ms": 390.69999980926514,
+      "type": "request-start",
+      "request": 8,
+      "text": "Wait, what?",
+      "emotion": "confused",
+      "origin": "playback"
+    },
+    {
+      "ms": 390.80000019073486,
+      "type": "request-start",
+      "request": 9,
+      "text": "Let me think.",
+      "emotion": "thinking",
+      "origin": "playback"
+    },
+    {
+      "ms": 391,
+      "type": "request-start",
+      "request": 10,
+      "text": "Oh, I know.",
+      "emotion": "smug",
+      "origin": "playback"
+    },
+    {
+      "ms": 391.1000003814697,
+      "type": "request-start",
+      "request": 11,
+      "text": "You're my favorite person.",
+      "emotion": "love",
+      "origin": "playback"
+    },
+    {
+      "ms": 391.1000003814697,
+      "type": "request-start",
+      "request": 12,
+      "text": "Sorry, that was a lot.",
+      "emotion": "shy",
+      "origin": "playback"
+    },
+    {
+      "ms": 391.19999980926514,
+      "type": "request-start",
+      "request": 13,
+      "text": "Ta da!",
+      "emotion": "joy",
+      "origin": "playback"
+    },
+    {
+      "ms": 391.30000019073486,
+      "type": "request-start",
+      "request": 14,
+      "text": "Thanks for watching, and thank you so much for having me.",
+      "emotion": "joy",
+      "origin": "playback"
+    },
+    {
+      "ms": 391.5,
+      "type": "wait-first-two-start"
+    },
+    {
+      "ms": 861.1999998092651,
+      "type": "response",
+      "request": 6
+    },
+    {
+      "ms": 865.5,
+      "type": "clip-ready",
+      "request": 6,
+      "duration": 0.4217916666666667
+    },
+    {
+      "ms": 1580.1999998092651,
+      "type": "response",
+      "request": 1
+    },
+    {
+      "ms": 1581.6000003814697,
+      "type": "response",
+      "request": 8
+    },
+    {
+      "ms": 1591.3000001907349,
+      "type": "clip-ready",
+      "request": 1,
+      "duration": 0.9947083333333333
+    },
+    {
+      "ms": 1597.8000001907349,
+      "type": "clip-ready",
+      "request": 8,
+      "duration": 0.7485
+    },
+    {
+      "ms": 2454.800000190735,
+      "type": "response",
+      "request": 2
+    },
+    {
+      "ms": 2457.3999996185303,
+      "type": "request-start",
+      "request": 15,
+      "text": "Hi, I'm Vita!",
+      "emotion": "joy",
+      "origin": "preload"
+    },
+    {
+      "ms": 2460.300000190735,
+      "type": "response",
+      "request": 10
+    },
+    {
+      "ms": 2472.8999996185303,
+      "type": "clip-ready",
+      "request": 2,
+      "duration": 1.7770416666666666
+    },
+    {
+      "ms": 2473,
+      "type": "wait-first-two-end"
+    },
+    {
+      "ms": 2477.1000003814697,
+      "type": "audio-unlock-start"
+    },
+    {
+      "ms": 2477.199999809265,
+      "type": "audio-unlock-end",
+      "state": "running"
+    },
+    {
+      "ms": 2479.8999996185303,
+      "type": "source-scheduled",
+      "duration": 0.9947083333333333,
+      "delayMs": 36.00000000000002,
+      "signalLeadMs": 3.022875816993464,
+      "natural": true
+    },
+    {
+      "ms": 2481.3999996185303,
+      "type": "clip-ready",
+      "request": 10,
+      "duration": 0.8788333333333334
+    },
+    {
+      "ms": 3538.6000003814697,
+      "type": "audio-unlock-start"
+    },
+    {
+      "ms": 3538.800000190735,
+      "type": "audio-unlock-end",
+      "state": "running"
+    },
+    {
+      "ms": 3538.8999996185303,
+      "type": "source-scheduled",
+      "duration": 1.7770416666666666,
+      "delayMs": 36.00000000000002,
+      "signalLeadMs": 5.59640522875817,
+      "natural": true
+    },
+    {
+      "ms": 3793.3999996185303,
+      "type": "response",
+      "request": 3
+    },
+    {
+      "ms": 3830.1000003814697,
+      "type": "clip-ready",
+      "request": 3,
+      "duration": 3.52075
+    },
+    {
+      "ms": 4808.10000038147,
+      "type": "response",
+      "request": 4
+    },
+    {
+      "ms": 4809.89999961853,
+      "type": "response",
+      "request": 13
+    },
+    {
+      "ms": 4825.5,
+      "type": "clip-ready",
+      "request": 4,
+      "duration": 2.2123333333333335
+    },
+    {
+      "ms": 4829.60000038147,
+      "type": "clip-ready",
+      "request": 13,
+      "duration": 0.6188333333333333
+    },
+    {
+      "ms": 5366.300000190735,
+      "type": "audio-unlock-start"
+    },
+    {
+      "ms": 5366.5,
+      "type": "audio-unlock-end",
+      "state": "running"
+    },
+    {
+      "ms": 5366.60000038147,
+      "type": "source-scheduled",
+      "duration": 3.52075,
+      "delayMs": 35.999999999999574,
+      "signalLeadMs": 9.444444444444445,
+      "natural": true
+    },
+    {
+      "ms": 5628,
+      "type": "response",
+      "request": 5
+    },
+    {
+      "ms": 5641.199999809265,
+      "type": "clip-ready",
+      "request": 5,
+      "duration": 1.4945
+    },
+    {
+      "ms": 6080.89999961853,
+      "type": "response",
+      "request": 7
+    },
+    {
+      "ms": 6087.300000190735,
+      "type": "clip-ready",
+      "request": 7,
+      "duration": 0.724625
+    },
+    {
+      "ms": 6603,
+      "type": "response",
+      "request": 9
+    },
+    {
+      "ms": 6612.10000038147,
+      "type": "clip-ready",
+      "request": 9,
+      "duration": 0.8783333333333333
+    },
+    {
+      "ms": 7473.800000190735,
+      "type": "response",
+      "request": 11
+    },
+    {
+      "ms": 7490.89999961853,
+      "type": "clip-ready",
+      "request": 11,
+      "duration": 1.4714166666666666
+    },
+    {
+      "ms": 8194.300000190735,
+      "type": "response",
+      "request": 12
+    },
+    {
+      "ms": 8208.199999809265,
+      "type": "clip-ready",
+      "request": 12,
+      "duration": 1.4252916666666666
+    },
+    {
+      "ms": 8800.300000190735,
+      "type": "audio-unlock-start"
+    },
+    {
+      "ms": 8800.39999961853,
+      "type": "audio-unlock-end",
+      "state": "running"
+    },
+    {
+      "ms": 8800.699999809265,
+      "type": "source-scheduled",
+      "duration": 2.2123333333333335,
+      "delayMs": 35.999999999999574,
+      "signalLeadMs": 9.027777777777777,
+      "natural": true
+    },
+    {
+      "ms": 9310.39999961853,
+      "type": "response",
+      "request": 14
+    },
+    {
+      "ms": 9336.699999809265,
+      "type": "clip-ready",
+      "request": 14,
+      "duration": 2.860625
+    },
+    {
+      "ms": 9833.39999961853,
+      "type": "response",
+      "request": 15
+    },
+    {
+      "ms": 9842.39999961853,
+      "type": "clip-ready",
+      "request": 15,
+      "duration": 0.9947083333333333
+    },
+    {
+      "ms": 10843.39999961853,
+      "type": "request-start",
+      "request": 16,
+      "text": "Let me show you what this rig can do.",
+      "emotion": "joy",
+      "origin": "preload"
+    },
+    {
+      "ms": 11184.300000190735,
+      "type": "audio-unlock-start"
+    },
+    {
+      "ms": 11184.5,
+      "type": "audio-unlock-end",
+      "state": "running"
+    },
+    {
+      "ms": 11184.699999809265,
+      "type": "source-scheduled",
+      "duration": 1.2000453514739229,
+      "delayMs": 35.999999999999574,
+      "signalLeadMs": 0.2725449154020582,
+      "natural": false
+    },
+    {
+      "ms": 11645.699999809265,
+      "type": "response",
+      "request": 16
+    },
+    {
+      "ms": 11663,
+      "type": "clip-ready",
+      "request": 16,
+      "duration": 1.7770416666666666
+    },
+    {
+      "ms": 12509.10000038147,
+      "type": "audio-unlock-start"
+    },
+    {
+      "ms": 12509.39999961853,
+      "type": "audio-unlock-end",
+      "state": "running"
+    },
+    {
+      "ms": 12509.60000038147,
+      "type": "source-scheduled",
+      "duration": 1.4945,
+      "delayMs": 35.999999999999574,
+      "signalLeadMs": 3.9166666666666665,
+      "natural": true
+    },
+    {
+      "ms": 12663.800000190735,
+      "type": "request-start",
+      "request": 17,
+      "text": "When I'm excited, everything lifts, and I just can't help spinning around!",
+      "emotion": "excited",
+      "origin": "preload"
+    },
+    {
+      "ms": 14062.800000190735,
+      "type": "response",
+      "request": 17
+    },
+    {
+      "ms": 14085,
+      "type": "audio-unlock-start"
+    },
+    {
+      "ms": 14085.199999809265,
+      "type": "audio-unlock-end",
+      "state": "running"
+    },
+    {
+      "ms": 14085.39999961853,
+      "type": "source-scheduled",
+      "duration": 0.4217916666666667,
+      "delayMs": 35.999999999999574,
+      "signalLeadMs": 7.612179487179488,
+      "natural": true
+    },
+    {
+      "ms": 14091.199999809265,
+      "type": "clip-ready",
+      "request": 17,
+      "duration": 3.52075
+    },
+    {
+      "ms": 14570.60000038147,
+      "type": "audio-unlock-start"
+    },
+    {
+      "ms": 14570.89999961853,
+      "type": "audio-unlock-end",
+      "state": "running"
+    },
+    {
+      "ms": 14571.10000038147,
+      "type": "source-scheduled",
+      "duration": 0.47002267573696144,
+      "delayMs": 35.999999999999574,
+      "signalLeadMs": 0.2515799219095922,
+      "natural": false
+    },
+    {
+      "ms": 15094,
+      "type": "request-start",
+      "request": 18,
+      "text": "When I'm sad, it all sinks down.",
+      "emotion": "sad",
+      "origin": "preload"
+    },
+    {
+      "ms": 15127.800000190735,
+      "type": "audio-unlock-start"
+    },
+    {
+      "ms": 15128,
+      "type": "audio-unlock-end",
+      "state": "running"
+    },
+    {
+      "ms": 15128.10000038147,
+      "type": "source-scheduled",
+      "duration": 0.724625,
+      "delayMs": 35.999999999999574,
+      "signalLeadMs": 5.317460317460317,
+      "natural": true
+    },
+    {
+      "ms": 15898.5,
+      "type": "audio-unlock-start"
+    },
+    {
+      "ms": 15898.800000190735,
+      "type": "audio-unlock-end",
+      "state": "running"
+    },
+    {
+      "ms": 15899,
+      "type": "source-scheduled",
+      "duration": 0.7485,
+      "delayMs": 35.999999999999574,
+      "signalLeadMs": 8.25,
+      "natural": true
+    },
+    {
+      "ms": 16149.699999809265,
+      "type": "response",
+      "request": 18
+    },
+    {
+      "ms": 16170.5,
+      "type": "clip-ready",
+      "request": 18,
+      "duration": 2.2123333333333335
+    },
+    {
+      "ms": 16730.60000038147,
+      "type": "audio-unlock-start"
+    },
+    {
+      "ms": 16731.10000038147,
+      "type": "audio-unlock-end",
+      "state": "running"
+    },
+    {
+      "ms": 16731.300000190735,
+      "type": "source-scheduled",
+      "duration": 0.6900226757369614,
+      "delayMs": 35.999999999999574,
+      "signalLeadMs": 0.4360718646432932,
+      "natural": false
+    },
+    {
+      "ms": 17172.5,
+      "type": "request-start",
+      "request": 19,
+      "text": "And I can get really grumpy!",
+      "emotion": "angry",
+      "origin": "preload"
+    },
+    {
+      "ms": 18078.300000190735,
+      "type": "response",
+      "request": 19
+    },
+    {
+      "ms": 18091.10000038147,
+      "type": "clip-ready",
+      "request": 19,
+      "duration": 1.4945
+    },
+    {
+      "ms": 18143.699999809265,
+      "type": "request-start",
+      "request": 20,
+      "text": "Oh!",
+      "emotion": "surprised",
+      "origin": "preload"
+    },
+    {
+      "ms": 18146.89999961853,
+      "type": "response",
+      "request": 20
+    },
+    {
+      "ms": 18150.199999809265,
+      "type": "clip-ready",
+      "request": 20,
+      "duration": 0.4217916666666667
+    },
+    {
+      "ms": 18201.89999961853,
+      "type": "request-start",
+      "request": 21,
+      "text": "What was that?",
+      "emotion": "scared",
+      "origin": "preload"
+    },
+    {
+      "ms": 18655.39999961853,
+      "type": "response",
+      "request": 21
+    },
+    {
+      "ms": 18670.699999809265,
+      "type": "clip-ready",
+      "request": 21,
+      "duration": 0.724625
+    },
+    {
+      "ms": 18722.5,
+      "type": "request-start",
+      "request": 22,
+      "text": "Wait, what?",
+      "emotion": "confused",
+      "origin": "preload"
+    },
+    {
+      "ms": 18725,
+      "type": "response",
+      "request": 22
+    },
+    {
+      "ms": 18731.39999961853,
+      "type": "clip-ready",
+      "request": 22,
+      "duration": 0.7485
+    },
+    {
+      "ms": 18782.300000190735,
+      "type": "request-start",
+      "request": 23,
+      "text": "Let me think.",
+      "emotion": "thinking",
+      "origin": "preload"
+    },
+    {
+      "ms": 19274.699999809265,
+      "type": "response",
+      "request": 23
+    },
+    {
+      "ms": 19283.699999809265,
+      "type": "clip-ready",
+      "request": 23,
+      "duration": 0.8783333333333333
+    },
+    {
+      "ms": 19335.60000038147,
+      "type": "request-start",
+      "request": 24,
+      "text": "Oh, I know.",
+      "emotion": "smug",
+      "origin": "preload"
+    },
+    {
+      "ms": 19339,
+      "type": "response",
+      "request": 24
+    },
+    {
+      "ms": 19355.10000038147,
+      "type": "clip-ready",
+      "request": 24,
+      "duration": 0.8788333333333334
+    },
+    {
+      "ms": 19406.699999809265,
+      "type": "request-start",
+      "request": 25,
+      "text": "You're my favorite person.",
+      "emotion": "love",
+      "origin": "preload"
+    },
+    {
+      "ms": 20031.800000190735,
+      "type": "response",
+      "request": 25
+    },
+    {
+      "ms": 20043.39999961853,
+      "type": "clip-ready",
+      "request": 25,
+      "duration": 1.4714166666666666
+    },
+    {
+      "ms": 20095.60000038147,
+      "type": "request-start",
+      "request": 26,
+      "text": "Sorry, that was a lot.",
+      "emotion": "shy",
+      "origin": "preload"
+    },
+    {
+      "ms": 20885.800000190735,
+      "type": "response",
+      "request": 26
+    },
+    {
+      "ms": 20906.60000038147,
+      "type": "clip-ready",
+      "request": 26,
+      "duration": 1.4252916666666666
+    },
+    {
+      "ms": 20958.89999961853,
+      "type": "request-start",
+      "request": 27,
+      "text": "Ta da!",
+      "emotion": "joy",
+      "origin": "preload"
+    },
+    {
+      "ms": 20974.800000190735,
+      "type": "response",
+      "request": 27
+    },
+    {
+      "ms": 20982,
+      "type": "clip-ready",
+      "request": 27,
+      "duration": 0.6188333333333333
+    },
+    {
+      "ms": 21032.60000038147,
+      "type": "request-start",
+      "request": 28,
+      "text": "Thanks for watching, and thank you so much for having me.",
+      "emotion": "joy",
+      "origin": "preload"
+    },
+    {
+      "ms": 22451.800000190735,
+      "type": "response",
+      "request": 28
+    },
+    {
+      "ms": 22476.300000190735,
+      "type": "clip-ready",
+      "request": 28,
+      "duration": 2.860625
+    },
+    {
+      "ms": 27912.300000190735,
+      "type": "reel-click",
+      "character": "vita",
+      "voice": "kokoro:af_heart",
+      "cachedClips": 14
+    },
+    {
+      "ms": 27913.39999961853,
+      "type": "cache-hit",
+      "text": "Hi, I'm Vita!",
+      "emotion": "joy",
+      "origin": "playback"
+    },
+    {
+      "ms": 27913.5,
+      "type": "cache-hit",
+      "text": "Let me show you what this rig can do.",
+      "emotion": "joy",
+      "origin": "playback"
+    },
+    {
+      "ms": 27913.5,
+      "type": "cache-hit",
+      "text": "When I'm excited, everything lifts, and I just can't help spinning around!",
+      "emotion": "excited",
+      "origin": "playback"
+    },
+    {
+      "ms": 27913.60000038147,
+      "type": "cache-hit",
+      "text": "When I'm sad, it all sinks down.",
+      "emotion": "sad",
+      "origin": "playback"
+    },
+    {
+      "ms": 27913.699999809265,
+      "type": "cache-hit",
+      "text": "And I can get really grumpy!",
+      "emotion": "angry",
+      "origin": "playback"
+    },
+    {
+      "ms": 27913.699999809265,
+      "type": "cache-hit",
+      "text": "Oh!",
+      "emotion": "surprised",
+      "origin": "playback"
+    },
+    {
+      "ms": 27913.800000190735,
+      "type": "cache-hit",
+      "text": "What was that?",
+      "emotion": "scared",
+      "origin": "playback"
+    },
+    {
+      "ms": 27913.89999961853,
+      "type": "cache-hit",
+      "text": "Wait, what?",
+      "emotion": "confused",
+      "origin": "playback"
+    },
+    {
+      "ms": 27913.89999961853,
+      "type": "cache-hit",
+      "text": "Let me think.",
+      "emotion": "thinking",
+      "origin": "playback"
+    },
+    {
+      "ms": 27913.89999961853,
+      "type": "cache-hit",
+      "text": "Oh, I know.",
+      "emotion": "smug",
+      "origin": "playback"
+    },
+    {
+      "ms": 27914,
+      "type": "cache-hit",
+      "text": "You're my favorite person.",
+      "emotion": "love",
+      "origin": "playback"
+    },
+    {
+      "ms": 27914,
+      "type": "cache-hit",
+      "text": "Sorry, that was a lot.",
+      "emotion": "shy",
+      "origin": "playback"
+    },
+    {
+      "ms": 27914.10000038147,
+      "type": "cache-hit",
+      "text": "Ta da!",
+      "emotion": "joy",
+      "origin": "playback"
+    },
+    {
+      "ms": 27914.10000038147,
+      "type": "cache-hit",
+      "text": "Thanks for watching, and thank you so much for having me.",
+      "emotion": "joy",
+      "origin": "playback"
+    },
+    {
+      "ms": 27914.300000190735,
+      "type": "wait-first-two-start"
+    },
+    {
+      "ms": 27914.5,
+      "type": "wait-first-two-end"
+    },
+    {
+      "ms": 27914.699999809265,
+      "type": "audio-unlock-start"
+    },
+    {
+      "ms": 27914.699999809265,
+      "type": "audio-unlock-end",
+      "state": "running"
+    },
+    {
+      "ms": 27914.89999961853,
+      "type": "source-scheduled",
+      "duration": 0.9947083333333333,
+      "delayMs": 35.999999999999574,
+      "signalLeadMs": 3.022875816993464,
+      "natural": true
+    }
+  ]
+}

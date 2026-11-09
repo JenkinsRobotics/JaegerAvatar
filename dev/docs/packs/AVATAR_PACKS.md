@@ -8,7 +8,8 @@ definitions and assets already present in Mochi, JaegerAI and JaegerAgent.
 
 Implemented: seed import, independent persona/appearance variants, source
 provenance, local-reference resolution, validation and a repository-local CLI.
-Planned: visual authoring, rendering, agent binding and adoption by existing apps.
+Implemented runtime: live rigs, image/video appearances and explicit persona selection.
+Planned: visual pack authoring and adoption by existing apps.
 This change does not replace the existing apps' loaders or delete their packs.
 
 | Owner | Responsibility |
@@ -72,10 +73,23 @@ does not imply a renderer is installed. The Python loader in
   identity/voice defaults, prompt, traits, lore, level, revision and neutral flag.
   An optional `card` references a pack-relative file. Hosts retain their own
   identity policy; importing `neutral` does not rename an existing agent instance.
-- A representation supplies a pack-relative `root` and `presentation` data.
+- A representation may supply a nonempty `name` for its human-readable variant label.
+  It supplies a pack-relative `root` and `presentation` data.
   `format: character/v1` preserves the existing render, expression, mouth, motion,
   mood and sprite-transition semantics without inventing a new playback engine.
-  Other presentation formats and a universal pose contract remain planned.
+  `format: avatar/rig-v1` now selects one of the application-owned `nori-vrm`,
+  `kin-vrm`, `nori-anime`, `nori-3d`, `nori-led`, `kin-momo` or `jaeger-study` adapters.
+  The latter selects one of 16 app-owned vector fan studies; see the
+  [demo pack review](DEMO_PACK_REVIEW.md). A fixed
+  preset allowlist prevents a pack from naming executable code. VRM assets remain
+  pack-local. `render.look` restyles a built-in rig with data only: `filter`
+  (numbers for `hue` in degrees, `saturate`, `brightness`, `contrast`, `sepia`,
+  `grayscale`) on any rig, and on `nori-anime` a `palette` of named colours
+  (`[r, g, b]` in 0..1; `skin`, `hair` and `iris` as `[light, shadow]` pairs).
+  `defaults.library: true` keeps a rig out of the top tabs and in the library.
+  `presentation.defaults` preserves voice/introduction/performance
+  defaults. This is an in-repository representation format, not a JaegerOS topic
+  contract. A universal pose contract remains planned.
 - Persona and representation variants may name a `source`. The source records
   repository, commit, original path, dirty-working-tree flag, license declaration
   and file hashes. Native authored packs may leave `sources` empty.
@@ -153,6 +167,6 @@ authored packs; imports are explicit snapshots, not automatic synchronization.
 4. Move new authoring to `avatar.yaml`, pin the supported contract, then retire
    the consumer's duplicate bundled library when its migration is verified.
 
-No legacy exporter or downstream loader switch is included yet. JaegerAnimation's
+An explicit compatibility exporter is now available; see [robot deployment](ROBOT_DEPLOYMENT.md). No downstream loader switch is included. JaegerAnimation's
 existing `character/v1` contract remains in service for unmigrated clients.
 Version and coordinate changes at that boundary rather than silently changing it.

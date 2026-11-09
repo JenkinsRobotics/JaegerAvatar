@@ -77,6 +77,23 @@ representations:
         default: mscripts/blink.mscript
     path_aliases:
       characters/bitmap man: sources/mochi
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-led
+        preset: mochi
+        look:
+          filter:
+            grayscale: 1
+            contrast: 1.2
+      defaults:
+        tag: mochi rig, own look
+        kokoro: am_michael
+        library: true
+        pack: bitmap_man
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi

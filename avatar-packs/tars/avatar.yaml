@@ -195,6 +195,20 @@ representations:
       default_mouth: ''
     path_aliases:
       characters/tars: sources/jaeger_ai
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: jaeger-study
+        preset: tars
+      defaults:
+        tag: animated fan study · rights unspecified
+        kokoro: am_echo
+        library: true
+        pack: tars
+    name: TARS · vector study
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi

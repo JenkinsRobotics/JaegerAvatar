@@ -140,6 +140,24 @@ representations:
       characters/clanker: sources/jaeger_ai
     unavailable_assets:
       avatar: avatar
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-3d
+        preset: droid
+        look:
+          filter:
+            sepia: 0.4
+            hue: -20
+            contrast: 1.15
+      defaults:
+        tag: droid rig, own look
+        kokoro: bm_george
+        library: true
+        pack: clanker
 sources:
   jaeger_ai:
     repository: https://github.com/JenkinsRobotics/JaegerAI

@@ -1,0 +1,23 @@
+:root { color-scheme:dark; --bg:#0b0d16; --panel:#141726; --panel2:#1c2034; --line:#2b3048; --ink:#eef0f8; --dim:#a2a9c0; --accent:#5fe0d0; --accent-ink:#04211e; --warm:#ffc27a; --hot:#ff7088; }
+/* Home-page tokens are shared by Studio and its companion demo pages. */
+.demo-page {margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;}
+.demo-page * {box-sizing:border-box;}
+.demo-page h1 {font-size:32px;letter-spacing:-.025em;line-height:1.2;}
+.demo-page h2 {font-size:18px;}
+.demo-page .card,.demo-page article {background:var(--panel);border-color:var(--line);border-radius:16px;}
+.demo-page a {color:var(--accent);}
+.demo-page button,.demo-page select,.demo-page input,.demo-page a.button {font:inherit;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:8px 12px;}
+.demo-page input[type=range],.demo-page input[type=checkbox] {accent-color:var(--accent);padding:0;}
+.demo-page button {cursor:pointer;}
+.demo-page button:hover,.demo-page a.button:hover {background:#272c45;border-color:#3b4263;}
+.demo-page button:disabled,.demo-page select:disabled {opacity:.5;cursor:wait;}
+.demo-page :is(button,input,select,a):focus-visible {outline:2px solid var(--accent);outline-offset:2px;}
+.demo-page #play,.demo-page .card>a,.demo-page a.button {background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600;}
+.demo-page #play:hover,.demo-page .card>a:hover {background:#86eadc;}
+.demo-page .note,.demo-page small,.demo-page .card p,.demo-page .tag {color:var(--dim);}
+.demo-page .tag,.demo-page main>small {font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;}
+.demo-page #stage,.demo-page .art {background:radial-gradient(ellipse at 50% 40%,var(--panel2),var(--bg));}
+.demo-page video {background:#000;}
+.demo-page [hidden] {display:none!important;}
+.demo-page .demo-nav {display:flex;gap:18px;align-items:center;margin-bottom:24px;border-bottom:1px solid var(--line);padding-bottom:14px;}
+.demo-page .demo-nav a {text-decoration:none;font-weight:600;}

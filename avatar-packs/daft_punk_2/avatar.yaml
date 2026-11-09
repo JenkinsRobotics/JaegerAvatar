@@ -58,6 +58,20 @@ representations:
         default: mscripts/loop.mscript
     path_aliases:
       characters/Daft Punk 2: sources/mochi
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: jaeger-study
+        preset: daft_punk_2
+      defaults:
+        tag: animated fan study · rights unspecified
+        kokoro: am_michael
+        library: true
+        pack: daft_punk_2
+    name: Daft Punk 2 · vector study
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi

@@ -2,11 +2,25 @@ schema: avatar/v1
 avatar: nova
 name: Nova (Portrait prototype)
 version: 0.1.0
-description: Nova placeholder portrait from JaegerAI UI experiments. No rig, personality or agent instance
-  is supplied.
-default_profile: null
+description: Nova placeholder portrait from JaegerAI UI experiments. Draft persona and a built-in rig
+  added in Jaeger Avatar. Draft persona and a built-in rig added in Jaeger Avatar.
+default_profile: jaeger_avatar
 default_representation: portrait
-profiles: {}
+profiles:
+  jaeger_avatar:
+    character:
+      name: Nova (Portrait prototype)
+      description: A warm, bookish human-looking AI with round glasses.
+      author: Jenkins Robotics (draft persona)
+      license: Apache-2.0 (persona and built-in rig)
+      identity:
+        role: a warm, bookish human-looking AI with round glasses
+        voice_tone: warm, wry, thoughtful
+        voice_id: af_sarah
+      prompt:
+        custom_instructions: You are Nova, a warm, bookish AI who looks human and wears round glasses.
+          Wry, thoughtful, and happy to think out loud with people.
+    card: sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public/avatar-placeholder-nova.jpg
 representations:
   portrait:
     source: jaeger_ai_ui
@@ -33,6 +47,22 @@ representations:
           loop: false
       default_expression: idle
       default_mouth: ''
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-3d
+        preset: human
+        look:
+          filter:
+            hue: -8
+      defaults:
+        tag: human rig, own look
+        kokoro: af_sarah
+        library: true
+        pack: nova
 sources:
   jaeger_ai_ui:
     commit: e42e98872e68a5b88cac595140a2e9a4034ac216

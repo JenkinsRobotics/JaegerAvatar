@@ -100,6 +100,23 @@ representations:
         certain: '#FFFFFF'
     path_aliases:
       characters/Orbs: sources/mochi
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-led
+        preset: mochi
+        look:
+          filter:
+            hue: 110
+            saturate: 1.2
+      defaults:
+        tag: mochi rig, own look
+        kokoro: bf_emma
+        library: true
+        pack: orbs
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi

@@ -1,0 +1,11 @@
+{
+  "pauseWhilePreparing": {
+    "clip": false,
+    "audio": "suspended"
+  },
+  "staleSampleStopped": true,
+  "delayedSongCancelled": true,
+  "samePackSession": true,
+  "resetChangesSession": true,
+  "errors": []
+}

@@ -1,0 +1,20 @@
+{
+  "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+  "cpu": "Apple M1 Max",
+  "sourceHashes": {
+    "local-avatar-demo/public/js/app.js": "8bb4ae66fd24317b35620dfcd39786f1ce0b6831bcc8647df08de590e9575357",
+    "local-avatar-demo/public/js/audio.js": "83c7e8dd232638c0dbdbdc509294e6fc20d6d3025fda89e1fd93b6765934d44c",
+    "local-avatar-demo/public/js/rig.js": "5efde76ec2902a3eabc73dba6664fecdc27fc14b949c4b29edf78f71f034aa6a",
+    "local-avatar-demo/public/js/renderer.js": "75b808416183e04d846630560b5a6d134e24e32c056c077b3d413fd9d089f484",
+    "nori-face-rig/web/app.js": "02820f2ec1a2883abd18bfbdb190fc82e4b89429b4b040e44ff3d90bc12422dd",
+    "nori-face-rig/web/rig.js": "4d1a3347ef2ac98fde8a9bebcdb0d0c3c9ff01e44d37778e63e7c1b834f2fcd2",
+    "nori-face-rig/web/voice.js": "913686b3367566a79a7926e187c5a99d3c1d332f44fdce6b0c0583f8d3d438e1",
+    "nori-face-rig/web/render-vrm.js": "ae5a201be2bc44ba2475e76e3bb59c18deea8a7ff6a63ecc17ea7a57b8f76905"
+  },
+  "fixtureHash": "f78d2ec39386bb3d49f9c5bd223d9f1cbd459dd7d0fc88ee46e17cdf4d8bfc1f",
+  "harnessHashes": {
+    "nori.js": "a852ad64cfe2e1a6814b8926c5908d23181f8c27a3ced1890636e0fba3ec758a",
+    "kin.js": "347b74f1889a78ceb7cb52bde1eba2f15b69d179794c0061f47336e4eee4a07b",
+    "bench.js": "200e9fc53120e2fe5a76a7e0ee80fc5a1b00fd065a4181beb4df706bb060f92f"
+  }
+}

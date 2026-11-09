@@ -1,0 +1,63 @@
+{
+  "lip": [
+    {
+      "mode": "nori",
+      "duration": 4.325,
+      "hybrid": 0,
+      "finite": true
+    },
+    {
+      "mode": "kin",
+      "duration": 4.325,
+      "hybrid": 1,
+      "finite": true
+    }
+  ],
+  "errors": [],
+  "layout": [
+    {
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "width": 850,
+      "overflow": false
+    },
+    {
+      "width": 1280,
+      "overflow": false
+    }
+  ],
+  "singer": {
+    "duration": 6.1,
+    "frames": 245
+  },
+  "stop": {
+    "clip": false,
+    "mode": "idle"
+  },
+  "pause": {
+    "held": true,
+    "audio": "suspended"
+  },
+  "chapters": [
+    "Showtime 1/8: Hello",
+    "Showtime 2/8: A full turn",
+    "Showtime 3/8: Big feelings",
+    "Showtime 4/8: Shock",
+    "Showtime 5/8: Thinking",
+    "Showtime 6/8: Love",
+    "Showtime 7/8: A song",
+    "Showtime 8/8: Thank you",
+    "Singer A · prepared SoulX performance"
+  ],
+  "finished": true,
+  "clanker": {
+    "pack": "clanker",
+    "status": "Portrait"
+  }
+}

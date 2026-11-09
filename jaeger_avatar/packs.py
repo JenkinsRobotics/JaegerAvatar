@@ -61,6 +61,30 @@ def check_data(value: object) -> None:
         raise PackError(f"Unsupported data type: {type(value).__name__}")
 
 
+LOOK_FILTERS = {"hue", "saturate", "brightness", "contrast", "sepia", "grayscale"}
+LOOK_COLOURS = {"hairTip", "ring", "brow", "lash", "cloth", "clothSh", "rim"}
+LOOK_PAIRS = {"skin", "hair", "iris"}  # [light, shadow]
+
+
+def check_look(render: dict) -> None:
+    """A pack restyles a built-in rig with data only: colour filters, and named colours on anime rigs."""
+    look = render.get("look", {})
+    if not isinstance(look, dict) or set(look) - {"filter", "palette"}:
+        raise PackError("render.look takes only filter and palette")
+    filters, palette = look.get("filter", {}), look.get("palette", {})
+    number = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)
+    if not isinstance(filters, dict) or set(filters) - LOOK_FILTERS or not all(map(number, filters.values())):
+        raise PackError(f"render.look.filter takes numbers for {sorted(LOOK_FILTERS)}")
+    if not isinstance(palette, dict) or set(palette) - LOOK_COLOURS - LOOK_PAIRS:
+        raise PackError("Unknown render.look.palette colour")
+    if palette and render.get("adapter") != "nori-anime":
+        raise PackError("render.look.palette is only for nori-anime rigs")
+    rgb = lambda c: isinstance(c, list) and len(c) == 3 and all(number(n) and 0 <= n <= 1 for n in c)
+    for key, colour in palette.items():
+        if not (rgb(colour) if key in LOOK_COLOURS else isinstance(colour, list) and len(colour) == 2 and all(map(rgb, colour))):
+            raise PackError(f"render.look.palette.{key} must be [r, g, b] in 0..1" + (", as a [light, shadow] pair" if key in LOOK_PAIRS else ""))
+
+
 def presentation_references(presentation: dict):
     """Known character/v1 asset fields, preserved inside a representation."""
     for key in ("assets", "render", "expressions", "motion_scripts", "animation_sets"):
@@ -83,6 +107,12 @@ def presentation_references(presentation: dict):
                     yield value
                 elif isinstance(value, list):
                     yield from value
+                elif isinstance(value, dict):
+                    # Clip sets may select a file per mouth/variant state.
+                    for ref in value.values():
+                        if not isinstance(ref, str):
+                            raise PackError("Expression clip choices must be paths")
+                        yield ref
     for value in presentation.get("motion_scripts", {}).values():
         if isinstance(value, str):
             yield value
@@ -140,12 +170,28 @@ def load_pack(folder: Path, *, verify_sources: bool = False) -> dict:
         if profile.get("card"):
             local_path(folder, profile["card"])
     for representation in data.get("representations", {}).values():
+        if "name" in representation and (not isinstance(representation["name"], str) or not representation["name"].strip()):
+            raise PackError("Representation name must be a nonempty string")
         root = local_path(folder, representation.get("root"))
         presentation = representation.get("presentation")
         if not root.is_dir() or not isinstance(presentation, dict):
             raise PackError("A representation needs a directory root and presentation mapping")
-        if representation.get("format") != "character/v1":
-            raise PackError("Only imported character/v1 presentation data is supported yet")
+        if representation.get("format") not in {"character/v1", "avatar/rig-v1"}:
+            raise PackError("Unsupported presentation format")
+        if representation.get("format") == "avatar/rig-v1":
+            render = presentation.get("render", {})
+            presets = {
+                "nori-vrm": {"vita", "aster"}, "kin-vrm": {"vita"},
+                "nori-anime": {"nori", "ace", "sol"},
+                "nori-3d": {"astro", "cube", "droid", "human", "truth"},
+                "jaeger-study": {'daft_punk_2', 'tars', 'kamina', 'jarvis', 'eve', 'patric', 'helldiver', 'anakin_skywalker', 'glados', 'daft_punk_1', 'simon', 'hal_9000', 'paul_atreides', 'eren_yeager', 'bender', 'lelouch'},
+                "nori-led": {"mochi", "visor"}, "kin-momo": {"momo"},
+            }
+            if render.get("preset") not in presets.get(render.get("adapter"), set()):
+                raise PackError("Unknown built-in avatar rig or preset")
+            if render["adapter"].endswith("vrm") and not render.get("asset"):
+                raise PackError("VRM representations require a model asset")
+            check_look(render)
         for relative in presentation_references(presentation):
             local_path(root, relative)
         for alias, relative in representation.get("path_aliases", {}).items():

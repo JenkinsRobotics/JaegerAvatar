@@ -1,0 +1,12 @@
+{
+  a: { open: 0.9924481769402822, wide: 0, round: 0 },
+  i: { open: 0.21971812446912128, wide: 0.636424595117569, round: 0 },
+  u: { open: 0.2199710597594579, wide: 0, round: 1 }
+}
+rig tick 15.7us
+en_US-kristin-medium {
+  oo: { wide: 0.10894104688936337, round: 0.6050429289271547 },
+  ee: { wide: 0.8366110757407216, round: 0.003836495594845878 }
+}
+ok
+largest eye outline jump in one frame 37.6 of 1024

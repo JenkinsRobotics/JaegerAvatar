@@ -1,0 +1,10 @@
+{
+  "id": "pip",
+  "name": "Pip",
+  "tag": "3D robot",
+  "voice": "en_US-kristin-medium",
+  "kokoro": "af_sky",
+  "kp": 1.08,
+  "pitch": 1.2,
+  "intro": "[excited] [wave] I'm Pip, an AI character! [joy] I'm a little astronaut robot, and I love meeting people."
+}

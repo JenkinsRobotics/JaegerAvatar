@@ -134,6 +134,55 @@ representations:
       default_mouth: ''
     path_aliases:
       characters/lilith: sources/jaeger_ai
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-anime
+        preset: nori
+        look:
+          palette:
+            hair:
+            - - 0.12
+              - 0.1
+              - 0.16
+            - - 0.03
+              - 0.02
+              - 0.06
+            hairTip:
+            - 0.42
+            - 0.2
+            - 0.62
+            brow:
+            - 0.06
+            - 0.05
+            - 0.08
+            iris:
+            - - 0.18
+              - 0.06
+              - 0.28
+            - - 0.55
+              - 0.3
+              - 0.8
+            cloth:
+            - 0.1
+            - 0.09
+            - 0.13
+            clothSh:
+            - 0.03
+            - 0.03
+            - 0.05
+            rim:
+            - 0.66
+            - 0.35
+            - 1
+      defaults:
+        tag: nori rig, own look
+        kokoro: af_heart
+        library: true
+        pack: lilith
 sources:
   jaeger_ai:
     repository: https://github.com/JenkinsRobotics/JaegerAI

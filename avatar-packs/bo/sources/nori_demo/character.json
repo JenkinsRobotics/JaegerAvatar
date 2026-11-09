@@ -1,0 +1,10 @@
+{
+  "id": "bo",
+  "name": "Bo",
+  "tag": "3D robot",
+  "voice": "en_US-bryce-medium",
+  "kokoro": "am_echo",
+  "kp": 1.18,
+  "pitch": 1.34,
+  "intro": "[shy] I'm Bo, an AI character. [joy] I'm a small box-headed robot, and I really like tiny things."
+}

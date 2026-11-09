@@ -64,4 +64,8 @@ htmlcov/
 
 # Real (non-example) config generated from the .example templates —
 # keep the templates tracked, never the filled-in versions.
-pyproject.toml
+# The application now owns its real package configuration.
+.cache/
+.agent-venv/
+node_modules/
+app/evidence/

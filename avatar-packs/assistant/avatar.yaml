@@ -111,6 +111,22 @@ representations:
       default_mouth: ''
     path_aliases:
       characters/assistant: sources/jaeger_ai
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-led
+        preset: visor
+        look:
+          filter:
+            saturate: 0.3
+      defaults:
+        tag: visor rig, own look
+        kokoro: af_heart
+        library: true
+        pack: assistant
 sources:
   jaeger_ai:
     repository: https://github.com/JenkinsRobotics/JaegerAI

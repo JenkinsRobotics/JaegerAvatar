@@ -1,0 +1,3 @@
+# Python 3.11 or 3.12; public runtime API revisions reviewed for this migration.
+jaeger-os @ git+https://github.com/JenkinsRobotics/JaegerOS.git@949edcd828e998ca912d4933f6e8666632140130
+jaeger-agent[openai] @ git+https://github.com/JenkinsRobotics/jaeger-agent.git@3d0266401b6b58b3112bd8d472b632d8cf09c27d

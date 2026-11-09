@@ -93,6 +93,23 @@ representations:
         default: mscripts/talking.mscript
     path_aliases:
       characters/Cyber Cat: sources/mochi
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-led
+        preset: mochi
+        look:
+          filter:
+            hue: -45
+            brightness: 0.6
+      defaults:
+        tag: mochi rig, own look
+        kokoro: bm_george
+        library: true
+        pack: cat
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi

@@ -83,6 +83,20 @@ representations:
         default: mscripts/idle.mscript
     path_aliases:
       characters/eve: sources/mochi
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: jaeger-study
+        preset: eve
+      defaults:
+        tag: animated fan study · rights unspecified
+        kokoro: bf_emma
+        library: true
+        pack: eve
+    name: Eve · vector study
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi

@@ -1,0 +1,12 @@
+import { open } from './cdp.mjs';
+const SP = process.argv[2], delay = +process.argv[3];
+const TAP = `(()=>{const C=AudioNode.prototype.connect;window.__au=[];const taps=[];AudioNode.prototype.connect=function(t,...a){if(t instanceof AudioDestinationNode){const c=this.context;if(!c.__tap){const an=c.createAnalyser();an.fftSize=1024;const z=c.createGain();z.gain.value=0;C.call(an,z);C.call(z,t);c.__tap=an;taps.push(an)}return C.call(this,c.__tap,...a)}return C.call(this,t,...a)};const d=new Float32Array(1024);setInterval(()=>{let r=0;for(const an of taps){an.getFloatTimeDomainData(d);let s=0;for(const x of d)s+=x*x;r=Math.max(r,Math.sqrt(s/1024))}window.__au.push([performance.now(),r])},10)})()`;
+const reqs=[];const p = await open(SP, 'about:blank', { port: 9398 });
+await p.send('Page.addScriptToEvaluateOnNewDocument', { source: TAP });
+await p.send('Network.enable');await p.send('Page.navigate', { url: 'http://localhost:8765/' });
+for (let i = 0; i < 300; i++) { await p.sleep(50); try { if (await p.ev(`!!(window.nori&&nori.faces.vita&&nori.faces.vita.m&&document.querySelector('#loading').hidden)`)) break; } catch {} }
+await p.sleep(delay);
+await p.ev(`window.__t0=performance.now();window.__ops=[];setInterval(()=>window.__ops.push([Math.round(performance.now()-window.__t0),document.querySelector('#sub')?.textContent.slice(0,40)||'',!!nori.clip]),250);document.querySelector("#reel").click();window.__says=0;setTimeout(()=>document.querySelector("#reel").click(),700);0`);
+await p.sleep(25000);
+console.log(await p.ev(`JSON.stringify(performance.getEntriesByName("http://localhost:8765/say").length)`),"say requests");console.log(await p.ev(`(()=>{const a=window.__au.filter(x=>x[0]>window.__t0),on=a.filter(x=>x[1]>0.01);if(!on.length)return JSON.stringify({silent:true,subs:window.__ops.filter((o,i,arr)=>!i||o[1]!==arr[i-1][1]||o[2]!==arr[i-1][2]).slice(0,12)});let gaps=[],q=null;for(const [t,r] of a){if(t>on.at(-1)[0])break;if(t<on[0][0])continue;if(r<0.004){q??=t}else{if(q!==null&&t-q>400)gaps.push([Math.round(q-window.__t0),Math.round(t-q)]);q=null}}const subs=window.__ops.filter((o,i,arr)=>!i||o[1]!==arr[i-1][1]);return JSON.stringify({first:Math.round(on[0][0]-window.__t0),end:Math.round(on.at(-1)[0]-window.__t0),gaps,subs})})()`));
+p.close(); process.exit(0);

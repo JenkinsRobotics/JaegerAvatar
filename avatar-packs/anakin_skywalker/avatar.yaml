@@ -134,6 +134,20 @@ representations:
       default_mouth: ''
     path_aliases:
       characters/anakin_skywalker: sources/jaeger_ai
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: jaeger-study
+        preset: anakin_skywalker
+      defaults:
+        tag: animated fan study · rights unspecified
+        kokoro: am_adam
+        library: true
+        pack: anakin_skywalker
+    name: Anakin Skywalker · vector study
 sources:
   jaeger_ai:
     repository: https://github.com/JenkinsRobotics/JaegerAI

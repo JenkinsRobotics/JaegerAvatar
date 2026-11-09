@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: mochi
 name: Mochi
-version: 0.1.0
+version: 0.2.1
 description: ''
 default_profile: jaeger_ai
 default_representation: mochi
@@ -153,6 +153,15 @@ profiles:
         - Cheers others up
       revision: 1.0
     card: sources/jaeger_ai/card.png
+  nori_demo:
+    source: nori_demo
+    character:
+      name: Mochi
+      description: display robot
+      identity:
+        role: display robot
+      prompt:
+        custom_instructions: You are Mochi, a tiny desk robot with a pixel face. Curious and sweet.
 representations:
   mochi:
     source: mochi
@@ -219,6 +228,7 @@ representations:
         default: mscripts/scene_cycle.mscript
     path_aliases:
       characters/mochi: sources/mochi
+    name: Mochi Enhanced
   jaeger_ai:
     source: jaeger_ai
     format: character/v1
@@ -250,6 +260,95 @@ representations:
       default_mouth: ''
     path_aliases:
       characters/mochi: sources/jaeger_ai
+    name: Mochi Portrait
+  nori_demo:
+    source: nori_demo
+    format: avatar/rig-v1
+    root: sources/nori_demo
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-led
+        preset: mochi
+      defaults:
+        id: mochi
+        name: Mochi Live
+        tag: display robot
+        voice: en_US-kristin-medium
+        kokoro: af_sky
+        kp: 1.12
+        pitch: 1.18
+        led: true
+        intro: '[joy] I''m Mochi, an AI character! [excited] I''m a tiny desk robot, and all of me is
+          in these two eyes. [wink]'
+        pack: mochi
+    name: Mochi Live
+  classic:
+    source: mochi
+    format: character/v1
+    root: assets/classic
+    presentation:
+      kind: clip_set
+      assets:
+        original:
+          root: .
+          type: clip_set
+          adapter: video
+          resolution:
+          - 360
+          - 234
+      default_asset: original
+      render:
+        adapter: video
+        asset: cell_0_0.mp4
+        ideal_size:
+        - 360
+        - 234
+        framing: fit
+        scaling: smooth
+      expressions:
+        scene_0:
+          clips:
+            primary: cell_0_0.mp4
+            alternate: cell_0_1.mp4
+        scene_1:
+          clips:
+            primary: cell_1_0.mp4
+            alternate: cell_1_1.mp4
+        scene_2:
+          clips:
+            primary: cell_2_0.mp4
+            alternate: cell_2_1.mp4
+        scene_3:
+          clips:
+            primary: cell_3_0.mp4
+            alternate: cell_3_1.mp4
+        scene_4:
+          clips:
+            primary: cell_4_0.mp4
+            alternate: cell_4_1.mp4
+      mouth_states:
+        primary: 0
+        alternate: 1
+      default_expression: scene_0
+      default_mouth: primary
+    name: Mochi Classic
+  procedural_3d:
+    name: Mochi 3D
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: kin-momo
+        preset: momo
+      defaults:
+        id: mochi3d
+        tag: fixed 3D shell · procedural eyes
+        library: true
+        shell_label: mochi
+        kokoro: af_heart
+        led: true
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi
@@ -330,3 +429,10 @@ sources:
       sources/jaeger_ai/lore/ideals.md: f57ed73c14d243ddaed49096a521977760cf9538882fe2ac8eb50ba9e711aabf
       sources/jaeger_ai/lore/mannerisms.md: dd64555d9988d0978b437261fc3fad5811e7c1417a501ed3e15f7b6be9b2a18e
       sources/jaeger_ai/lore/quotes.md: 43dba80679b04d414e6c3aa88a9e32c3edd59075fea52a0003d7a8a18dd9c844
+  nori_demo:
+    repository: local avatar demos
+    original_path: ../AI Visual Playground/nori-face-rig
+    dirty_working_tree: true
+    files:
+      sources/nori_demo/character.json: 7ef5443cc91072c8c71ba3e61cc5464aae93a443666046e89592092199ade341
+    license: See app/licenses and source model metadata; mixed provenance

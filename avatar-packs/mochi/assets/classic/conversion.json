@@ -1,0 +1,65 @@
+{
+  "method": "ffmpeg libx264 CRF 18 yuv420p faststart; source MPEG-4 Part 2 clips preserved unchanged; no audio",
+  "files": [
+    {
+      "source": "sources/mochi/assets/mochi2/cell_0_0.mp4",
+      "output": "assets/classic/cell_0_0.mp4",
+      "source_sha256": "7da652ac5819edd8cb28b1d4ecf95383819d409a49e1e7a85a9ee3ab021a10b7",
+      "output_sha256": "467107c03bb16aba54c290364f9eff28c87c797cf941db9df2fb150953b741c2"
+    },
+    {
+      "source": "sources/mochi/assets/mochi2/cell_0_1.mp4",
+      "output": "assets/classic/cell_0_1.mp4",
+      "source_sha256": "c07de0eef8cf7fed56b30e8241a7470e74981670b7d63a510dbda6ac7303c3cb",
+      "output_sha256": "4115f270eee053d0c148eaea11cacf3ef1ce5f5cc83d76598c24053bb3363257"
+    },
+    {
+      "source": "sources/mochi/assets/mochi2/cell_1_0.mp4",
+      "output": "assets/classic/cell_1_0.mp4",
+      "source_sha256": "ac848afe70b29fd63bc34446bc285475b599a8cced14cff6c4ca6c921a2e00a3",
+      "output_sha256": "bfe3e9ed719592311e1e46bf86d761b0aa0dc2f1912673d6230e40ecf7b18333"
+    },
+    {
+      "source": "sources/mochi/assets/mochi2/cell_1_1.mp4",
+      "output": "assets/classic/cell_1_1.mp4",
+      "source_sha256": "a01265289f24402a3d3297723c2a228f0f274e7bfe20a94b8077e7e3ba4b22da",
+      "output_sha256": "02ceaf607debbf2065e1c41f4e8bfa1628a8782c1f919638193addf4eee6f2b6"
+    },
+    {
+      "source": "sources/mochi/assets/mochi2/cell_2_0.mp4",
+      "output": "assets/classic/cell_2_0.mp4",
+      "source_sha256": "fea5a85ead4e90d67abc218a920d5bb6206df7371551bd0adbe3070830b2188d",
+      "output_sha256": "67d0d4bc273c3cf7e83448416aad389c527bf8b5ea8a7aac6a808653ed9a8989"
+    },
+    {
+      "source": "sources/mochi/assets/mochi2/cell_2_1.mp4",
+      "output": "assets/classic/cell_2_1.mp4",
+      "source_sha256": "847f7bda3613ef3c2b3a97247484ea53f76be5c24dba3bbd6d3400b6a7ee94b9",
+      "output_sha256": "8d9f49842946114e4e09384809d57e4dbeda8747dd10d9e13e3bc817b1dc90c4"
+    },
+    {
+      "source": "sources/mochi/assets/mochi2/cell_3_0.mp4",
+      "output": "assets/classic/cell_3_0.mp4",
+      "source_sha256": "e7b7dc5376a51394ed0d0d5cab47b52025a856da9bc37f2a463b2b37739527de",
+      "output_sha256": "e8ff015e3ffb8716e25a0e86041669a7d7ec11bcd3b98bb1ee740e22bedf1b18"
+    },
+    {
+      "source": "sources/mochi/assets/mochi2/cell_3_1.mp4",
+      "output": "assets/classic/cell_3_1.mp4",
+      "source_sha256": "e1cd579c471807aad567fdc0fcb841ac7ee18a24d16d9b1fd03c0c16ae33b8c8",
+      "output_sha256": "177db816e98d78e63f65bc4af14fe7ad87d45ef448622d7c944230fb5e550939"
+    },
+    {
+      "source": "sources/mochi/assets/mochi2/cell_4_0.mp4",
+      "output": "assets/classic/cell_4_0.mp4",
+      "source_sha256": "b0c4aacfa3633bb1d58e0d15ebd630d338f86c0801e5c6e681e011a1f47ebe41",
+      "output_sha256": "4571db9ca34899e90193f261f665f45e865a38b6c329cdb4954fe13ba5739c2b"
+    },
+    {
+      "source": "sources/mochi/assets/mochi2/cell_4_1.mp4",
+      "output": "assets/classic/cell_4_1.mp4",
+      "source_sha256": "882dcd078052e14803353ea3b87ba8c2853eb44e3e9a263919dec842581f5cf9",
+      "output_sha256": "1ea9da402ba9d86945ba9e7cf237e497529cf503a2b33ef17fbb9791c518cb77"
+    }
+  ]
+}

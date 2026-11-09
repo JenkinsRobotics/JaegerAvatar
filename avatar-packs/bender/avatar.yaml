@@ -134,6 +134,20 @@ representations:
       default_mouth: ''
     path_aliases:
       characters/bender: sources/jaeger_ai
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: jaeger-study
+        preset: bender
+      defaults:
+        tag: animated fan study · rights unspecified
+        kokoro: am_onyx
+        library: true
+        pack: bender
+    name: Bender · vector study
 sources:
   jaeger_ai:
     repository: https://github.com/JenkinsRobotics/JaegerAI

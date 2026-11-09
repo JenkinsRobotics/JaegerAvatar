@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-08",
+  "archive": "/Users/jonathanjenkins/GITHUB/AvatarDemoArchive/2026-11-08",
+  "original_directories_absent": true,
+  "incoming_symlinks": 0,
+  "runtime_links_to_old_demos": 0,
+  "demos": [
+    {
+      "original": "/Users/jonathanjenkins/GITHUB/AI Visual Playground/local-avatar-demo",
+      "archive": "/Users/jonathanjenkins/GITHUB/AvatarDemoArchive/2026-11-08/kin",
+      "port": 8791
+    },
+    {
+      "original": "/Users/jonathanjenkins/GITHUB/AI Visual Playground/nori-face-rig",
+      "archive": "/Users/jonathanjenkins/GITHUB/AvatarDemoArchive/2026-11-08/nori",
+      "port": 8765
+    }
+  ],
+  "independent_launch_verified": true,
+  "full_reel_after_retirement": "passed"
+}

@@ -1,127 +1,128 @@
 <h1 align="center">Jaeger Avatar</h1>
-<p align="center"><strong>Create a character. Give it a voice. Bring it to life.</strong></p>
-<p align="center">
-  <a href="https://jenkinsrobotics.github.io/JaegerAvatar/">Project website</a> ·
-  <a href="dev/docs/vision/PRODUCT_SCOPE.md">Product scope</a> ·
-  <a href="dev/docs/roadmap/README.md">Roadmap</a> ·
-  <a href="LICENSE">Apache-2.0</a>
-</p>
+<p align="center"><strong>A character, a voice, a place to perform.</strong></p>
+<p align="center"><a href="https://jenkinsrobotics.github.io/JaegerAvatar/">Project website</a> · <a href="dev/docs/reality/STATUS.md">Current status</a> · <a href="dev/docs/vision/ARCHITECTURE.md">Architecture</a></p>
 
-> **Early development.** The avatar-pack foundation is implemented: **39 avatars,
-> 39 persona profiles and 45 visual representations**, imported from Mochi,
-> JaegerAI and JaegerAgent, with a loader, validator and repeatable importer.
-> The avatar application, embedded agent, pack editor and JaegerAI connection are
-> **planned**, not installed or runnable here yet. See [current status](dev/docs/reality/STATUS.md).
+Jaeger Avatar now runs locally, built on **Nori's app, rig and presentation**.
+Conversation sits beside the character. Perform, change expressions, play the
+narrated reel, record a performance, or open a transparent/green output window.
+KIN contributes Momo, the softer Vita appearance, optional vowel lip sync and
+the prepared Singer A performance.
 
-## What is Jaeger Avatar?
+## Run
 
-Jaeger Avatar is a planned standalone application for creating, customizing and
-interacting with animated AI characters. Configure a character's appearance,
-expressions, gestures, personality and voice; save it as a portable avatar
-pack; then bring it into a conversation or a performance.
+```sh
+./run.sh
+```
 
-An **avatar** is the visual representation. A **character** combines that
-representation with identity and behavior defaults. An **agent instance** is a
-running assistant with its own conversation, memory, tools and permissions.
-These are separate objects: sharing a character does not share private memories.
+Open **http://127.0.0.1:8790/**. `./run.sh --scripted` needs no conversational
+model; `--port 8790` selects the local port. On a fresh checkout, the launcher
+creates `.venv` and installs `requirements-app.txt`. Neural voice/hearing models
+are downloaded on first use. The application currently runs from source; there
+is no packaged desktop installer.
 
-## Planned experience
+The [demo pack launcher](http://127.0.0.1:8790/demo-packs.html) opens each live
+character directly. See the [demo pack review](dev/docs/packs/DEMO_PACK_REVIEW.md)
+for the new vector studies and their scope.
 
-- **Create a character:** identity, personality, backstory and voice preferences.
-- **Configure its appearance:** import or customize 2D, 3D or procedural assets;
-  map expressions, gaze, mouth shapes and gestures. Full model sculpting is not
-  an initial milestone.
-- **Save a portable pack:** assets, declared controls, reusable clips and optional
-  persona defaults. Credentials and conversation state stay with the runtime.
-- **Talk and interact:** host JaegerAgent inside the standalone app, with speech
-  and animation synchronized to the active conversation.
-- **Connect an existing assistant:** use Avatar as the animated interface for a
-  JaegerAI instance while that instance retains memory, permissions and tools.
-- **Perform in other modes:** human puppeteering and scripted playback, with
-  recording and streaming outputs in later milestones.
+For conversation, install the optional [JaegerAgent host](dev/docs/runtime/SETUP.md).
+It runs the public JaegerAgent API in a separate Python 3.11/3.12 environment,
+with LM Studio at `http://127.0.0.1:1234` by default. The header identifies the
+actual brain; without the agent/model, scripted replies and performances remain
+available. JaegerAI is not required. The current agent has no tools enabled.
 
-An avatar pack does not require an agent. A person, a script or an AI can drive
-its declared controls. The default product experience will be conversational.
+## Characters and packs
 
-## Avatar packs — available now
+**51 avatar packs, 57 persona profiles and 98 representations; every pack has a live rig.** The existing
+Mochi, JaegerAI and JaegerAgent library remains intact, including Clanker and the
+sculpted Jaeger artwork. **Avatar library** shows live rigs, portraits, video
+representations and source-only entries separately. Imported Python/MScript
+artwork is preserved but not executed by the browser.
 
-**Jaeger Avatar owns `avatar/v1`, the successor to the existing character packs.**
-The [starter library](avatar-packs/README.md) brings together Mochi's 18 visual
-packs, JaegerAI's 20 persona/card packs and JaegerAgent's default assistant persona.
-Shared identities are consolidated, preserving each source's profile and appearance.
-TARS, for example, defaults to its JaegerAI persona and Mochi face.
-The [recovered UI experiments](dev/docs/packs/EXPERIMENT_IMPORT.md) also include
-sculpted Jaeger, Atlas, Nova, Relay and bronze Jaeger.
-[Clanker](avatar-packs/clanker/README.md) is already included with its persona and card.
+Thirteen live representations are included: Vita, Vita · KIN, Mochi, Vee, Nori,
+Ace, Sol, Pip, Bo, Rook, Maya, Momo and the archived Aster VRM. Vita's two looks
+share a pack and conversation. Persona selection in Studio is independent of
+appearance. Existing Mochi defaults and its original source variants are preserved.
 
-Every imported pack includes source provenance, asset hashes and original license
-declarations. SOUL text, lore, traits, voice preferences, images, procedural faces
-and motion scripts are preserved. JaegerAgent contributes persona data; its engine
-is not copied. Packs carry no agent instance, private memory or tool permissions.
+Jaeger Avatar owns **`avatar/v1`**, the successor to character packs. Pack data
+contains identity, assets and representation defaults. Conversations, model
+configuration, credentials and tool permissions belong to the runtime.
+An agent is optional for manual, scripted or tracked performance.
 
 ```sh
 python3 -m pip install -r requirements-packs.txt
 python3 -m jaeger_avatar.packs list
 python3 -m jaeger_avatar.packs validate
-python3 -m unittest discover -s tests -v
 ```
 
-These are repository-local pack tools, not an app launcher. The older applications
-still read `character/v1`; their switch to `avatar/v1` is a separate integration.
-See the [format and migration guide](dev/docs/packs/AVATAR_PACKS.md).
+See [pack format](dev/docs/packs/AVATAR_PACKS.md) and
+[migration details](dev/docs/runtime/DEMO_MIGRATION.md).
 
-## Where it fits
+## Voice, lip sync and singing
+
+- **Nori remains the default lip sync.** Studio → Lip sync offers **KIN vowels +
+  Nori smoothing**. The comparison button plays the exact same recording in both
+  modes; change the selector and replay. KIN's five approximate vowel shapes use
+  Nori's mouth springs while Nori continues supplying emphasis, blinks and body
+  acting. Neither method provides text/phoneme alignment.
+- **Singer A** is the exact prepared SoulX/Kokoro-reference recording preferred
+  in KIN. Play it in Studio or leave **Singer A finale** enabled for an additional
+  chapter after Nori's original reel. It is clearly labelled as prepared audio.
+- **Fresh songs** use the JaegerLyra checkout through a process adapter. Configure
+  `NORI_LYRA` if it is not beside JaegerAvatar. Model weights and synthesis scripts
+  stay with Lyra. The saved Singer A sample works without Lyra installed.
+- Kokoro speech, Whisper hearing, live mic lip sync, optional webcam tracking,
+  local model loading, recording and output windows come from Nori. The local
+  audio bridge is retained; JaegerOS speech-topic integration remains planned.
+
+## Integration boundaries
 
 | Project | Responsibility |
 | --- | --- |
-| **Jaeger Avatar** | Owns avatar packs and the starter library; character editing, rendering and interaction are planned. |
-| [JaegerAgent](https://github.com/JenkinsRobotics/jaeger-agent) | Reusable headless agent engine: models, turns, tools, skills and multimodal processing. Planned embedded runtime for Avatar. |
-| [JaegerAI](https://github.com/JenkinsRobotics/JaegerAI) | Complete general-purpose assistant application. Avatar can become an optional interface for an existing instance. |
-| [JaegerOS](https://github.com/JenkinsRobotics/JaegerOS) | Runtime composition, messaging, modules, supervision and capability contracts. |
-| [JaegerAnimation](https://github.com/JenkinsRobotics/JaegerAnimation) | Reusable raster/media playback and the existing `character/v1` loader. |
-| [Mochi](https://github.com/JenkinsRobotics/Mochi) | Character and virtual-robot workbench for proving runtime capabilities intended for JP01. |
-| [Aether Animation](https://github.com/JenkinsRobotics/Aether-Animation) | Physical mechanisms, animatronics, rig control and digital-twin development. |
+| Jaeger Avatar | Application, pack library, rig, rendering and performance coordination. |
+| JaegerAgent | Actual conversational engine, hosted through its public API; no engine code copied. |
+| JaegerLyra | Optional SoulX singing implementation and models. |
+| JaegerAI | Optional connected-assistant integration, still planned. |
+| JaegerOS / JaegerAnimation | Runtime contracts and robot display/media pathways; pose-bus integration is planned. |
+| Mochi / JP01 | Robot demonstration and deployment consumers. |
+| Aether Animation | Physical rig control, calibration and digital twins. |
 
-**Standalone mode (planned):** Avatar hosts JaegerAgent and owns the session's
-configuration and storage. JaegerAI is not a required second application.
-
-**Connected mode (planned):** JaegerAI owns the assistant session; Avatar renders
-and voices that session through an explicit client adapter. It does not create
-an additional agent or independent memory for the same conversation.
-
-The seed import is implemented. Playback, downstream loader adoption and Aether
-interchange still require integration work.
-See [architecture](dev/docs/vision/ARCHITECTURE.md).
+The agent owns an in-memory session per browser conversation and pack. Switching
+Vita's representation preserves it; Start over starts that character's new
+conversation. Persistent memory, tools, pack authoring GUI, connected JaegerAI
+and physical robot control are not part of this migration.
 
 ## Development
 
-There is no application installer or launch command yet. To preview the project
-website, using Python 3:
-
 ```sh
-git clone https://github.com/JenkinsRobotics/JaegerAvatar.git
-cd JaegerAvatar
+npm test
+python3 -m unittest discover -s tests -v
 python3 scripts/check_site.py
-python3 -m http.server 8898 --bind 127.0.0.1 --directory docs
+git diff --check
 ```
 
-Open [the local website](http://127.0.0.1:8898/). Its expression sketch runs in the
-browser without a model, microphone or account; it is an illustration of the
-control concept, not the finished avatar runtime.
+Browser acceptance results and lip-sync recordings are in
+[dev/evidence/migration](dev/evidence/migration/). Historical Nori benchmarks are
+retained under `dev/evidence/nori-baseline`; their measurements describe the old
+apps, not this runtime. [Setup and verification](dev/docs/runtime/SETUP.md).
 
-- [Documentation map](dev/docs/README.md)
-- [Product scope](dev/docs/vision/PRODUCT_SCOPE.md)
-- [Architecture and integration](dev/docs/vision/ARCHITECTURE.md)
-- [Milestones](dev/docs/roadmap/README.md)
-- [GitHub Pages publishing](docs/SITE.md)
-- [Contributor conventions](CONVENTIONS.md)
+The static project website is in `docs/`; it is separate from the runnable app
+and keeps its existing `gh-pages` publishing route. The inherited `workspace/`,
+`examples/`, `{{package_name}}/` and `pyproject.toml.example` remain reference
+scaffolds. [Documentation map](dev/docs/README.md).
 
-The inherited `workspace/`, `examples/`, `{{package_name}}/` and
-`pyproject.toml.example` are retained template references. They are not an
-application runtime. `jaeger_avatar/` currently implements pack tools only;
-application packaging and runtime dependencies remain planned.
+## Licenses
 
-## License
+Application repository: [Apache-2.0](LICENSE). Imported models, characters,
+third-party code and optional engines retain their original terms. See the
+[import and dependency inventory](app/licenses/README.md), original license
+files, source hashes and each model's embedded metadata.
 
-[Apache License 2.0](LICENSE). Original character assets and imported models
-retain their own licenses and attribution.
+## Robot pack exports
+
+Build portable packs with `.venv/bin/python -m jaeger_avatar.deploy build --output dist/robot-packs-alpha-0.1`.
+The exporter preserves all 50 native packs and creates 46 explicit Mochi-compatible
+representation views (including Mochi Classic). The previous 45 and the new Classic export passed local offline rendering; this is not physical
+JP01 qualification. [Deployment guide](dev/docs/packs/ROBOT_DEPLOYMENT.md) and
+[future development references](dev/docs/vision/OPEN_SOURCE_REFERENCES.md).
+
+[Mochi demo family](dev/docs/packs/MOCHI_DEMO.md): Classic, Enhanced, Live and Portrait, alongside Momo Shell.

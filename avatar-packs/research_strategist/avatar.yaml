@@ -141,6 +141,22 @@ representations:
       characters/research_strategist: sources/jaeger_ai
     unavailable_assets:
       avatar: avatar
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-led
+        preset: visor
+        look:
+          filter:
+            hue: 60
+      defaults:
+        tag: visor rig, own look
+        kokoro: af_heart
+        library: true
+        pack: research_strategist
 sources:
   jaeger_ai:
     repository: https://github.com/JenkinsRobotics/JaegerAI

@@ -1,0 +1,363 @@
+{
+  "server": "http://127.0.0.1:8796",
+  "launches": [
+    {
+      "href": "http://127.0.0.1:8796/?face=ace",
+      "name": "Launch Ace",
+      "id": "ace",
+      "tag": "Ace · anime, 3D flattened",
+      "expected": "ace"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=anakin_skywalker--jaeger_rig",
+      "name": "Launch Anakin Skywalker",
+      "id": "anakin_skywalker--jaeger_rig",
+      "tag": "Anakin Skywalker · animated fan study · rights unspecified",
+      "expected": "anakin_skywalker--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=assistant--jaeger_rig",
+      "name": "Launch Assistant",
+      "id": "assistant--jaeger_rig",
+      "tag": "Assistant · visor rig, own look",
+      "expected": "assistant--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=aster",
+      "name": "Launch Aster",
+      "id": "aster",
+      "tag": "Aster · KIN archived VRM",
+      "expected": "aster"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=atlas--jaeger_rig",
+      "name": "Launch Atlas (Portrait prototype)",
+      "id": "atlas--jaeger_rig",
+      "tag": "Atlas (Portrait prototype) · astro rig, own look",
+      "expected": "atlas--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=bender--jaeger_rig",
+      "name": "Launch Bender",
+      "id": "bender--jaeger_rig",
+      "tag": "Bender · animated fan study · rights unspecified",
+      "expected": "bender--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=bitmap_man--jaeger_rig",
+      "name": "Launch Bitmap Man",
+      "id": "bitmap_man--jaeger_rig",
+      "tag": "Bitmap Man · mochi rig, own look",
+      "expected": "bitmap_man--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=bo",
+      "name": "Launch Bo",
+      "id": "bo",
+      "tag": "Bo · 3D robot",
+      "expected": "bo"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=cat--jaeger_rig",
+      "name": "Launch Cat",
+      "id": "cat--jaeger_rig",
+      "tag": "Cat · mochi rig, own look",
+      "expected": "cat--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=clanker--jaeger_rig",
+      "name": "Launch Clanker",
+      "id": "clanker--jaeger_rig",
+      "tag": "Clanker · droid rig, own look",
+      "expected": "clanker--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=crazy_eyes--jaeger_rig",
+      "name": "Launch Crazy Eyes",
+      "id": "crazy_eyes--jaeger_rig",
+      "tag": "Crazy Eyes · mochi rig, own look",
+      "expected": "crazy_eyes--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=daft_punk_1--jaeger_rig",
+      "name": "Launch Daft Punk 1",
+      "id": "daft_punk_1--jaeger_rig",
+      "tag": "Daft Punk 1 · animated fan study · rights unspecified",
+      "expected": "daft_punk_1--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=daft_punk_2--jaeger_rig",
+      "name": "Launch Daft Punk 2",
+      "id": "daft_punk_2--jaeger_rig",
+      "tag": "Daft Punk 2 · animated fan study · rights unspecified",
+      "expected": "daft_punk_2--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=deborahbot--jaeger_rig",
+      "name": "Launch Deborahbot 5000",
+      "id": "deborahbot--jaeger_rig",
+      "tag": "Deborahbot 5000 · mochi rig, own look",
+      "expected": "deborahbot--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=emotes--jaeger_rig",
+      "name": "Launch Emotes",
+      "id": "emotes--jaeger_rig",
+      "tag": "Emotes · mochi rig, own look",
+      "expected": "emotes--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=eren_yeager--jaeger_rig",
+      "name": "Launch Eren Yeager",
+      "id": "eren_yeager--jaeger_rig",
+      "tag": "Eren Yeager · animated fan study · rights unspecified",
+      "expected": "eren_yeager--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=eric--jaeger_rig",
+      "name": "Launch Eric",
+      "id": "eric--jaeger_rig",
+      "tag": "Eric · mochi rig, own look",
+      "expected": "eric--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=eve--jaeger_rig",
+      "name": "Launch Eve",
+      "id": "eve--jaeger_rig",
+      "tag": "Eve · animated fan study · rights unspecified",
+      "expected": "eve--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=glados--jaeger_rig",
+      "name": "Launch GLaDOS",
+      "id": "glados--jaeger_rig",
+      "tag": "GLaDOS · animated fan study · rights unspecified",
+      "expected": "glados--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=hal_9000--jaeger_rig",
+      "name": "Launch HAL 9000",
+      "id": "hal_9000--jaeger_rig",
+      "tag": "HAL 9000 · animated fan study · rights unspecified",
+      "expected": "hal_9000--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=halo--jaeger_rig",
+      "name": "Launch Halo",
+      "id": "halo--jaeger_rig",
+      "tag": "Halo · visor rig, own look",
+      "expected": "halo--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=helldiver--jaeger_rig",
+      "name": "Launch Helldiver",
+      "id": "helldiver--jaeger_rig",
+      "tag": "Helldiver · animated fan study · rights unspecified",
+      "expected": "helldiver--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=jaeger--jaeger_rig",
+      "name": "Launch Jaeger",
+      "id": "jaeger--jaeger_rig",
+      "tag": "Jaeger · visor rig, own look",
+      "expected": "jaeger--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=jaeger_bronze--jaeger_rig",
+      "name": "Launch Jaeger (Bronze)",
+      "id": "jaeger_bronze--jaeger_rig",
+      "tag": "Jaeger (Bronze) · droid rig, own look",
+      "expected": "jaeger_bronze--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=jaeger_sculpted--jaeger_rig",
+      "name": "Launch Jaeger (Sculpted)",
+      "id": "jaeger_sculpted--jaeger_rig",
+      "tag": "Jaeger (Sculpted) · astro rig, own look",
+      "expected": "jaeger_sculpted--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=jarvis--jaeger_rig",
+      "name": "Launch Jarvis",
+      "id": "jarvis--jaeger_rig",
+      "tag": "Jarvis · animated fan study · rights unspecified",
+      "expected": "jarvis--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=kamina--jaeger_rig",
+      "name": "Launch Kamina",
+      "id": "kamina--jaeger_rig",
+      "tag": "Kamina · animated fan study · rights unspecified",
+      "expected": "kamina--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=lelouch--jaeger_rig",
+      "name": "Launch Lelouch",
+      "id": "lelouch--jaeger_rig",
+      "tag": "Lelouch · animated fan study · rights unspecified",
+      "expected": "lelouch--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=lilith--jaeger_rig",
+      "name": "Launch Lilith",
+      "id": "lilith--jaeger_rig",
+      "tag": "Lilith · nori rig, own look",
+      "expected": "lilith--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=maya",
+      "name": "Launch Maya",
+      "id": "maya",
+      "tag": "Maya · 3D human",
+      "expected": "maya"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=mochi",
+      "name": "Launch Mochi",
+      "id": "mochi",
+      "tag": "Mochi · display robot",
+      "expected": "mochi"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=momo",
+      "name": "Launch Momo",
+      "id": "momo",
+      "tag": "Momo · KIN desk companion",
+      "expected": "momo"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=nori",
+      "name": "Launch Nori",
+      "id": "nori",
+      "tag": "Nori · anime, 3D flattened",
+      "expected": "nori"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=nova--jaeger_rig",
+      "name": "Launch Nova (Portrait prototype)",
+      "id": "nova--jaeger_rig",
+      "tag": "Nova (Portrait prototype) · human rig, own look",
+      "expected": "nova--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=orbs--jaeger_rig",
+      "name": "Launch Orbs",
+      "id": "orbs--jaeger_rig",
+      "tag": "Orbs · mochi rig, own look",
+      "expected": "orbs--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=patric--jaeger_rig",
+      "name": "Launch Patric",
+      "id": "patric--jaeger_rig",
+      "tag": "Patric · animated fan study · rights unspecified",
+      "expected": "patric--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=paul_atreides--jaeger_rig",
+      "name": "Launch Paul Atreides",
+      "id": "paul_atreides--jaeger_rig",
+      "tag": "Paul Atreides · animated fan study · rights unspecified",
+      "expected": "paul_atreides--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=pip",
+      "name": "Launch Pip",
+      "id": "pip",
+      "tag": "Pip · 3D robot",
+      "expected": "pip"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=purge_man--jaeger_rig",
+      "name": "Launch Purge Man",
+      "id": "purge_man--jaeger_rig",
+      "tag": "Purge Man · visor rig, own look",
+      "expected": "purge_man--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=relay--jaeger_rig",
+      "name": "Launch Relay (Portrait prototype)",
+      "id": "relay--jaeger_rig",
+      "tag": "Relay (Portrait prototype) · droid rig, own look",
+      "expected": "relay--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=reliability_auditor--jaeger_rig",
+      "name": "Launch Reliability Auditor",
+      "id": "reliability_auditor--jaeger_rig",
+      "tag": "Reliability Auditor · visor rig, own look",
+      "expected": "reliability_auditor--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=research_strategist--jaeger_rig",
+      "name": "Launch Research Strategist",
+      "id": "research_strategist--jaeger_rig",
+      "tag": "Research Strategist · visor rig, own look",
+      "expected": "research_strategist--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=robotics_architect--jaeger_rig",
+      "name": "Launch Robotics Architect",
+      "id": "robotics_architect--jaeger_rig",
+      "tag": "Robotics Architect · visor rig, own look",
+      "expected": "robotics_architect--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=rook",
+      "name": "Launch Rook",
+      "id": "rook",
+      "tag": "Rook · 3D humanoid robot",
+      "expected": "rook"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=simon--jaeger_rig",
+      "name": "Launch Simon",
+      "id": "simon--jaeger_rig",
+      "tag": "Simon · animated fan study · rights unspecified",
+      "expected": "simon--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=sol",
+      "name": "Launch Sol",
+      "id": "sol",
+      "tag": "Sol · anime, 3D flattened",
+      "expected": "sol"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=systems_principal--jaeger_rig",
+      "name": "Launch Systems Principal",
+      "id": "systems_principal--jaeger_rig",
+      "tag": "Systems Principal · visor rig, own look",
+      "expected": "systems_principal--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=tars--jaeger_rig",
+      "name": "Launch TARS",
+      "id": "tars--jaeger_rig",
+      "tag": "TARS · animated fan study · rights unspecified",
+      "expected": "tars--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=truth--jaeger_rig",
+      "name": "Launch Truth",
+      "id": "truth--jaeger_rig",
+      "tag": "Truth · generic white stand-in · licensing review",
+      "expected": "truth--jaeger_rig"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=visor",
+      "name": "Launch Vee",
+      "id": "visor",
+      "tag": "Vee · LED visor",
+      "expected": "visor"
+    },
+    {
+      "href": "http://127.0.0.1:8796/?face=vita",
+      "name": "Launch Vita",
+      "id": "vita",
+      "tag": "Vita · artist model, flattened",
+      "expected": "vita"
+    }
+  ],
+  "scope": "Expected active pane for each live launch link; not hardware or per-character voice quality qualification"
+}

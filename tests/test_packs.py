@@ -66,6 +66,8 @@ class ImportedCatalogTests(unittest.TestCase):
         for pack in self.packs:
             root = CATALOG / pack["avatar"]
             for key, rep in pack["representations"].items():
+                if rep["format"] != "character/v1":  # built-in rigs carry no scripts of their own
+                    continue
                 for script in (root / rep["root"]).rglob("*.mscript"):
                     for ref in re.findall(r'''["'](characters/[^"'\n]+)["']''', script.read_text()):
                         self.assertTrue(resolve_reference(root, key, ref).is_file())

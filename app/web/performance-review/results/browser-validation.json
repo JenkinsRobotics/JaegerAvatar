@@ -1,0 +1,42 @@
+{
+  "since": "2026-11-08T01:10:05.728Z",
+  "errors": {
+    "KIN": [],
+    "Nori": [],
+    "comparison": []
+  },
+  "media": [
+    {
+      "duration": 12.047396,
+      "error": null,
+      "readyState": 4,
+      "src": "results/kin-classic.mp4"
+    },
+    {
+      "duration": 12.047438,
+      "error": null,
+      "readyState": 4,
+      "src": "results/kin-imported.mp4"
+    },
+    {
+      "duration": 12.044125,
+      "error": null,
+      "readyState": 4,
+      "src": "results/nori-vita.mp4"
+    },
+    {
+      "duration": 6.6,
+      "error": null,
+      "readyState": 4,
+      "src": "results/kin-line2-0.wav"
+    },
+    {
+      "duration": 5.970708,
+      "error": null,
+      "readyState": 4,
+      "src": "results/nori-line2-0.wav"
+    }
+  ],
+  "exclusivity": "Starting original Vita paused Nori at 4.515 seconds.",
+  "recordingCancel": "Stop restored controls and prevented the scheduled recording/spin."
+}

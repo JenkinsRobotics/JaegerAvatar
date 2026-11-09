@@ -1,4 +1,10 @@
-# Architecture and integration (planned)
+# Architecture and integration
+
+The November 8 runtime imports Nori's app and rig, adds a pack-backed library,
+KIN appearance/mouth adapters and Singer A, and hosts the real JaegerAgent API.
+The host worker has its own Python environment because JaegerOS and the audio
+stack currently require different Python versions. See [runtime setup](../runtime/SETUP.md).
+JaegerOS bus, speech-module replacement and connected JaegerAI are still planned.
 
 ## Application modes
 
@@ -78,5 +84,11 @@ Reusable features proven in Mochi belong in their owning modules when JP01 and
 Avatar consume them. Preserve original licenses and provenance when importing
 prototype code or character assets.
 
-Pack import, source integrity and reference resolution are tested here. The agent,
-renderer and cross-process integrations described above remain unqualified.
+Pack import, source integrity and reference resolution are tested here. The local renderer and agent worker now run in this repository. Broader JaegerOS
+bus and connected JaegerAI integrations remain unqualified.
+
+
+## External references
+
+See [the dedicated reference review](OPEN_SOURCE_REFERENCES.md) for the comparison,
+source links and future development priorities.

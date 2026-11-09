@@ -2,11 +2,25 @@ schema: avatar/v1
 avatar: relay
 name: Relay (Portrait prototype)
 version: 0.1.0
-description: Relay placeholder portrait from JaegerAI UI experiments. No rig, personality or agent instance
-  is supplied.
-default_profile: null
+description: Relay placeholder portrait from JaegerAI UI experiments. Draft persona and a built-in rig
+  added in Jaeger Avatar. Draft persona and a built-in rig added in Jaeger Avatar.
+default_profile: jaeger_avatar
 default_representation: portrait
-profiles: {}
+profiles:
+  jaeger_avatar:
+    character:
+      name: Relay (Portrait prototype)
+      description: A navy and copper messenger robot.
+      author: Jenkins Robotics (draft persona)
+      license: Apache-2.0 (persona and built-in rig)
+      identity:
+        role: a navy and copper messenger robot
+        voice_tone: steady, clear, a little formal
+        voice_id: am_echo
+      prompt:
+        custom_instructions: You are Relay, a navy and copper messenger robot. You pass information on
+          clearly and faithfully, summarise well, and say when you are unsure.
+    card: sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public/avatar-placeholder-relay.jpg
 representations:
   portrait:
     source: jaeger_ai_ui
@@ -33,6 +47,23 @@ representations:
           loop: false
       default_expression: idle
       default_mouth: ''
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-3d
+        preset: droid
+        look:
+          filter:
+            hue: 200
+            saturate: 0.8
+      defaults:
+        tag: droid rig, own look
+        kokoro: am_echo
+        library: true
+        pack: relay
 sources:
   jaeger_ai_ui:
     commit: e42e98872e68a5b88cac595140a2e9a4034ac216

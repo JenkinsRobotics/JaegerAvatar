@@ -1,0 +1,198 @@
+{
+  "date": "2026-11-08",
+  "sources": {
+    "app/test_voice.py": {
+      "source": "nori-face-rig/test_voice.py",
+      "sha256": "9c1cb23e56a88187cb359bfec2b5f2a80d1a5d807e10f4a330cb426a817e04bb"
+    },
+    "app/test.mjs": {
+      "source": "nori-face-rig/test.mjs",
+      "sha256": "1bc6e4a1e2a7087baa6a9f5b1e617f68856cb274fa9e396fed2087b63dfee697"
+    },
+    "app/voice_engine.py": {
+      "source": "nori-face-rig/voice_engine.py",
+      "sha256": "ba31347f2100dd88e0401d67e48b5449ff59deb66f6f387178595eeda40aedb7"
+    },
+    "app/server.py": {
+      "source": "nori-face-rig/server.py",
+      "sha256": "b8f7513755c2d2b4c3b25486ffa48725e0d7e1e4610281f34562117deb5fea14"
+    },
+    "app/requirements.txt": {
+      "source": "nori-face-rig/requirements.txt",
+      "sha256": "6877c48ee82421f96379b599df2a668cf492023e9c6edd0dde047b4dea63c461"
+    },
+    "app/singing.py": {
+      "source": "nori-face-rig/singing.py",
+      "sha256": "fc148623b0ff4c36add3c7d15d398502a6612ffd9a0fc970711f0e9ae994fbb7"
+    },
+    "app/lyra_singer.py": {
+      "source": "nori-face-rig/lyra_singer.py",
+      "sha256": "8f5145ba9bed15e278af9d099995fd1a04353f8eaa76265d9bad397750b4d455"
+    },
+    "app/song.py": {
+      "source": "nori-face-rig/song.py",
+      "sha256": "394f44f220b42fdb754ee4341cc386f5bfb000fd4e05b5b5cf4c9d1768414b83"
+    },
+    "app/web/render-3d.js": {
+      "source": "nori-face-rig/web/render-3d.js",
+      "sha256": "b02af443b3882c7adccf643e4f8825d497eeabebfcde61d2791a1e3cdfed97fa"
+    },
+    "app/web/index.html": {
+      "source": "nori-face-rig/web/index.html",
+      "sha256": "26dbb989e13a1eff00f1dc394ae2ba00a8265ab4334d256300f63c68222dad56"
+    },
+    "app/web/rig.js": {
+      "source": "nori-face-rig/web/rig.js",
+      "sha256": "4d1a3347ef2ac98fde8a9bebcdb0d0c3c9ff01e44d37778e63e7c1b834f2fcd2"
+    },
+    "app/web/render-anime.js": {
+      "source": "nori-face-rig/web/render-anime.js",
+      "sha256": "b198b15a55f69484b7a069b15d486aa03ac40944a673dba931ccce2073ecb4e3"
+    },
+    "app/web/model-map.js": {
+      "source": "nori-face-rig/web/model-map.js",
+      "sha256": "da0aa9c11eaa2d1bdd6cdfa99a46921b70cfaed3a49eb6e5821eec9923eadc18"
+    },
+    "app/web/anime-fx.js": {
+      "source": "nori-face-rig/web/anime-fx.js",
+      "sha256": "b3bde36ca8f23f1313ab656b86b12beb8f5f5394ea44a2beeb02e108577bf315"
+    },
+    "app/web/ears.js": {
+      "source": "nori-face-rig/web/ears.js",
+      "sha256": "933eef0ff47483c6180dba037617c3b4afe95f627c1b91be9d9edb0558efa8bd"
+    },
+    "app/web/render-led.js": {
+      "source": "nori-face-rig/web/render-led.js",
+      "sha256": "9573eb3ccbac2519d3377f289e17fa9933188e0162365ce5bc21497564f4128b"
+    },
+    "app/web/eyes.js": {
+      "source": "nori-face-rig/web/eyes.js",
+      "sha256": "cf6cb320d158a7a5d827e4b9ac77ccfa9ca84180063a86185ecb53805b5f380f"
+    },
+    "app/web/motion.js": {
+      "source": "nori-face-rig/web/motion.js",
+      "sha256": "44d1cf861f151e7abfcdefc846ffbab62f71c6e8608083371291d2adb03487df"
+    },
+    "app/web/voice.js": {
+      "source": "nori-face-rig/web/voice.js",
+      "sha256": "913686b3367566a79a7926e187c5a99d3c1d332f44fdce6b0c0583f8d3d438e1"
+    },
+    "app/web/brain.js": {
+      "source": "nori-face-rig/web/brain.js",
+      "sha256": "9deda317b0df0ec3eff91b5413161759d952a1262ba6f0956773a7d84a2ddb6c"
+    },
+    "app/web/render-vrm.js": {
+      "source": "nori-face-rig/web/render-vrm.js",
+      "sha256": "06b66d6abe9d1cd70a23a500405c5bb7f316f33e40db6d1cf68e0b0b4b8835f9"
+    },
+    "app/web/app.js": {
+      "source": "nori-face-rig/web/app.js",
+      "sha256": "9cab4720904457bd0b67ae1b03cd46feb0ef1a103f212af83faa035b45279bb8"
+    },
+    "app/web/voice-worker.js": {
+      "source": "nori-face-rig/web/voice-worker.js",
+      "sha256": "e4d2b3804f85faa141f7d11a15edfbbc8c91ecad82cab9d9dc1e8d52fc181cbf"
+    },
+    "app/web/plugins/lipsync.js": {
+      "source": "nori-face-rig/web/plugins/lipsync.js",
+      "sha256": "db2e1b71a642cdafd2f6afc0b01489bb0d6fcd1356d903fcc9e591e3c9ae2ca6"
+    },
+    "app/web/vendor/three-vrm.module.min.js": {
+      "source": "nori-face-rig/web/vendor/three-vrm.module.min.js",
+      "sha256": "99f943e956e52dbf52bbe418899e8a8ae5e35f5c79a94ab8e404926afc620bf2"
+    },
+    "app/web/vendor/three-vrm.LICENSE": {
+      "source": "nori-face-rig/web/vendor/three-vrm.LICENSE",
+      "sha256": "279ec82987aec7e72ecb9850bb704a87e352d577bc7581454c30f3551a88ea92"
+    },
+    "app/web/vendor/three/LICENSE": {
+      "source": "nori-face-rig/web/vendor/three/LICENSE",
+      "sha256": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc"
+    },
+    "app/web/vendor/three/build/three.module.js": {
+      "source": "nori-face-rig/web/vendor/three/build/three.module.js",
+      "sha256": "104f56145899722094556490d787aae0617cc2fc3382f31df02d724ea1aee341"
+    },
+    "app/web/vendor/three/build/three.core.js": {
+      "source": "nori-face-rig/web/vendor/three/build/three.core.js",
+      "sha256": "613e370f76638fdef83926642bf256dc9615684922de1ce1f63a8583e5d78578"
+    },
+    "app/web/vendor/three/examples/jsm/utils/SkeletonUtils.js": {
+      "source": "nori-face-rig/web/vendor/three/examples/jsm/utils/SkeletonUtils.js",
+      "sha256": "b1632a703206c3d830de9fcbe515696770d04b71a15ee6b50afa6d2c3298c86f"
+    },
+    "app/web/vendor/three/examples/jsm/utils/BufferGeometryUtils.js": {
+      "source": "nori-face-rig/web/vendor/three/examples/jsm/utils/BufferGeometryUtils.js",
+      "sha256": "7bda2a8ba836b2bcf67cb938d4b9e1bb5d1b1bc616817103ed858c0b58296ce7"
+    },
+    "app/web/vendor/three/examples/jsm/loaders/GLTFLoader.js": {
+      "source": "nori-face-rig/web/vendor/three/examples/jsm/loaders/GLTFLoader.js",
+      "sha256": "532ac726e120039acbcd6cf54328c57acbf7b438176afaa6951257126d11bff1"
+    },
+    "app/web/plugins/webcam/vision_bundle.js": {
+      "source": "nori-face-rig/web/plugins/webcam/vision_bundle.js",
+      "sha256": "bf58c9b3f592304422947b51e1f7de360c67d4dfeaa900064352da0c5a7c9115"
+    },
+    "app/web/plugins/webcam/worker.js": {
+      "source": "nori-face-rig/web/plugins/webcam/worker.js",
+      "sha256": "cb1f211f5470a95012e7b05d7225af26210c00de24e5b0f5768e258115325d51"
+    },
+    "app/web/plugins/webcam/index.js": {
+      "source": "nori-face-rig/web/plugins/webcam/index.js",
+      "sha256": "6cefeb09b5cc46522504725cb48f7b7ca28b33d315ddec50c6ce5eb6077a71ac"
+    },
+    "app/web/plugins/webcam/face_landmarker.task": {
+      "source": "nori-face-rig/web/plugins/webcam/face_landmarker.task",
+      "sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff"
+    },
+    "app/web/plugins/webcam/LICENSE-mediapipe.txt": {
+      "source": "nori-face-rig/web/plugins/webcam/LICENSE-mediapipe.txt",
+      "sha256": "8707eef0533987efc5b155d64761eeb6e20793f50b9bd1a68dad1cf4719d0ed8"
+    },
+    "app/web/plugins/webcam/wasm/vision_wasm_internal.wasm": {
+      "source": "nori-face-rig/web/plugins/webcam/wasm/vision_wasm_internal.wasm",
+      "sha256": "f00ec4731faa23b3e714d00e88d4d10e2df5c0a427d3a2b4ae6e3526fdd14ef7"
+    },
+    "app/web/plugins/webcam/wasm/vision_wasm_internal.js": {
+      "source": "nori-face-rig/web/plugins/webcam/wasm/vision_wasm_internal.js",
+      "sha256": "4a97e2520ba506c680ecd6ba6acfb146888afa0e2746d57f205352bc6ebb82eb"
+    },
+    "app/web/kin/renderer.js": {
+      "source": "local-avatar-demo/public/js/renderer.js",
+      "sha256": "75b808416183e04d846630560b5a6d134e24e32c056c077b3d413fd9d089f484"
+    },
+    "app/web/kin/hands.js": {
+      "source": "local-avatar-demo/public/js/hands.js",
+      "sha256": "6ef6917340cb991ac263fb0231feb8781fc0e0ce56c779e7cc11c327b157427e"
+    },
+    "app/web/kin/vrm-face.js": {
+      "source": "local-avatar-demo/public/js/vrm-face.js",
+      "sha256": "687e4b5689a1ae932b54079a6b0fce288eb784d914c1d1cbc424469e3bea7e77"
+    },
+    "app/web/kin/eyes.js": {
+      "source": "local-avatar-demo/public/js/eyes.js",
+      "sha256": "99e445c86230a00d49932d8fa6a36705eee58bb2e0819600e40d714890dcb57f"
+    },
+    "app/web/kin/motion.js": {
+      "source": "local-avatar-demo/public/js/motion.js",
+      "sha256": "dba3bd53269182f8e3b99dc22219f57cce76265d5bd25b4aeb5897a3512ed9f0"
+    },
+    "app/kin_lipsync.py": {
+      "source": "/Users/jonathanjenkins/GITHUB/JaegerLyra/audio_analysis.py",
+      "sha256": "9ea5f107fdc20982228892956bef9b271fdb3d44e2a05a5d3b80a2b46a9fb6c9"
+    },
+    "app/web/audio/singer-a.json": {
+      "source": "/Users/jonathanjenkins/GITHUB/JaegerLyra/public/audio/research/singer-a.json",
+      "sha256": "4263115360123a4d11a0e4d52b4b8c285c9efc39bd19b5fa82e6460eebb2805b"
+    },
+    "app/web/audio/heart.json": {
+      "source": "/Users/jonathanjenkins/GITHUB/JaegerLyra/public/audio/research/heart.json",
+      "sha256": "5da1a35fe87ecc1fb369526c6f9b5e42857f3376cf8d7d37b9801d534cde6cd0"
+    }
+  },
+  "baseline_archive": "/Users/jonathanjenkins/GITHUB/AvatarDemoArchive/2026-11-08",
+  "retired_sources": {
+    "nori-face-rig": "/Users/jonathanjenkins/GITHUB/AvatarDemoArchive/2026-11-08/nori",
+    "local-avatar-demo": "/Users/jonathanjenkins/GITHUB/AvatarDemoArchive/2026-11-08/kin"
+  }
+}

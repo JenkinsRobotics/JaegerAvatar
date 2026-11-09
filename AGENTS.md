@@ -23,3 +23,7 @@ Read `dev/docs/reality/STATUS.md`, `dev/docs/vision/PRODUCT_SCOPE.md`,
   `git diff --check`; exercise changed website controls and responsive layouts.
   For pack changes also run `python3 -m jaeger_avatar.packs validate` and
   `python3 -m unittest discover -s tests -v` after installing requirements-packs.txt.
+
+- UI pages and demos must match the Studio home page. Reuse `app/web/theme.css`
+  for colors, typography and controls; do not introduce a separate demo theme.
+  Portable generated demos should embed that same stylesheet.

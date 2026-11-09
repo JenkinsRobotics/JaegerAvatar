@@ -1,0 +1,10 @@
+{
+  "id": "visor",
+  "name": "Vee",
+  "tag": "LED visor",
+  "voice": "en_US-kristin-medium",
+  "kokoro": "af_nicole",
+  "pitch": 1.05,
+  "led": true,
+  "intro": "[joy] I'm Vee, an AI character. [shy] I'm a little hovering helper robot, and I look at the world through this visor."
+}

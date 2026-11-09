@@ -1,6 +1,6 @@
 # Jaeger Avatar — product scope
 
-Confirmed direction, November 7, 2026. Implementation is planned; current truth
+Confirmed direction, updated November 8, 2026. The Nori-based local runtime is implemented; current truth
 lives in [STATUS](../reality/STATUS.md).
 
 ## Purpose

@@ -2,6 +2,14 @@
   "schema": "avatar-catalog/v1",
   "avatars": [
     {
+      "avatar": "ace",
+      "name": "Ace",
+      "manifest": "ace/avatar.yaml",
+      "sources": [
+        "nori_demo"
+      ]
+    },
+    {
       "avatar": "anakin_skywalker",
       "name": "Anakin Skywalker",
       "manifest": "anakin_skywalker/avatar.yaml",
@@ -19,6 +27,14 @@
         "jaeger_ai_canvas_experiment",
         "jaeger_ai_shapes_experiment",
         "jaeger_ai_vrm_experiment"
+      ]
+    },
+    {
+      "avatar": "aster",
+      "name": "Aster",
+      "manifest": "aster/avatar.yaml",
+      "sources": [
+        "kin_demo"
       ]
     },
     {
@@ -43,6 +59,14 @@
       "manifest": "bitmap_man/avatar.yaml",
       "sources": [
         "mochi"
+      ]
+    },
+    {
+      "avatar": "bo",
+      "name": "Bo",
+      "manifest": "bo/avatar.yaml",
+      "sources": [
+        "nori_demo"
       ]
     },
     {
@@ -218,12 +242,37 @@
       ]
     },
     {
+      "avatar": "maya",
+      "name": "Maya",
+      "manifest": "maya/avatar.yaml",
+      "sources": [
+        "nori_demo"
+      ]
+    },
+    {
       "avatar": "mochi",
       "name": "Mochi",
       "manifest": "mochi/avatar.yaml",
       "sources": [
         "jaeger_ai",
-        "mochi"
+        "mochi",
+        "nori_demo"
+      ]
+    },
+    {
+      "avatar": "momo",
+      "name": "Momo",
+      "manifest": "momo/avatar.yaml",
+      "sources": [
+        "kin_demo"
+      ]
+    },
+    {
+      "avatar": "nori",
+      "name": "Nori",
+      "manifest": "nori/avatar.yaml",
+      "sources": [
+        "nori_demo"
       ]
     },
     {
@@ -256,6 +305,14 @@
       "manifest": "paul_atreides/avatar.yaml",
       "sources": [
         "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "pip",
+      "name": "Pip",
+      "manifest": "pip/avatar.yaml",
+      "sources": [
+        "nori_demo"
       ]
     },
     {
@@ -299,11 +356,27 @@
       ]
     },
     {
+      "avatar": "rook",
+      "name": "Rook",
+      "manifest": "rook/avatar.yaml",
+      "sources": [
+        "nori_demo"
+      ]
+    },
+    {
       "avatar": "simon",
       "name": "Simon",
       "manifest": "simon/avatar.yaml",
       "sources": [
         "jaeger_ai"
+      ]
+    },
+    {
+      "avatar": "sol",
+      "name": "Sol",
+      "manifest": "sol/avatar.yaml",
+      "sources": [
+        "nori_demo"
       ]
     },
     {
@@ -321,6 +394,28 @@
       "sources": [
         "jaeger_ai",
         "mochi"
+      ]
+    },
+    {
+      "avatar": "truth",
+      "name": "Truth",
+      "manifest": "truth/avatar.yaml",
+      "sources": []
+    },
+    {
+      "avatar": "vee",
+      "name": "Vee",
+      "manifest": "vee/avatar.yaml",
+      "sources": [
+        "nori_demo"
+      ]
+    },
+    {
+      "avatar": "vita",
+      "name": "Vita",
+      "manifest": "vita/avatar.yaml",
+      "sources": [
+        "nori_demo"
       ]
     }
   ]

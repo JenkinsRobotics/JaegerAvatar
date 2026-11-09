@@ -68,6 +68,20 @@ representations:
         default: mscripts/showcase.mscript
     path_aliases:
       characters/Daft Punk 1: sources/mochi
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: jaeger-study
+        preset: daft_punk_1
+      defaults:
+        tag: animated fan study · rights unspecified
+        kokoro: am_adam
+        library: true
+        pack: daft_punk_1
+    name: Daft Punk 1 · vector study
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi

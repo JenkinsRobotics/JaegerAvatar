@@ -221,6 +221,20 @@ representations:
       default_mouth: ''
     path_aliases:
       characters/hal_9000: sources/jaeger_ai
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: jaeger-study
+        preset: hal_9000
+      defaults:
+        tag: animated fan study · rights unspecified
+        kokoro: am_michael
+        library: true
+        pack: hal_9000
+    name: HAL 9000 · vector study
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi

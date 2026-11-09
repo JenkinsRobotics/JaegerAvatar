@@ -130,6 +130,20 @@ representations:
       default_mouth: ''
     path_aliases:
       characters/jarvis: sources/jaeger_ai
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: jaeger-study
+        preset: jarvis
+      defaults:
+        tag: animated fan study · rights unspecified
+        kokoro: bm_george
+        library: true
+        pack: jarvis
+    name: Jarvis · vector study
 sources:
   jaeger_ai:
     repository: https://github.com/JenkinsRobotics/JaegerAI

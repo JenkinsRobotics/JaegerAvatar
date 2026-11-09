@@ -142,6 +142,22 @@ representations:
       characters/robotics_architect: sources/jaeger_ai
     unavailable_assets:
       avatar: avatar
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-led
+        preset: visor
+        look:
+          filter:
+            hue: -40
+      defaults:
+        tag: visor rig, own look
+        kokoro: am_michael
+        library: true
+        pack: robotics_architect
 sources:
   jaeger_ai:
     repository: https://github.com/JenkinsRobotics/JaegerAI

@@ -1,0 +1,61 @@
+
+> kin-local-presence-studio@0.1.0 test
+> node --test tests/*.test.js
+
+✔ every possible split preserves inline moods, text, singing boundaries and gestures (5.05725ms)
+✔ sloppy aliases work, unknown tags remain text, hidden thought and special tokens do not leak (0.212167ms)
+✔ Gemma thought-channel markers are suppressed even one character at a time (0.156167ms)
+✔ springs converge across frame rates and stay finite after a long suspended frame (1.441875ms)
+✔ every mood and gesture gives finite bounded channels without scaling a skeleton (1221.080417ms)
+✔ gaze responds before head, and head before spine (0.525166ms)
+✔ both reels finish in order; pause freezes the clock and replay restarts exactly once (15.016416ms)
+✔ a suspended frame cannot skip through a whole performance (0.109334ms)
+✔ reply reader handles split UTF-8, arbitrary chunks and a final line without newline (76.546834ms)
+✔ a stopped reply cannot deliver a chunk that arrives after a pending read (9.069666ms)
+✔ Stop prevents delayed voice responses or decoding from reviving audio or errors (8.636459ms)
+✔ pausing audio suspends its playback clock and Stop resumes it (0.188ms)
+✔ song cancellation also cancels a job created after Stop (0.631042ms)
+✔ native audio chunks play contiguously and trigger a gesture only once (0.232ms)
+✔ a failing audio callback cancels its reader instead of leaving inference running (0.282833ms)
+✔ experimental song controls do not replace the saved speaking voice (3.472833ms)
+✔ failed song polling cancels abandoned generation and pre-cancelled work never starts (0.508959ms)
+✔ sixteen moods produce distinct, bounded eye silhouettes (239.333ms)
+✔ emotion changes interpolate without jumping or leaving stale velocities (19.909125ms)
+✔ all reactions finish, stay finite, and animate the face (257.381666ms)
+✔ wink closes only the requested eye; a double blink closes both twice (7.325584ms)
+✔ emotion/reaction state can be serialized and reproduced by an output window (3.054875ms)
+✔ Momo shell, camera and world transforms stay fixed through every body gesture (346.863667ms)
+✔ Momo remains inside the horizontal frame on tall and wide studio surfaces (0.48725ms)
+✔ both mirrored VRM bind poses flex toward the palm, never through the back of the hand (4.711958ms)
+✔ imported expression and move channels survive the exact output relay payload (49.81625ms)
+✔ spin completes a revolution and holds its heading without unwinding (64.992125ms)
+✔ interrupting a spin and beginning a second spin is continuous (9.415292ms)
+✔ all moves remain finite, end, and include substantial body or hand movement (487.44925ms)
+✔ dance alternates weight and hands; hop has preparation, lift, and recovery (9.270542ms)
+✔ two-bone IK reaches a target under a rotated parent without changing bone lengths (5.461958ms)
+✔ camera mapping preserves independent eyes, mouth and finite head pose (0.256584ms)
+✔ live-mic silence closes the mouth and voiced signal opens it (0.353458ms)
+✔ idle moods keep feet grounded and never produce root bobbing (432.016125ms)
+✔ dance keeps the support foot still while the other foot travels (5.871792ms)
+✔ leg IK preserves contact through pelvis weight shifts without stretching (4.655875ms)
+✔ hop trajectory uses gravity and has no below-floor samples (0.195291ms)
+✔ support pivot remains fixed through the complete turn (0.45275ms)
+✔ pose curves do not overshoot foot contacts or introduce velocity jumps (1.565416ms)
+✔ camera stays fixed throughout large gestures and changes only on manual framing (5.668292ms)
+✔ incremental numbers and titles stay intact (2.643375ms)
+✔ a first natural clause can speak before its sentence finishes (0.191792ms)
+✔ arbitrary network chunking never loses or repeats words (4.976541ms)
+✔ singing stays together until the mode ends (0.248625ms)
+✔ loading the Nori variant preserves the KIN face for subsequent character switches (0.8175ms)
+✔ the imported Vita file supplies independent eye, brow and vowel targets (40.473333ms)
+✔ VRoid primitive target names survive a loader that supplies numeric dictionaries (10.134625ms)
+✔ unsupported custom faces retain the standard VRM expression fallback (0.15475ms)
+✔ all moods retain finite face weights and close speech vowels in silence (83.253ms)
+ℹ tests 49
+ℹ suites 0
+ℹ pass 49
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1360.458416

@@ -131,6 +131,20 @@ representations:
       default_mouth: ''
     path_aliases:
       characters/eren_yeager: sources/jaeger_ai
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: jaeger-study
+        preset: eren_yeager
+      defaults:
+        tag: animated fan study · rights unspecified
+        kokoro: am_michael
+        library: true
+        pack: eren_yeager
+    name: Eren Yeager · vector study
 sources:
   jaeger_ai:
     repository: https://github.com/JenkinsRobotics/JaegerAI

@@ -3,10 +3,25 @@ avatar: jaeger_bronze
 name: Jaeger (Bronze)
 version: 0.1.0
 description: Bronze Jaeger design study preserved from the design-tokens branch, including full and face
-  crops at the original resolutions.
-default_profile: null
+  crops at the original resolutions. Draft persona and a built-in rig added in Jaeger Avatar. Draft persona
+  and a built-in rig added in Jaeger Avatar.
+default_profile: jaeger_avatar
 default_representation: full
-profiles: {}
+profiles:
+  jaeger_avatar:
+    character:
+      name: Jaeger (Bronze)
+      description: A bronze-helmeted Jaeger guardian.
+      author: Jenkins Robotics (draft persona)
+      license: Apache-2.0 (persona and built-in rig)
+      identity:
+        role: a bronze-helmeted Jaeger guardian
+        voice_tone: low, measured, ceremonial
+        voice_id: bm_george
+      prompt:
+        custom_instructions: You are the Bronze Jaeger, a helmeted guardian design of the Jaeger line.
+          Measured, loyal and protective; you speak briefly and mean it.
+    card: sources/jaeger_ai_design/packages/jaeger-design-tokens/assets/avatar-bronze-full-1024.png
 representations:
   full:
     source: jaeger_ai_design
@@ -58,6 +73,23 @@ representations:
           loop: false
       default_expression: idle
       default_mouth: ''
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-3d
+        preset: droid
+        look:
+          filter:
+            sepia: 0.9
+            saturate: 1.6
+      defaults:
+        tag: droid rig, own look
+        kokoro: bm_george
+        library: true
+        pack: jaeger_bronze
 sources:
   jaeger_ai_design:
     commit: fc9f4695cd7ac905237cf128566fcf3996b34cbf

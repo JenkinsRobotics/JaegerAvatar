@@ -97,6 +97,23 @@ representations:
         default: mscripts/idle.mscript
     path_aliases:
       characters/Eric: sources/mochi
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-led
+        preset: mochi
+        look:
+          filter:
+            hue: 195
+            saturate: 1.3
+      defaults:
+        tag: mochi rig, own look
+        kokoro: am_adam
+        library: true
+        pack: eric
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi

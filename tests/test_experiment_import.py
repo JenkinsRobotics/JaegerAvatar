@@ -18,11 +18,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class RecoveredLibraryTests(unittest.TestCase):
-    def test_sculpted_avatar_has_artwork_and_six_clips_without_invented_persona(self):
+    def test_sculpted_avatar_has_artwork_and_six_clips_and_a_marked_draft_persona(self):
         folder = ROOT / "avatar-packs/jaeger_sculpted"
         pack = load_pack(folder, verify_sources=True)
-        self.assertEqual(pack["profiles"], {})
-        self.assertIsNone(pack["default_profile"])
+        # Personas for the design studies were written in Jaeger Avatar and say so.
+        self.assertEqual(list(pack["profiles"]), ["jaeger_avatar"])
         self.assertEqual(pack["default_representation"], "activity_clips")
         presentation = pack["representations"]["activity_clips"]["presentation"]
         self.assertEqual(set(presentation["expressions"]), {
@@ -30,15 +30,16 @@ class RecoveredLibraryTests(unittest.TestCase):
         })
         self.assertFalse(presentation["expressions"]["milestone_level_up"]["loop"])
         for name in ("atlas", "nova", "relay", "jaeger_bronze"):
-            self.assertEqual(load_pack(ROOT / "avatar-packs" / name)["profiles"], {})
+            profiles = load_pack(ROOT / "avatar-packs" / name)["profiles"]
+            self.assertIn("draft", profiles["jaeger_avatar"]["character"]["author"])
         # Mochi's unrelated Jaeger identity must not be replaced by the new art.
         self.assertEqual(load_pack(ROOT / "avatar-packs/jaeger")["default_representation"], "mochi")
 
     def test_archived_prototypes_are_not_registered_as_working_representations(self):
         packs = validate_catalog(ROOT / "avatar-packs")
-        self.assertEqual(len(packs), 39)
-        self.assertEqual(sum(len(p["profiles"]) for p in packs), 39)
-        self.assertEqual(sum(len(p["representations"]) for p in packs), 45)
+        self.assertEqual(len(packs), 51)
+        self.assertEqual(sum(len(p["profiles"]) for p in packs), 57)
+        self.assertEqual(sum(len(p["representations"]) for p in packs), 99)
         archived = 0
         for pack in packs:
             for key, source in pack["sources"].items():

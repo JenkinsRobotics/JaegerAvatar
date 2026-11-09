@@ -1,0 +1,813 @@
+[
+  {
+    "app": "KIN",
+    "character": "vita-kin",
+    "kind": "controlled",
+    "fps": 59.89,
+    "frameP95": 18.4,
+    "frameP99": 18.69,
+    "frames": 2214,
+    "over33ms": 1,
+    "over50ms": 0,
+    "jsP95": 4.4,
+    "sources": 3,
+    "dimensions": [
+      600,
+      600
+    ],
+    "audio": {
+      "sampleRate": 48000,
+      "baseLatency": 0.005333333333333333,
+      "outputLatency": 0.016
+    },
+    "mouthEnvelope": [
+      {
+        "lagMs": 5,
+        "correlation": 0.902,
+        "amplitudeP95": 0.88
+      },
+      {
+        "lagMs": 0,
+        "correlation": 0.905,
+        "amplitudeP95": 0.89
+      }
+    ],
+    "phraseGapsMs": [
+      18.0
+    ],
+    "gestureVsAudioStartMs": [
+      {
+        "name": "wave",
+        "ms": 5.0
+      },
+      {
+        "name": "nod",
+        "ms": -3.3
+      }
+    ],
+    "cachedCommandToAudioMs": 139.0,
+    "stopCallMs": 0.1,
+    "mouthBelow005AfterStopMs": 216.5,
+    "moves": {
+      "wave": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 7.139124050308619
+      },
+      "spin": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 6.4631559293949135,
+        "maxArmStepDeg": 25.377470277747285
+      },
+      "dance": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 4.2672423640316035
+      },
+      "celebrate": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 5.9500385889379785
+      }
+    },
+    "file": "kin-classic-1.json"
+  },
+  {
+    "app": "KIN",
+    "character": "vita-kin",
+    "kind": "controlled",
+    "fps": 59.95,
+    "frameP95": 18.3,
+    "frameP99": 18.7,
+    "frames": 2217,
+    "over33ms": 0,
+    "over50ms": 0,
+    "jsP95": 4.3,
+    "sources": 3,
+    "dimensions": [
+      600,
+      600
+    ],
+    "audio": {
+      "sampleRate": 48000,
+      "baseLatency": 0.005333333333333333,
+      "outputLatency": 0.016
+    },
+    "mouthEnvelope": [
+      {
+        "lagMs": 5,
+        "correlation": 0.897,
+        "amplitudeP95": 0.885
+      },
+      {
+        "lagMs": 10,
+        "correlation": 0.9,
+        "amplitudeP95": 0.89
+      }
+    ],
+    "phraseGapsMs": [
+      18.0
+    ],
+    "gestureVsAudioStartMs": [
+      {
+        "name": "wave",
+        "ms": -11.0
+      },
+      {
+        "name": "nod",
+        "ms": -3.3
+      }
+    ],
+    "cachedCommandToAudioMs": 133.7,
+    "stopCallMs": 0.0,
+    "mouthBelow005AfterStopMs": 190.1,
+    "moves": {
+      "wave": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 7.269668254632849
+      },
+      "spin": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 6.46312055322351,
+        "maxArmStepDeg": 25.812339215245096
+      },
+      "dance": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 4.100642268630775
+      },
+      "celebrate": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 6.041674101366473
+      }
+    },
+    "file": "kin-classic-2.json"
+  },
+  {
+    "app": "KIN",
+    "character": "anime",
+    "kind": "controlled",
+    "fps": 59.97,
+    "frameP95": 18.2,
+    "frameP99": 18.6,
+    "frames": 2218,
+    "over33ms": 0,
+    "over50ms": 0,
+    "jsP95": 5.0,
+    "sources": 3,
+    "dimensions": [
+      600,
+      600
+    ],
+    "audio": {
+      "sampleRate": 48000,
+      "baseLatency": 0.005333333333333333,
+      "outputLatency": 0.016
+    },
+    "mouthEnvelope": [
+      {
+        "lagMs": -5,
+        "correlation": 0.895,
+        "amplitudeP95": 0.989
+      },
+      {
+        "lagMs": -15,
+        "correlation": 0.898,
+        "amplitudeP95": 0.985
+      }
+    ],
+    "phraseGapsMs": [
+      18.0
+    ],
+    "gestureVsAudioStartMs": [
+      {
+        "name": "wave",
+        "ms": -11.0
+      },
+      {
+        "name": "nod",
+        "ms": 2.0
+      }
+    ],
+    "cachedCommandToAudioMs": 112.3,
+    "stopCallMs": 0.5,
+    "mouthBelow005AfterStopMs": 122.3,
+    "moves": {
+      "wave": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 10.510141960604429
+      },
+      "spin": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 6.4631559293949135,
+        "maxArmStepDeg": 9.041054098380295
+      },
+      "dance": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 10.64995362739867
+      },
+      "celebrate": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 11.610029400911957
+      }
+    },
+    "file": "kin-imported-1.json"
+  },
+  {
+    "app": "KIN",
+    "character": "anime",
+    "kind": "controlled",
+    "fps": 59.97,
+    "frameP95": 18.3,
+    "frameP99": 18.6,
+    "frames": 2217,
+    "over33ms": 0,
+    "over50ms": 0,
+    "jsP95": 4.8,
+    "sources": 3,
+    "dimensions": [
+      600,
+      600
+    ],
+    "audio": {
+      "sampleRate": 48000,
+      "baseLatency": 0.005333333333333333,
+      "outputLatency": 0.016
+    },
+    "mouthEnvelope": [
+      {
+        "lagMs": -10,
+        "correlation": 0.898,
+        "amplitudeP95": 0.992
+      },
+      {
+        "lagMs": -10,
+        "correlation": 0.899,
+        "amplitudeP95": 0.976
+      }
+    ],
+    "phraseGapsMs": [
+      18.0
+    ],
+    "gestureVsAudioStartMs": [
+      {
+        "name": "wave",
+        "ms": -11.0
+      },
+      {
+        "name": "nod",
+        "ms": 2.0
+      }
+    ],
+    "cachedCommandToAudioMs": 112.3,
+    "stopCallMs": 0.0,
+    "mouthBelow005AfterStopMs": 128.2,
+    "moves": {
+      "wave": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 9.537130853360832
+      },
+      "spin": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 6.463146952381911,
+        "maxArmStepDeg": 9.52235647729102
+      },
+      "dance": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 10.962969288596575
+      },
+      "celebrate": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 11.000063530108518
+      }
+    },
+    "file": "kin-imported-2.json"
+  },
+  {
+    "app": "KIN",
+    "character": "mochi",
+    "kind": "controlled",
+    "fps": 59.97,
+    "frameP95": 18.2,
+    "frameP99": 18.6,
+    "frames": 1732,
+    "over33ms": 0,
+    "over50ms": 0,
+    "jsP95": 1.6,
+    "sources": 3,
+    "dimensions": [
+      600,
+      600
+    ],
+    "audio": {
+      "sampleRate": 48000,
+      "baseLatency": 0.005333333333333333,
+      "outputLatency": 0.016
+    },
+    "mouthEnvelope": [
+      {
+        "lagMs": -15,
+        "correlation": 0.943,
+        "amplitudeP95": 0.655
+      },
+      {
+        "lagMs": -15,
+        "correlation": 0.947,
+        "amplitudeP95": 0.66
+      }
+    ],
+    "phraseGapsMs": [
+      18.0
+    ],
+    "gestureVsAudioStartMs": [
+      {
+        "name": "blink",
+        "ms": -11.0
+      },
+      {
+        "name": "blink",
+        "ms": -3.3
+      }
+    ],
+    "cachedCommandToAudioMs": 112.3,
+    "stopCallMs": 1.1,
+    "mouthBelow005AfterStopMs": 83.6,
+    "moves": {
+      "heart": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 0.0
+      },
+      "wink": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 0.0
+      },
+      "roll": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 0.0
+      },
+      "groove": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 0.0
+      }
+    },
+    "file": "kin-mochi-1.json"
+  },
+  {
+    "app": "KIN",
+    "character": "vita-kin",
+    "kind": "native-reel",
+    "fps": 59.97,
+    "frameP95": 18.3,
+    "frameP99": 18.6,
+    "frames": 2579,
+    "over33ms": 0,
+    "over50ms": 0,
+    "jsP95": 4.4,
+    "sources": 4,
+    "dimensions": [
+      600,
+      600
+    ],
+    "audio": {
+      "sampleRate": 48000,
+      "baseLatency": 0.005333333333333333,
+      "outputLatency": 0.016
+    },
+    "mouthEnvelope": [],
+    "phraseGapsMs": [],
+    "gestureVsAudioStartMs": [],
+    "moves": {},
+    "file": "kin-native-reel.json"
+  },
+  {
+    "app": "KIN",
+    "character": "vee",
+    "kind": "controlled",
+    "fps": 59.98,
+    "frameP95": 18.2,
+    "frameP99": 18.6,
+    "frames": 1731,
+    "over33ms": 0,
+    "over50ms": 0,
+    "jsP95": 1.6,
+    "sources": 3,
+    "dimensions": [
+      600,
+      600
+    ],
+    "audio": {
+      "sampleRate": 48000,
+      "baseLatency": 0.005333333333333333,
+      "outputLatency": 0.016
+    },
+    "mouthEnvelope": [
+      {
+        "lagMs": -10,
+        "correlation": 0.944,
+        "amplitudeP95": 0.657
+      },
+      {
+        "lagMs": -15,
+        "correlation": 0.941,
+        "amplitudeP95": 0.66
+      }
+    ],
+    "phraseGapsMs": [
+      18.0
+    ],
+    "gestureVsAudioStartMs": [
+      {
+        "name": "blink",
+        "ms": -11.0
+      },
+      {
+        "name": "blink",
+        "ms": -14.0
+      }
+    ],
+    "cachedCommandToAudioMs": 112.3,
+    "stopCallMs": 0.0,
+    "mouthBelow005AfterStopMs": 96.9,
+    "moves": {
+      "heart": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 0.0
+      },
+      "wink": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 0.0
+      },
+      "roll": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 0.0
+      },
+      "groove": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 0.0
+      }
+    },
+    "file": "kin-vee-1.json"
+  },
+  {
+    "app": "Nori",
+    "character": "mochi",
+    "kind": "controlled",
+    "fps": 59.97,
+    "frameP95": 18.3,
+    "frameP99": 18.6,
+    "frames": 1731,
+    "over33ms": 0,
+    "over50ms": 0,
+    "jsP95": 0.9,
+    "sources": 3,
+    "dimensions": [
+      600,
+      600
+    ],
+    "audio": {
+      "sampleRate": 48000,
+      "baseLatency": 0.005333333333333333,
+      "outputLatency": 0.016
+    },
+    "mouthEnvelope": [
+      {
+        "lagMs": 5,
+        "correlation": 0.775,
+        "amplitudeP95": 0.589
+      },
+      {
+        "lagMs": 0,
+        "correlation": 0.771,
+        "amplitudeP95": 0.594
+      }
+    ],
+    "phraseGapsMs": [
+      79.3
+    ],
+    "gestureVsAudioStartMs": [
+      {
+        "name": "wave",
+        "ms": -36.0
+      },
+      {
+        "name": "nod",
+        "ms": -36.0
+      }
+    ],
+    "cachedCommandToAudioMs": 36.0,
+    "stopCallMs": 0.7,
+    "mouthBelow005AfterStopMs": 134.6,
+    "moves": {
+      "heart": {
+        "cameraRange": null,
+        "rootRotationRange": null,
+        "maxArmStepDeg": null
+      },
+      "wink": {
+        "cameraRange": null,
+        "rootRotationRange": null,
+        "maxArmStepDeg": null
+      },
+      "roll": {
+        "cameraRange": null,
+        "rootRotationRange": null,
+        "maxArmStepDeg": null
+      },
+      "groove": {
+        "cameraRange": null,
+        "rootRotationRange": null,
+        "maxArmStepDeg": null
+      }
+    },
+    "file": "nori-mochi-1.json"
+  },
+  {
+    "app": "Nori",
+    "character": "vita",
+    "kind": "native-reel",
+    "fps": 59.97,
+    "frameP95": 18.3,
+    "frameP99": 18.6,
+    "frames": 2579,
+    "over33ms": 0,
+    "over50ms": 0,
+    "jsP95": 4.1,
+    "sources": 20,
+    "dimensions": [
+      600,
+      600
+    ],
+    "audio": {
+      "sampleRate": 48000,
+      "baseLatency": 0.005333333333333333,
+      "outputLatency": 0.016
+    },
+    "mouthEnvelope": [],
+    "phraseGapsMs": [],
+    "gestureVsAudioStartMs": [],
+    "moves": {},
+    "file": "nori-native-reel-2.json"
+  },
+  {
+    "app": "Nori",
+    "character": "vita",
+    "kind": "native-reel",
+    "fps": 59.52,
+    "frameP95": 18.3,
+    "frameP99": 18.6,
+    "frames": 3928,
+    "over33ms": 2,
+    "over50ms": 1,
+    "jsP95": 3.6,
+    "sources": 20,
+    "dimensions": [
+      600,
+      600
+    ],
+    "audio": {
+      "sampleRate": 48000,
+      "baseLatency": 0.005333333333333333,
+      "outputLatency": 0.016
+    },
+    "mouthEnvelope": [],
+    "phraseGapsMs": [],
+    "gestureVsAudioStartMs": [],
+    "moves": {},
+    "file": "nori-native-reel.json"
+  },
+  {
+    "app": "Nori",
+    "character": "visor",
+    "kind": "controlled",
+    "fps": 59.97,
+    "frameP95": 18.1,
+    "frameP99": 18.6,
+    "frames": 1731,
+    "over33ms": 0,
+    "over50ms": 0,
+    "jsP95": 1.0,
+    "sources": 3,
+    "dimensions": [
+      600,
+      600
+    ],
+    "audio": {
+      "sampleRate": 48000,
+      "baseLatency": 0.005333333333333333,
+      "outputLatency": 0.016
+    },
+    "mouthEnvelope": [
+      {
+        "lagMs": 0,
+        "correlation": 0.777,
+        "amplitudeP95": 0.591
+      },
+      {
+        "lagMs": 0,
+        "correlation": 0.781,
+        "amplitudeP95": 0.584
+      }
+    ],
+    "phraseGapsMs": [
+      84.3
+    ],
+    "gestureVsAudioStartMs": [
+      {
+        "name": "wave",
+        "ms": -36.0
+      },
+      {
+        "name": "nod",
+        "ms": -36.0
+      }
+    ],
+    "cachedCommandToAudioMs": 36.0,
+    "stopCallMs": 0.6,
+    "mouthBelow005AfterStopMs": 147.6,
+    "moves": {
+      "heart": {
+        "cameraRange": null,
+        "rootRotationRange": null,
+        "maxArmStepDeg": null
+      },
+      "wink": {
+        "cameraRange": null,
+        "rootRotationRange": null,
+        "maxArmStepDeg": null
+      },
+      "roll": {
+        "cameraRange": null,
+        "rootRotationRange": null,
+        "maxArmStepDeg": null
+      },
+      "groove": {
+        "cameraRange": null,
+        "rootRotationRange": null,
+        "maxArmStepDeg": null
+      }
+    },
+    "file": "nori-vee-1.json"
+  },
+  {
+    "app": "Nori",
+    "character": "vita",
+    "kind": "controlled",
+    "fps": 59.97,
+    "frameP95": 18.4,
+    "frameP99": 18.6,
+    "frames": 2217,
+    "over33ms": 0,
+    "over50ms": 0,
+    "jsP95": 4.1,
+    "sources": 3,
+    "dimensions": [
+      600,
+      600
+    ],
+    "audio": {
+      "sampleRate": 48000,
+      "baseLatency": 0.005333333333333333,
+      "outputLatency": 0.016
+    },
+    "mouthEnvelope": [
+      {
+        "lagMs": 0,
+        "correlation": 0.82,
+        "amplitudeP95": 0.928
+      },
+      {
+        "lagMs": 0,
+        "correlation": 0.833,
+        "amplitudeP95": 0.955
+      }
+    ],
+    "phraseGapsMs": [
+      84.3
+    ],
+    "gestureVsAudioStartMs": [
+      {
+        "name": "wave",
+        "ms": -36.0
+      },
+      {
+        "name": "nod",
+        "ms": -36.0
+      }
+    ],
+    "cachedCommandToAudioMs": 36.0,
+    "stopCallMs": 0.3,
+    "mouthBelow005AfterStopMs": 174.9,
+    "moves": {
+      "wave": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 0.03338271869393258
+      },
+      "spin": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 6.46315422930469,
+        "maxArmStepDeg": 10.078223314029692
+      },
+      "dance": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 10.761011155771238
+      },
+      "celebrate": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 11.109854686725658
+      }
+    },
+    "file": "nori-vita-1.json"
+  },
+  {
+    "app": "Nori",
+    "character": "vita",
+    "kind": "controlled",
+    "fps": 59.97,
+    "frameP95": 18.3,
+    "frameP99": 18.6,
+    "frames": 2217,
+    "over33ms": 0,
+    "over50ms": 0,
+    "jsP95": 4.1,
+    "sources": 3,
+    "dimensions": [
+      600,
+      600
+    ],
+    "audio": {
+      "sampleRate": 48000,
+      "baseLatency": 0.005333333333333333,
+      "outputLatency": 0.016
+    },
+    "mouthEnvelope": [
+      {
+        "lagMs": 0,
+        "correlation": 0.826,
+        "amplitudeP95": 0.924
+      },
+      {
+        "lagMs": 0,
+        "correlation": 0.832,
+        "amplitudeP95": 0.955
+      }
+    ],
+    "phraseGapsMs": [
+      79.0
+    ],
+    "gestureVsAudioStartMs": [
+      {
+        "name": "wave",
+        "ms": -36.0
+      },
+      {
+        "name": "nod",
+        "ms": -36.0
+      }
+    ],
+    "cachedCommandToAudioMs": 36.0,
+    "stopCallMs": 0.3,
+    "mouthBelow005AfterStopMs": 178.9,
+    "moves": {
+      "wave": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 0.11500077297163654
+      },
+      "spin": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 6.463143028153348,
+        "maxArmStepDeg": 9.36000865555885
+      },
+      "dance": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 10.737727796806302
+      },
+      "celebrate": {
+        "cameraRange": 0.0,
+        "rootRotationRange": 0.0,
+        "maxArmStepDeg": 11.687705971783489
+      }
+    },
+    "file": "nori-vita-2.json"
+  }
+]

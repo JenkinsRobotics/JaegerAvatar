@@ -142,6 +142,22 @@ representations:
       characters/reliability_auditor: sources/jaeger_ai
     unavailable_assets:
       avatar: avatar
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-led
+        preset: visor
+        look:
+          filter:
+            hue: 150
+      defaults:
+        tag: visor rig, own look
+        kokoro: bm_george
+        library: true
+        pack: reliability_auditor
 sources:
   jaeger_ai:
     repository: https://github.com/JenkinsRobotics/JaegerAI

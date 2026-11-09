@@ -1,0 +1,10 @@
+{
+  "id": "rook",
+  "name": "Rook",
+  "tag": "3D humanoid robot",
+  "voice": "en_US-norman-medium",
+  "kokoro": "am_onyx",
+  "pitch": 1.08,
+  "robot": true,
+  "intro": "[neutral] I'm Rook, an AI character. [joy] I'm a battered robot, and I'm still new to the world."
+}

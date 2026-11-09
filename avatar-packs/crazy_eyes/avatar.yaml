@@ -101,6 +101,23 @@ representations:
         default: mscripts/idle.mscript
     path_aliases:
       characters/crazy eyes: sources/mochi
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-led
+        preset: mochi
+        look:
+          filter:
+            hue: 35
+            saturate: 1.4
+      defaults:
+        tag: mochi rig, own look
+        kokoro: am_michael
+        library: true
+        pack: crazy_eyes
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi

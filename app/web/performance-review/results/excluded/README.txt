@@ -1,0 +1,1 @@
+Excluded from final comparison: the initial KIN imported-renderer adapter set scale=0.5, resulting in a 300x300 internal buffer with 600x600 output. Corrected to 600x600 internal rendering and rerun twice. These original artifacts are retained for audit.

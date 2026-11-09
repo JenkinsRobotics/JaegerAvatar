@@ -91,6 +91,23 @@ representations:
         certain: '#FFFFFF'
     path_aliases:
       characters/Halo: sources/mochi
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-led
+        preset: visor
+        look:
+          filter:
+            hue: 110
+            saturate: 1.3
+      defaults:
+        tag: visor rig, own look
+        kokoro: bf_emma
+        library: true
+        pack: halo
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi

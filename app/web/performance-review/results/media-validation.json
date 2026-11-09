@@ -1,0 +1,71 @@
+{
+  "kin-classic": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 600,
+        "height": 600,
+        "avg_frame_rate": "5415000/180533",
+        "duration": "12.035533"
+      },
+      {
+        "codec_name": "aac",
+        "codec_type": "audio",
+        "avg_frame_rate": "0/0",
+        "duration": "11.989396"
+      }
+    ],
+    "format": {
+      "duration": "12.047396"
+    }
+  },
+  "kin-imported": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 600,
+        "height": 600,
+        "avg_frame_rate": "10830000/361081",
+        "duration": "12.036033"
+      },
+      {
+        "codec_name": "aac",
+        "codec_type": "audio",
+        "avg_frame_rate": "0/0",
+        "duration": "11.989437"
+      }
+    ],
+    "format": {
+      "duration": "12.047438"
+    }
+  },
+  "nori-vita": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "codec_type": "video",
+        "width": 600,
+        "height": 600,
+        "avg_frame_rate": "10830000/361009",
+        "duration": "12.033633"
+      },
+      {
+        "codec_name": "aac",
+        "codec_type": "audio",
+        "avg_frame_rate": "0/0",
+        "duration": "11.986125"
+      }
+    ],
+    "format": {
+      "duration": "12.044125"
+    }
+  }
+}

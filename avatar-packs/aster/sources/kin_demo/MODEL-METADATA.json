@@ -1,0 +1,25 @@
+{
+  "VRMC_vrm": {
+    "allowAntisocialOrHateUsage": false,
+    "allowExcessivelySexualUsage": true,
+    "allowExcessivelyViolentUsage": true,
+    "allowPoliticalOrReligiousUsage": true,
+    "allowRedistribution": true,
+    "authors": [
+      "pixiv Inc.",
+      "Local avatar demo (material palette adaptation)"
+    ],
+    "avatarPermission": "everyone",
+    "commercialUsage": "corporation",
+    "copyrightInformation": "(c) 2022 pixiv Inc.",
+    "creditNotation": "unnecessary",
+    "licenseUrl": "https://vrm.dev/licenses/1.0/",
+    "modification": "allowModificationRedistribution",
+    "name": "Aster palette — VRM1_Constraint_Twist_Sample",
+    "thumbnailImage": 18,
+    "version": "v1.0.1-palette1",
+    "references": [
+      "https://github.com/pixiv/three-vrm/blob/dev/packages/three-vrm/examples/models/VRM1_Constraint_Twist_Sample.vrm"
+    ]
+  }
+}

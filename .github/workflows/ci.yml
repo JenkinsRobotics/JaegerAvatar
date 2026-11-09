@@ -16,6 +16,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Exercise avatar rig and lip sync
+        run: npm test
       - name: Check documentation and website
         run: python3 scripts/check_site.py
       - name: Install pack tooling dependencies

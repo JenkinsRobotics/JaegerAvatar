@@ -2,11 +2,26 @@ schema: avatar/v1
 avatar: jaeger_sculpted
 name: Jaeger (Sculpted)
 version: 0.1.0
-description: 'The white grinning Jaeger companion: original artwork, six activity clips, and archived
-  rig experiments. Visual identity only; no fictional persona is inferred.'
-default_profile: null
+description: 'The white grinning Jaeger companion: original artwork, six activity
+  clips, and archived rig experiments. Draft persona and a built-in rig added in Jaeger
+  Avatar. Draft persona and a built-in rig added in Jaeger Avatar.'
+default_profile: jaeger_avatar
 default_representation: activity_clips
-profiles: {}
+profiles:
+  jaeger_avatar:
+    character:
+      name: Jaeger (Sculpted)
+      description: The white grinning Jaeger companion.
+      author: Jenkins Robotics (draft persona)
+      license: Apache-2.0 (persona and built-in rig)
+      identity:
+        role: the white grinning Jaeger companion
+        voice_tone: playful, cheeky, kind
+        voice_id: am_puck
+      prompt:
+        custom_instructions: You are the Sculpted Jaeger, the white grinning companion
+          of the Jaeger line. Cheeky and playful, but always kind and genuinely helpful.
+    card: sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/src/assets/characters/jaeger-sculpted.png
 representations:
   portrait:
     source: jaeger_ai_ui
@@ -38,9 +53,9 @@ representations:
     format: character/v1
     root: sources/jaeger_ai_ui/jaeger_ai/interfaces/ui/public/assets/avatar/jaeger
     status: media_available
-    notes: Six silent pre-rendered 2.5D activity clips. Their inclusion does not claim the original laptop/smile
-      composition is corrected or that agent state wiring is implemented here. Milestone is configured
-      as a one-shot expression.
+    notes: Six silent pre-rendered 2.5D activity clips. Their inclusion does not claim
+      the original laptop/smile composition is corrected or that agent state wiring
+      is implemented here. Milestone is configured as a one-shot expression.
     presentation:
       kind: clip_set
       assets:
@@ -82,13 +97,31 @@ representations:
           loop: false
       default_expression: idle
       default_mouth: ''
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-3d
+        preset: astro
+        look:
+          filter:
+            grayscale: 1
+            brightness: 1.15
+      defaults:
+        tag: astro rig, own look
+        kokoro: am_puck
+        library: true
+        pack: jaeger_sculpted
 sources:
   jaeger_ai_ui:
     commit: e42e98872e68a5b88cac595140a2e9a4034ac216
     declared_license: Unspecified
     status: media_and_prototype_source
-    notes: Media is available. Cutout/SVG components and the offline clip generator are archived source,
-      not installed renderers. Source status text describes UI activity, not a fictional persona.
+    notes: Media is available. Cutout/SVG components and the offline clip generator
+      are archived source, not installed renderers. Source status text describes UI
+      activity, not a fictional persona.
     repository: https://github.com/JenkinsRobotics/JaegerAI
     working_tree_modified: false
     files:
@@ -115,9 +148,9 @@ sources:
     commit: 5be1d1e98c42f563a38b18113f74e321fee99c27
     declared_license: Unspecified
     status: archived_prototype
-    notes: Historical procedural Three.js reconstruction, replaced upstream by the artwork cutout. No
-      external 3D model. React/Three.js and host integration are not bundled; no active representation
-      is declared.
+    notes: Historical procedural Three.js reconstruction, replaced upstream by the
+      artwork cutout. No external 3D model. React/Three.js and host integration are
+      not bundled; no active representation is declared.
     repository: https://github.com/JenkinsRobotics/JaegerAI
     working_tree_modified: false
     files:
@@ -131,8 +164,8 @@ sources:
     commit: b8623d4cc21c7e2ae44e879e64d52194b8bb37ae
     declared_license: Unspecified
     status: archived_prototype
-    notes: Earlier hand-drawn SVG Jaeger character before the sculpted image. Retained for future adaptation;
-      not registered as a runnable renderer.
+    notes: Earlier hand-drawn SVG Jaeger character before the sculpted image. Retained
+      for future adaptation; not registered as a runnable renderer.
     repository: https://github.com/JenkinsRobotics/JaegerAI
     working_tree_modified: false
     files:

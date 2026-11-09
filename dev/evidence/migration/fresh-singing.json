@@ -1,0 +1,8 @@
+{
+  "engine": "soulx-singing",
+  "speaker": "af_heart",
+  "referenceKind": "speech",
+  "duration": 5.12,
+  "path": "/Users/jonathanjenkins/GITHUB/JaegerAvatar/app/.cache/songs/c1303d0b9effab66ea726b0c.wav",
+  "notice": "Experimental reference-conditioned singer. Identity and pronunciation can change."
+}

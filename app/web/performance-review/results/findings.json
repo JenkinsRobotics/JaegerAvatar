@@ -1,0 +1,7 @@
+[
+  "For this animation-and-speech demo, my preferred configuration is KIN with Vita \u00b7 Nori. Keep Vita \u00b7 KIN and Momo as selectable originals. This recommendation is about performance playback, not the completeness of the whole VTuber product.",
+  "All ten controlled runs stayed around 60 fps, with good mouth-envelope timing. KIN generated the three fresh Kokoro lines faster and kept queued phrase gaps at 18 ms. Nori started already-prepared audio sooner, at 36 ms.",
+  "Nori has the stronger speech-accent driver: voiced emphasis moves the brows, head, body and hands. Bringing those events into KIN is more valuable than adding camera effects.",
+  "Neither app aligns gesture peaks to individual words or musical beats. That is the next major performance improvement. Also inspect the sharper arm transition in the original Vita spin; keep the character and improve the transition.",
+  "Nori had one half-second native-reel hitch; it did not recur on a second complete run. Its nonverbal and singing clips also use built-in synthesis, so the entire reel is not Kokoro."
+]

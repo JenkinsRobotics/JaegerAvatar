@@ -132,6 +132,20 @@ representations:
       default_mouth: ''
     path_aliases:
       characters/paul_atreides: sources/jaeger_ai
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: jaeger-study
+        preset: paul_atreides
+      defaults:
+        tag: animated fan study · rights unspecified
+        kokoro: am_michael
+        library: true
+        pack: paul_atreides
+    name: Paul Atreides · vector study
 sources:
   jaeger_ai:
     repository: https://github.com/JenkinsRobotics/JaegerAI

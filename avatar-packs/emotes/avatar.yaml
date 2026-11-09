@@ -176,6 +176,19 @@ representations:
             unamused: assets/emotes-transition-unamused.png
     path_aliases:
       characters/Sprite Emotes: sources/mochi
+  jaeger_rig:
+    format: avatar/rig-v1
+    root: .
+    presentation:
+      kind: rig
+      render:
+        adapter: nori-led
+        preset: mochi
+      defaults:
+        tag: mochi rig, own look
+        kokoro: bf_emma
+        library: true
+        pack: emotes
 sources:
   mochi:
     repository: https://github.com/JenkinsRobotics/Mochi
