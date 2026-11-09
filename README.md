@@ -32,7 +32,7 @@ available. JaegerAI is not required. The current agent has no tools enabled.
 
 ## Characters and packs
 
-**51 avatar packs, 57 persona profiles and 98 representations; every pack has a live rig.** The existing
+**51 avatar packs, 57 persona profiles and 99 representations; every pack has a live rig.** The existing
 Mochi, JaegerAI and JaegerAgent library remains intact, including Clanker and the
 sculpted Jaeger artwork. **Avatar library** shows live rigs, portraits, video
 representations and source-only entries separately. Imported Python/MScript

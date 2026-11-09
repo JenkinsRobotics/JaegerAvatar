@@ -3,7 +3,7 @@
 Jaeger Avatar owns this library and its `avatar/v1` format, the successor to the
 earlier character packs. [Format, ownership and migration](../dev/docs/packs/AVATAR_PACKS.md).
 
-The library contains **51 avatars, 57 persona profiles and 98 representations**:
+The library contains **51 avatars, 57 persona profiles and 99 representations**:
 
 | Source | Imported foundation |
 | --- | --- |

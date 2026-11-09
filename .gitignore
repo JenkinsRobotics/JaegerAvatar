@@ -19,6 +19,7 @@ ENV/
 
 # Distribution / packaging
 build/
+!app/web/vendor/three/build/
 dist/
 *.egg-info/
 *.egg
