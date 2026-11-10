@@ -1,6 +1,6 @@
-"""The control link: an agent outside the avatar sends avatar-control/v1 commands to the body on stage.
+"""The control link: an optional way for another local process to send avatar-control/v1 commands to the body on stage.
 
-The page that shows the avatar attaches with the body's declared controls and polls the state; an external client
+The page that shows the avatar attaches with the body's declared controls and polls the state; a client
 sends commands with the token. Commands are refused while no page is polling, so nothing is accepted into the void.
 Speech audio is uploaded here as a clip the host's speaker plays; the avatar only times its mouth to it.
 """

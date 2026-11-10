@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""An agent outside the avatar, driving the body on stage through the demo app's control link.
+"""Drive the body on stage from another process, through the app's optional control link.
 
     python scripts/avatar_control.py feel joy
     python scripts/avatar_control.py react wink
@@ -8,7 +8,7 @@
     python scripts/avatar_control.py say "Mom bought a big puppy" --voice kokoro:af_heart
     python scripts/avatar_control.py stop
 
-`say` plays the part of an external TTS: it borrows the demo's voice service for audio and lip timing, uploads the
+`say` borrows the demo's voice service for audio and lip timing, uploads the
 clip, and sends `speak`. The token is the one the demo server prints (or $JAEGER_AVATAR_CONTROL_TOKEN).
 """
 import argparse

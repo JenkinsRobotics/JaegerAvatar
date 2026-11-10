@@ -14,13 +14,16 @@ move, wait until then.
 
 ## Intent
 
-Jaeger Avatar is an avatar AI framework, in the spirit of an AI companion
-avatar: **commands come in, animation comes out.** An AI that lives outside it
-drives the character the same way it drives everything else, including a
-robot's physical rig. Jaeger Avatar turns those commands into a performance
-and hands each display a finished video stream at the size and ratio that
-display declares. It is built to be dropped into the Jaegers and other
-projects.
+Jaeger Avatar is a complete, self-sufficient AI companion app: **an avatar
+pack plus its own TTS, STT and agent** (Jonathan, November 10). The agent
+drives the pack; nothing outside the app is needed for the full experience.
+Inside it, the engine works on one rule: **commands come in, animation comes
+out.** It turns the agent's commands into a performance and hands each display
+a finished video stream at the size and ratio that display declares.
+
+JaegerOS apps such as Mochi and JP01 copy the same recipe: **the same avatar
+pack plus their own TTS, STT and agent**, with the same engine playing it. What
+travels between them is the pack.
 
 The reason for this design is drift. Today two engines play the same
 character formats: JaegerAnimation in Python and Jaeger Avatar's renderers in
@@ -35,9 +38,13 @@ on two devices, and every fix is made twice. One engine removes that.
 2. Jaeger Avatar treats every device as a screen. It produces a video stream
    at the display's declared size and ratio. It does not drive hardware: the
    device's display driver lights the pixels.
-3. The AI, speech (TTS), hearing (STT) and the agent live **outside** Jaeger
-   Avatar. The Jaeger Avatar app demonstrates that level of control; it is a
-   demo harness, not part of the framework.
+3. **Each app brings its own TTS, STT and agent** (Jonathan, November 10,
+   replacing the November 9 wording that put them outside). The Jaeger Avatar
+   app ships with them and is a full product, not a demo harness. A JaegerOS
+   app (Mochi, JP01) ships its own. The agent drives the pack; it doesn't
+   have to come from outside the app. The engine code stays free of any
+   particular agent or speech engine so each app can plug in its own, and the
+   control link (`/control`) is an optional extra way in, not a requirement.
 4. Aether Animation is the authoring software (think Blender plus After
    Effects): it makes the rigs, animations, assets and scripts that make up an
    avatar pack. It supersedes the November 7 Aether Animation scope note,
@@ -47,9 +54,10 @@ on two devices, and every fix is made twice. One engine removes that.
      (the channels an agent may drive, with names, ranges and defaults), the
      sprite sheets, bitmaps, clips and motion scripts.
    - **Jaeger Avatar is the engine an agent needs to control that pack**, and
-     its app shows a real agent with TTS and STT using it (or the pack as a
-     simple avatar with no agent).
-   - **JaegerOS runs Jaeger Avatar plus the pack to play it on a device.**
+     its app is the full experience: pack, TTS, STT and agent (or the pack as
+     a simple avatar with no agent).
+   - **A JaegerOS app runs the engine plus the pack, with its own TTS, STT and
+     agent, to play it on a device.**
    The engine exposes exactly the controls the pack declares; it does not
    invent controls of its own.
 6. Jaeger Avatar does not become full animation software. It plays and
@@ -76,10 +84,10 @@ on two devices, and every fix is made twice. One engine removes that.
 - Owning a speaker or a screen. The avatar is one source among many; JaegerOS
   decides what each device plays at any moment.
 - Playing media that isn't part of a character (videos, calls, alerts).
-- Motor or actuator commands of any kind. The external AI and the Jaeger
+- Motor or actuator commands of any kind. The app's agent and the Jaeger
   project own the physical rig.
 - Editors and authoring tools (bitmap editor, MScript editor, timeline).
-- Hosting the agent, TTS or STT inside the framework.
+- Tying the engine to one agent or speech engine. Each app supplies its own.
 
 ## Anti-goals (failure even if it works)
 
@@ -94,9 +102,9 @@ on two devices, and every fix is made twice. One engine removes that.
 
 | Part | Owns | Does not own |
 | --- | --- | --- |
-| **Jaeger Avatar framework** | Packs (load, validate, lock), the engine and its renderers, the command interface, per-display video output, render status | Agent, TTS, STT, hardware, editors |
-| **Jaeger Avatar demo app** | A harness wiring an agent, TTS and STT to the framework through the public command interface; the library, Pack assets and "How this is animated" exhibit | Anything the framework needs to work |
-| **External AI / agent** (JaegerAgent, JaegerAI, any) | Deciding what the character says, feels and does; controlling the physical rig | Rendering |
+| **Jaeger Avatar engine** (`jaeger_avatar/` and the renderers) | Packs (load, validate, lock), the engine and its renderers, the command interface, per-display video output, render status | A particular agent, TTS or STT; hardware; editors |
+| **Jaeger Avatar app** | The full, self-sufficient experience: its own agent, TTS and STT driving the pack; the library, Pack assets and "How this is animated" exhibit; testing every output | Anything the engine needs to work |
+| **Each app's agent** (JaegerAgent in Jaeger Avatar; Mochi's and JP01's own) | Deciding what the character says, feels and does; on a robot, also the physical rig | Rendering |
 | **TTS / STT** (JaegerKokoroTTS, JaegerWhisperSTT) | Speech audio and its timing (including lip marks); transcripts | Mouth animation |
 | **Aether Animation** | Authoring rigs and their controllable nodes, animations, sprite sheets, bitmaps, motion scripts; exporting avatar packs | Playback at runtime |
 | **Jaeger project** (JP01 and others) | Display drivers (pixel format, orientation, brightness, the Teensy link), physical motion, deployment, packaging chosen packs | Rendering faces |
@@ -189,20 +197,20 @@ display path. Requirements:
 
 ## What changes in Jaeger Avatar itself
 
-- Kokoro, the agent worker, Whisper and the singer move out of the framework
-  into the demo harness, which talks to the framework only through the public
-  command interface. The lip-mark code in `app/voice_engine.py` becomes part
-  of the TTS side.
-- The demo app keeps the library, Pack assets and the "How this is animated"
+- Kokoro, the agent worker, Whisper and the singer stay in the app, as its
+  own TTS, agent and STT. They drive the engine through the same command
+  vocabulary a JaegerOS app's agent uses, so either can be swapped. The
+  lip-mark code in `app/voice_engine.py` is part of the TTS side.
+- The app keeps the library, Pack assets and the "How this is animated"
   exhibit.
-- **The demo app demos and tests every output** (Jonathan, November 9): for
+- **The app demos and tests every output** (Jonathan, November 9): for
   the body on show it lists each display it would drive (JP01: the 64 × 64
   face and the two 24 × 1 rings; Mochi: the 256 × 256 face; a desktop window)
   and can open any one as a live view of exactly the stream that device would
   receive, at native resolution, with its frame rate and frame count. The
   existing "output windows" (a re-rendered character for streaming tools such
   as OBS) are a different thing and stay.
-- Nothing in the framework imports an agent or speech engine.
+- Nothing in the engine imports a particular agent or speech engine.
 
 ## Mochi
 
@@ -215,7 +223,7 @@ on JaegerOS is decided at the end-of-project evaluation.
 | Mochi part | Goes to |
 | --- | --- |
 | Characters | Avatar packs (mostly imported already) |
-| Player, stage, virtual display | Jaeger Avatar demo app |
+| Player, stage, virtual display | The engine; Mochi keeps its own TTS, STT and agent |
 | Bitmap editor, MScript editor, MScript graph, character editor | Aether Animation |
 | Display driving | The Jaeger project's display driver |
 
@@ -260,12 +268,12 @@ From a search of `~/GITHUB`:
 
 1. **Audio.** The speaker lives at the hardware level, in JaegerOS, and the
    avatar's speech is only one of its inputs (alongside video sound, calls and
-   alerts). Speech audio goes from the external TTS to JaegerOS's speaker, never
+   alerts). Speech audio goes from the app's TTS to JaegerOS's speaker, never
    through the avatar. The engine follows the speaker's playback position, which needs
    the playback-position addition to `/act/speaker/state` already listed as a
    contract gap; until it exists, the engine follows the clock carried with
    the `speak` command. The engine outputs no audio at all. A character's
-   voice sounds (laughs, breaths, sighs, kisses) are speech too: the external
+   voice sounds (laughs, breaths, sighs, kisses) are speech too: the app's
    TTS voices them, or the pack carries them as recorded clips (as Mochi's
    `assets/performance-audio/` does) for the speaker to play. Either way they
    reach the engine as `speak` commands with timing, so the mouth moves with

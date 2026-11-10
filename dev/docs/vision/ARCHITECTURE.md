@@ -84,10 +84,10 @@ become an unrestricted actuator command.
 
 - The framework is `jaeger_avatar/` (packs, catalog, the `avatar-control/v1`
   Controller and the control link) plus the renderers in `app/web/`.
-- The demo harness is `app/server.py`, `app/voice_engine.py` and
-  `app/agent_bridge.py`: an agent, TTS and STT connected only to demonstrate
-  control. They stand in for what a host supplies.
-- Nothing in `jaeger_avatar/` imports the harness. Check:
+- The app's own TTS, STT and agent are `app/voice_engine.py` and
+  `app/agent_bridge.py`, served by `app/server.py`. They are part of the
+  product; a JaegerOS app swaps in its own.
+- Nothing in `jaeger_avatar/` imports them. Check:
   `grep -rn "voice_engine\|agent_bridge\|kokoro" jaeger_avatar/` finds nothing.
 
 ## Reuse and dependency rules

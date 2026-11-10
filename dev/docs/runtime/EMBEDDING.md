@@ -55,9 +55,9 @@ not a lossless choreography scheduler.
 
 ## Control link (demo app)
 
-The demo app exposes the Controller to an agent outside the avatar
-(`jaeger_avatar/embedded/link.py`). The agent, its TTS and its STT stay outside;
-commands go in and animation comes out. Every route is loopback only and checks
+The app's own agent drives the pack directly. The control link
+(`jaeger_avatar/embedded/link.py`) is an optional extra way in, for another
+process on the same machine; commands go in and animation comes out. Every route is loopback only and checks
 the Host header.
 
 - `POST /control/attach` (`Content-Type: application/json`, `{avatar, capabilities}`): the page showing the

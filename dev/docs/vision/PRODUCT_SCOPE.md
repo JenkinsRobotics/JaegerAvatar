@@ -20,9 +20,9 @@ to its original physical mechanism and animatronics control scope.
    procedural assets; qualify a first supported representation before expanding.
 3. Configure expressions, mouth shapes, gaze, gestures and reusable clips.
 4. Save a portable avatar pack with explicit control/capability declarations.
-5. Drive the character from an agent outside the avatar through the control link
-   (`avatar-control/v1`), or by hand or script without a conversational model. The
-   demo app connects a real agent, TTS and STT only to demonstrate that control.
+5. Talk to it: the app's own agent, TTS and STT drive the pack, so the app is a
+   complete experience on its own. It can also be driven by hand, by script, or
+   by another process through the optional control link (`avatar-control/v1`).
 
 Recording, streaming, tracking, multiple representations and richer authoring
 follow a complete first character workflow. Full 3D modelling/sculpting, a new
@@ -32,8 +32,8 @@ agent engine and physical actuator calibration are outside the initial scope.
 
 Avatar owns its presentation runtime (the engine), the control contract and the
 demo app that tests every output. Authoring tools and editors belong to Aether
-Animation, which produces the packs. The agent, TTS and STT live outside the
-avatar; JaegerAgent supplies a reusable agent engine a host may connect. JaegerOS supplies runtime
+Animation, which produces the packs. The app ships its own agent (JaegerAgent),
+TTS and STT; JaegerOS apps such as Mochi and JP01 use the same pack with their own. JaegerOS supplies runtime
 infrastructure. JaegerAI remains the complete general-purpose assistant product
 and can use an avatar as an optional interface. Mochi demonstrates reusable
 character/robot capabilities for JP01 and keeps only what a player needs; its
