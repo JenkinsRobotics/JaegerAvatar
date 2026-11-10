@@ -17,10 +17,27 @@ import { AnimeChar, TIMING } from './render-anime.js';
 import { Char3D } from './render-3d.js';
 import { VrmChar, STAGE } from './render-vrm.js';
 import { openMic, isEcho, toPcm } from './ears.js';
+import { startSettings } from './settings.js';
+import { trace, channels as traceChannels, describe as describeFlow, resend as resendFlow } from './flow.js';
+document.querySelector('#flowOpen').onclick = () => window.open('/flow.html', 'jaeger-flow', 'popup,width=1280,height=920');
 
 const { sampleTrack, SR, VOCAL_NAMES } = voice;
 const $ = s => document.querySelector(s);
 const rig = new Rig();
+// Data flow: every change to what the rig is aiming for, from any caller. Emotions and gaze set targets the channels
+// ease toward; gestures, reactions and moves are timed animations laid on top of them.
+{
+  const how = { setEmotion: 'sets channel targets; springs ease every channel there', look: 'sets the gaze target; eyes lead, head follows',
+    gesture: 'procedural curve added to channels for its duration', react: 'timed eye animation', move: 'timed body move' };
+  for (const m of Object.keys(how)) {
+    const f = rig[m].bind(rig);
+    rig[m] = (...a) => {
+      const before = rig.emotion, r = f(...a);
+      if (m !== 'setEmotion' || rig.emotion !== before) trace('anim', m, { args: a, how: how[m], ...(m === 'react' ? { seconds: REACTIONS[a[0]] } : m === 'move' ? { seconds: MOVES[a[0]]?.duration } : {}) });
+      return r;
+    };
+  }
+}
 // Choices that should still be there tomorrow. A private window can refuse this, and everything still works.
 const saved = (() => { try { return JSON.parse(localStorage.getItem('jaeger-avatar')) ?? {}; } catch { return {}; } })();
 const remember = patch => { Object.assign(saved, patch); try { localStorage.setItem('jaeger-avatar', JSON.stringify(saved)); } catch { /* not kept, then */ } };
@@ -206,7 +223,7 @@ function setView(id) {
   for(const f of Object.values(faces))f.suspend?.();
   view = id;
   const next = CHARACTERS.find(c => c.id === id);
-  if (next && next !== current) { stopAll(); current = next; rig.mode = 'idle'; rig.setEmotion('neutral'); hudStatic(); rig.gesture('wave'); }
+  if (next && next !== current) { stopAll(); current = next; rig.mode = 'idle'; rig.setEmotion('neutral'); hudStatic(); rig.gesture('wave'); resendFlow(); }
   remember({ view: id });
   $('#stage').className = id === 'all' ? 'all' : 'single';
   for (const [k, p] of Object.entries(panes)) p.classList.toggle('on', (id === 'all' && CHARACTERS.find(c=>c.id===k).featured) || id === k);
@@ -249,7 +266,9 @@ for (const type of ['pointerdown', 'pointerup', 'mousedown', 'click', 'touchend'
 if (!params.has('obs')) (window.requestIdleCallback ?? setTimeout)(() => audio());
 
 let serverVoice = null, serverBrain = 'scripted', serverEars = false, viewers = 0;
-const checkHealth=()=>fetch('/health').then(r=>r.json()).then(h=>{serverVoice=h.voice;serverBrain=h.brain;serverEars=h.ears;hudStatic();}).catch(hudStatic);checkHealth();setInterval(checkHealth,5000);
+describeFlow(() => ({ character: current.name, body: current.rep?.name || current.name, pack: current.packId, brain: serverBrain, voice: chosenVoice() ?? 'Piper ' + current.voice,
+  ears: serverEars, controls: controls(), lipSync: saved.lipSync === 'kin' ? 'KIN vowels' : 'Nori' }));
+const checkHealth=()=>fetch('/health').then(r=>r.json()).then(h=>{serverVoice=h.voice;serverBrain=h.brain;serverEars=h.ears;hudStatic();resendFlow();}).catch(hudStatic);checkHealth();setInterval(checkHealth,5000);
 
 // Kokoro's pacing per feeling, local-avatar-demo's gentle range: wider swings rushed or dragged her voice. RATE is the original pipeline's.
 const KSPEED = { excited: 1.08, surprised: 1.05, scared: 1.05, angry: 1.03, joy: 1.02, smug: 0.97, love: 0.97, thinking: 0.95, shy: 0.94, sad: 0.92, sleepy: 0.9 };
@@ -325,11 +344,15 @@ function singNatural(text, voiceId, turn = serverTurn, style = songStyle()) {
 }
 async function fetchClip(text, voiceId, emotion, origin, turn) {
   const request=++startupRequest;startupTrace("request-start",{request,text,emotion,origin});
-  const r = await fetch('/say', { method: 'POST', body: JSON.stringify({ text, voice: voiceId, emotion, speed: KSPEED[emotion] ?? 1, turn }), signal: turn === KEEP ? undefined : sayAbort.signal });
-  if (!r.ok) {startupTrace("request-failed",{request,status:r.status});return null;}
+  const sent = performance.now(), speed = (KSPEED[emotion] ?? 1) * (saved.speed ?? 1);
+  trace('tts', 'request', { text, voice: voiceId, emotion, speed: +speed.toFixed(2), why: origin });
+  const r = await fetch('/say', { method: 'POST', body: JSON.stringify({ text, voice: voiceId, emotion, speed: (KSPEED[emotion] ?? 1) * (saved.speed ?? 1), turn }), signal: turn === KEEP ? undefined : sayAbort.signal });
+  if (!r.ok) {startupTrace("request-failed",{request,status:r.status});trace('tts', 'failed', { text, status: r.status });return null;}
   const raw=await r.arrayBuffer();startupTrace("response",{request});
   const {samples,sr}=readWav(raw);
   const marks=JSON.parse(r.headers.get('X-Lips')||'[]'),track=voice.markLips(await work("analyze",samples,sr),marks);
+  trace('tts', 'clip ready', { text, ms: Math.round(performance.now() - sent), seconds: +(samples.length / sr).toFixed(2), kb: Math.round(raw.byteLength / 1024), sampleRate: sr,
+    lipMarks: marks.length, closures: marks.filter(m => m[2] === 'p').length, lipFrames: Math.round(track.dur / track.hop), lipHopMs: track.hop * 1000, format: 'one WAV clip, 16-bit mono' });
 startupTrace("clip-ready",{request,duration:samples.length/sr});
   return {samples,sr,natural:true,track,marks,voiceId};
 }
@@ -369,8 +392,11 @@ async function prepare(op, emotionAtQueue) {
   }
   if (serverVoice) {
     try {
-      const r = await fetch('/say', { method: 'POST', body: JSON.stringify({ text: op.text, voice: current.voice, rate: (RATE[emotionAtQueue] ?? 190) / current.pitch }), signal });
-      if (r.ok) { const { samples, sr } = readWav(await r.arrayBuffer()); return { samples, sr, track: await work('analyze', samples, sr) }; }
+      const sent = performance.now(); trace('tts', 'request', { text: op.text, voice: 'piper:' + current.voice, engine: 'Piper' });
+      const r = await fetch('/say', { method: 'POST', body: JSON.stringify({ text: op.text, voice: current.voice, rate: (RATE[emotionAtQueue] ?? 190) * (saved.speed ?? 1) / current.pitch }), signal });
+      if (r.ok) { const { samples, sr } = readWav(await r.arrayBuffer()), track = await work('analyze', samples, sr);
+        trace('tts', 'clip ready', { text: op.text, ms: Math.round(performance.now() - sent), seconds: +(samples.length / sr).toFixed(2), sampleRate: sr, lipMarks: 0, lipFrames: Math.round(track.dur / track.hop), format: 'one WAV clip; mouth from the audio alone' });
+        return { samples, sr, track }; }
     } catch { /* fall through to the built-in robot voice */ }
   }
   if (mine !== runId) return null;
@@ -453,6 +479,7 @@ function stopAll() {
 }
 function enqueue(ops) {
   for (const op of ops) {
+    if (op.type !== 'chapter') trace('perform', op.type, { name: op.name, text: op.text, ready: !!op.clip });
     if (op.type === 'emotion') pushEmotion = op.name;
     if (['say', 'sing', 'vocal'].includes(op.type)) op.ready = op.clip ? Promise.resolve(op.clip) : prepare(op, pushEmotion);   // a finished song comes ready
     if (op.text) spoken = (spoken + ' ' + op.text).slice(-800);
@@ -509,7 +536,9 @@ async function run() {
       sub('♪ ' + op.text + ' ♪');
     } else if (op.type === 'say') sub(op.text);
     else sub({ laugh: 'hahaha!', giggle: 'hehe', sigh: 'haah…', gasp: '*gasp*', hmm: 'hmm…', wow: 'wow!', aww: 'aww…', yay: 'yay!', ooh: 'ooh!' }[op.name] || '');
+    trace('speaker', 'play', { type: op.type, text: op.text ?? op.name, seconds: +(c.track?.dur ?? 0).toFixed(2), voice: c.voiceId ?? current.voice, how: 'Web Audio clip; its clock drives the mouth track' });
     await playClip({ ...c, mouth: op.type === 'vocal' && !c.natural ? VOCAL_MOUTH[op.name] : null });
+    trace('speaker', 'ended', { type: op.type, text: op.text ?? op.name });
     if (id !== runId) break;
     rig.sway = null;
     if (op.type === 'vocal') {                 // happy sounds leave a happy face; a gasp or hmm returns to what she was feeling
@@ -543,7 +572,7 @@ const SOUND = {
 const ownSounds = c => { const pack = PACKS.find(p => p.id === (c.personaPack || c.packId)); return pack?.profiles.find(p => p.id === c.profileId)?.character?.performance?.sounds ?? {}; };
 const express = name => perform(`[${name}] ${ownSounds(current)[name] ?? SOUND[name] ?? ''}`);
 function act(name) {
-  const body = faces[current.id]; if (body?.poses?.includes(name)) return body.pose(name);   // a posable body (Truth): kneel, lean, clap...
+  const body = faces[current.id]; if (body?.poses?.includes(name)) { trace('anim', 'pose', { args: [name], how: 'joint keyframes on the skeleton' }); return body.pose(name); }   // a posable body (Truth): kneel, lean, clap...
   if (current.led && (REACTIONS[name] || ON_DISPLAY[name])) rig.react(REACTIONS[name] ? name : ON_DISPLAY[name]);
   else if (current.moves && MOVES[name]) rig.move(name);
   else rig.gesture(SMALLER[name] ?? name);
@@ -589,10 +618,14 @@ async function ask(text, { idle = false } = {}) {
   if (!idle) { $('#log').textContent = 'You: ' + text; chat('You', text); selectPanel('talk'); bubble('user', text); }
   sentAt = performance.now(); firstSoundAt = 0;
   rig.mode = 'thinking'; rig.setEmotion('thinking'); streamDone = false;
+  const asked = performance.now(); let chunks = 0;
+  trace('agent', 'request', { text, turns: history.length, brain: serverBrain, character: current.name, offered: agentActions() });
   const id = runId, parser = new Parser({ clause: !chosenVoice() });   // a natural voice takes a moment per line, so it gets whole sentences rather than a short clause followed by a gap
   let reply = '', replyText = null;
   const feed = t => {
     if (id !== runId) return;
+    if (!chunks++) trace('agent', 'first text', { ms: Math.round(performance.now() - asked) });
+    trace('agent', 'text', { text: t });
     reply += t;
     (replyText ??= bubble('assistant', '')).textContent = plainText(reply.replace(/\[[^\]]*$/, ''));
     enqueue(parser.push(t));
@@ -618,12 +651,14 @@ async function ask(text, { idle = false } = {}) {
   } catch (e) {
     if (id !== runId) return;                  // stopped on purpose
     if (e.message !== 'scripted') console.warn('brain error, using scripted reply', e);
+    trace('agent', e.message === 'scripted' ? 'scripted reply (no model)' : 'error', { error: e.message });
     if (!reply) {
       feed(e.message === 'scripted' ? named(idle ? IDLE_LINE() : scriptedReply(text)) : "[confused] Oops, my brain link just dropped. [sigh] Can you try that again?");
     }
   }
   if (id !== runId) return;
   chatAbort=null;
+  trace('agent', 'done', { ms: Math.round(performance.now() - asked), chunks, chars: reply.length, reply });
   streamDone = true;
   enqueue(parser.flush());
   history.push({ role: 'assistant', content: reply });
@@ -738,7 +773,9 @@ function micState(state, note) {
 }
 // Whisper starts as soon as there's a pause. If it was the end of the sentence, the words are already there and a third of a second is saved.
 let early = null;
-const transcribe = samples => fetch(`/hear?name=${encodeURIComponent(current.name)}`, { method: 'POST', body: toPcm(samples).buffer }).then(r => { if (!r.ok) throw new Error('hear ' + r.status); return r.json(); });
+const transcribe = samples => { const t0 = performance.now(); trace('stt', 'request', { seconds: +(samples.length / 16000).toFixed(2), kb: Math.round(samples.length * 2 / 1024), format: '16 kHz 16-bit PCM, one phrase' });
+  return transcribeNow(samples).then(r => { trace('stt', 'transcript', { text: r.text, ms: Math.round(performance.now() - t0) }); return r; }, e => { trace('stt', 'failed', { error: e.message }); throw e; }); };
+const transcribeNow = samples => fetch(`/hear?name=${encodeURIComponent(current.name)}`, { method: 'POST', body: toPcm(samples).buffer }).then(r => { if (!r.ok) throw new Error('hear ' + r.status); return r.json(); });
 async function heard(samples) {
   const mine = ++turn, wasOver = overHer, t0 = performance.now(), job = early ?? transcribe(samples);
   early = null;
@@ -759,11 +796,11 @@ async function setMic(on) {
   try {
     if (!window.AudioWorkletNode || !navigator.mediaDevices) throw new Error('unsupported');
     closeMic = await openMic(audio(), {
-      start() { hearing = true; overHer = talking(); turn++; lastTalk = performance.now(); duck(true); micState('hearing'); },
-      pause(samples) { rig.gesture('nod'); early = transcribe(samples); early.catch(() => {}); },
-      resume() { early = null; },
-      cancel() { hearing = false; early = null; duck(false); micState('on'); },
-      end(samples) { hearing = false; heard(samples); },
+      start() { trace('mic', 'speech start', { strict: talking() }); hearing = true; overHer = talking(); turn++; lastTalk = performance.now(); duck(true); micState('hearing'); },
+      pause(samples) { trace('mic', 'pause', { seconds: +(samples.length / 16000).toFixed(2), then: 'transcribes early in case this is the end' }); rig.gesture('nod'); early = transcribe(samples); early.catch(() => {}); },
+      resume() { trace('mic', 'resumed', {}); early = null; },
+      cancel() { trace('mic', 'cancelled', { why: 'too short to be speech' }); hearing = false; early = null; duck(false); micState('on'); },
+      end(samples) { trace('mic', 'speech end', { seconds: +(samples.length / 16000).toFixed(2) }); hearing = false; heard(samples); },
     }, talking);
     micState('on'); showPrivacy();
   } catch (e) {
@@ -1251,6 +1288,7 @@ function frame(now) {
     if (!clip && liveMouth) rig.voice = liveMouth.read();
     if (hearing) rig.listen();
     rig.tick(dt);
+    traceChannels(rig);
   }
   const t1 = performance.now();
   const dpr = Math.min(devicePixelRatio || 1, 2);
@@ -1283,7 +1321,7 @@ setEnergy(typeof saved.energy === 'number' ? saved.energy : 1);
 setMuted(muted);
 setTiming(saved.onTwos ?? true);
 setCalm(!!saved.calm); setBackdrop(saved.backdrop ?? true);
-buildVoiceBox(); showEngine(); refreshVoices().then(() => { warmClone(); setTimeout(preloadReel, 1200); });
+buildVoiceBox(); startSettings({ speed: () => saved.speed ?? 1, setSpeed: v => { remember({ speed: v }); preloadReel(); } }); showEngine(); refreshVoices().then(() => { warmClone(); setTimeout(preloadReel, 1200); });
 selectPanel(['perform', 'talk', 'studio'].includes(saved.panel) ? saved.panel : 'talk');   // the conversation, beside her, unless you left another panel open
 if (params.has('obs')) document.body.classList.add('obs');
 if (params.has('stream') || params.has('obs')) setStream(true);
@@ -1332,6 +1370,7 @@ startControlLink({
   capabilities: () => controls(),
   note: text => logInput('control link', text),
   apply: ({ kind, value }) => {
+    trace('control', kind, { value });
     logInput('external ' + kind, kind === 'speak' ? `"${value.text}" · ${(value.duration_ms / 1000).toFixed(2)} s · ${value.marks.length} lip marks` : kind === 'look' ? value.map(n => n.toFixed(2)).join(', ') : value ?? '');
     if (kind === 'feel') rig.setEmotion(value);
     else if (kind === 'react' || kind === 'act') act(value);

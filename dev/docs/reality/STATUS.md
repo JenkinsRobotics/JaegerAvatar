@@ -42,7 +42,7 @@ values are rejected. Five synthetic lifecycle/mapping tests pass alongside the
 existing rig and three lip-sync tests. Physical webcam and permission-dialog
 acceptance remains unverified; these tests do not measure tracking accuracy.
 
-## External control and hardware streams — November 10, 2026
+## Control link and hardware streams — November 10, 2026
 
 - `avatar-control/v1` gains `act` and `speak` (an uploaded clip, its duration,
   lip closures and text) and reports `stop_seq`.
@@ -50,11 +50,24 @@ acceptance remains unverified; these tests do not measure tracking accuracy.
   JP01 and Truth declare theirs.
 - The demo server exposes a loopback, token-protected control link (`/control`).
   The page attaches with the body's controls, follows every command and logs it
-  under Inputs. `scripts/avatar_control.py` is an example external agent and TTS.
+  under Inputs. `scripts/avatar_control.py` is an example client. The link is optional: the
+  app's own agent, TTS and STT already drive the pack.
 - Under the stage, Outputs shows each simulated hardware stream at native size
   (JP01 face 64 × 64 and both rings, Mochi 256 × 256) at 60 fps, inline or in its
   own window. Face streams are stand-ins (the twin scaled down) until a pack ships
   a native-resolution look.
+- A Settings window (top bar) has a page each for the app's own agent, voice and
+  hearing. Agent: LM Studio model, creativity and longest reply, applied from the
+  next reply without losing the conversation. Voice: the voice picker and a
+  speaking-speed control, kept in this browser. Hearing: the Whisper model and
+  language. Agent and hearing settings are saved in `app/.cache/settings.json`.
+- A Data flow window (top bar, opens beside the app) shows every stage live, with
+  real timings and contents: mic phrases, Whisper requests and transcripts, the
+  agent's streamed text and first-text delay, the commands its tags become, each
+  TTS clip (time to make, length, lip marks), playback, and every animation
+  trigger. A timeline shows the last 20 seconds; every animation channel is drawn
+  live with its rest value. It runs over a BroadcastChannel in this browser, and
+  the app sends nothing while the window is closed.
 
 ## Still planned / limited
 

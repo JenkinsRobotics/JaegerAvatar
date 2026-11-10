@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data flow · Jaeger Avatar</title>
+<style>
+  :root { --bg:#0b0d16; --panel:#141827; --panel2:#1c2034; --line:#2a3050; --ink:#e8ebf7; --dim:#8d94b3; --accent:#5fe0d0;
+    --mic:#7cc7ff; --stt:#9d8cff; --agent:#ffb86b; --perform:#ff7ab6; --tts:#6be38f; --speaker:#f5e663; --anim:#5fe0d0; --control:#ff6b6b; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:13px/1.4 system-ui, -apple-system, sans-serif; }
+  header { display:flex; gap:12px; align-items:center; flex-wrap:wrap; padding:10px 16px; border-bottom:1px solid var(--line); background:var(--panel); position:sticky; top:0; z-index:2; }
+  h1 { font-size:15px; margin:0; } h2 { font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin:0 0 8px; }
+  #light { width:9px; height:9px; border-radius:50%; background:#555; display:inline-block; } #light.on { background:var(--accent); box-shadow:0 0 8px var(--accent); }
+  #who { color:var(--dim); flex:1; min-width:240px; }
+  button, label.chip { background:var(--panel2); color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:5px 10px; font:inherit; cursor:pointer; }
+  button[aria-pressed=true] { background:var(--accent); color:#0b0d16; border-color:var(--accent); }
+  main { padding:14px 16px; display:grid; gap:14px; }
+  section { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px; min-width:0; }
+  #pipe { display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:8px; }
+  .stage { border:1px solid var(--line); border-left:4px solid var(--c); border-radius:9px; padding:8px; background:var(--panel2); transition:box-shadow .4s; }
+  .stage.flash { box-shadow:0 0 0 2px var(--c); transition:none; }
+  .stage b { display:flex; justify-content:space-between; } .stage .mode { color:var(--dim); font-size:11.5px; margin:4px 0; min-height:46px; }
+  .stage .last { font-size:11.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  canvas { width:100%; display:block; }
+  .two { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:14px; }
+  @media (max-width: 900px) { .two { grid-template-columns:1fr; } }
+  #filters { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
+  label.chip { display:inline-flex; gap:5px; align-items:center; padding:3px 8px; } label.chip i { width:8px; height:8px; border-radius:2px; background:var(--c); }
+  #log { font:12px/1.45 ui-monospace, Menlo, monospace; max-height:520px; overflow:auto; }
+  #log div { display:grid; grid-template-columns:72px 72px 130px minmax(0, 1fr); gap:8px; padding:2px 0; border-bottom:1px solid #1e2338; }
+  #log .s { color:var(--c); } #log .d { color:var(--dim); white-space:pre-wrap; word-break:break-word; } #log .d.full { color:var(--ink); }
+  #now { color:var(--dim); font-size:12px; margin-bottom:6px; } #now b { color:var(--ink); }
+  .note { color:var(--dim); font-size:12px; margin:6px 0 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Data flow</h1><span id="light" title="Connected to the app"></span><span id="who">Waiting for the Jaeger Avatar tab…</span>
+  <button id="pause" aria-pressed="false">Pause</button><button id="clear">Clear</button>
+</header>
+<main>
+  <section><h2>Pipeline · what each stage does and how</h2><div id="pipe"></div></section>
+  <section><h2>Timeline · last 20 seconds</h2><canvas id="timeline" height="230"></canvas>
+    <p class="note">Bars are work with a start and an end: a phrase being heard, a transcript, the agent writing, a clip being made, a clip playing. Ticks are single events.</p></section>
+  <div class="two">
+    <section><h2>Animation channels · the sliders, live</h2><div id="now"></div><canvas id="chan"></canvas>
+      <p class="note">Each row is one channel the renderers read every frame: its value now, where it rests (the tick), and its last 6 seconds. Feelings move the targets; springs ease the channels there. Gestures, eye reactions and moves are timed layers added on top. Speech drives the mouth from the clip's lip track.</p></section>
+    <section><h2>Events · newest first</h2><div id="filters"></div><div id="log"></div></section>
+  </div>
+</main>
+<script type="module">
+import { GROUP, REST } from './rig.js';
+const STAGES = {
+  mic: ['Microphone', 'Browser mic, 30 ms frames into a voice detector. Sends each finished phrase as one clip; transcribes early at a pause.'],
+  stt: ['Hearing (STT)', 'faster-whisper on the server. One clip of 16 kHz PCM in, one transcript out. Not streaming.'],
+  agent: ['Agent', 'JaegerAgent through LM Studio. Streams its reply as text chunks while it writes.'],
+  perform: ['Performance', 'Reads the agent\'s tags as the text arrives and turns them into commands: feel, act, say, sound, sing.'],
+  tts: ['Voice (TTS)', 'One WAV clip per sentence from the server (Kokoro with lip-closure marks, or Piper). Not streaming.'],
+  speaker: ['Speaker', 'Web Audio plays each clip in order. The clip\'s own clock drives the mouth, 30 ms ahead.'],
+  anim: ['Animation', 'Feelings and gaze set targets for the channels; gestures, eye reactions, moves and poses are timed animations on top.'],
+  control: ['Control link', 'Optional: commands from another local process (/control), applied like the agent\'s.'],
+};
+const css = getComputedStyle(document.documentElement), color = s => css.getPropertyValue('--' + s).trim();
+const $ = s => document.querySelector(s), esc = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const events = [], spans = [], open = {}, stats = {}, hidden = new Set(), series = {};
+let paused = false, connectedAt = 0, t0 = null, latest = null;
+
+// Pipeline boxes and filter chips
+for (const [k, [name, mode]] of Object.entries(STAGES)) {
+  stats[k] = { n: 0 };
+  $('#pipe').insertAdjacentHTML('beforeend', `<div class="stage" id="st-${k}" style="--c:var(--${k})"><b><span>${name}</span><span id="n-${k}">0</span></b><div class="mode">${mode}</div><div class="last" id="l-${k}">—</div></div>`);
+  $('#filters').insertAdjacentHTML('beforeend', `<label class="chip" style="--c:var(--${k})"><input type="checkbox" checked data-k="${k}"><i></i>${name}</label>`);
+}
+$('#filters').insertAdjacentHTML('beforeend', `<label class="chip"><input type="checkbox" id="chunks" checked>Agent text chunks</label>`);
+$('#filters').onchange = e => { const k = e.target.dataset.k; if (k) e.target.checked ? hidden.delete(k) : hidden.add(k); redrawLog(); };
+$('#chunks').onchange = redrawLog;
+$('#pause').onclick = e => { paused = !paused; e.target.setAttribute('aria-pressed', paused); e.target.textContent = paused ? 'Paused' : 'Pause'; };
+$('#clear').onclick = () => { events.length = spans.length = 0; t0 = null; redrawLog(); };
+
+// Work with a start and an end becomes a bar on the timeline.
+const SPAN = { 'mic:speech start': ['mic', 'phrase'], 'mic:speech end': ['mic', 'phrase', 1], 'mic:cancelled': ['mic', 'phrase', 1],
+  'stt:request': ['stt', 'stt'], 'stt:transcript': ['stt', 'stt', 1], 'stt:failed': ['stt', 'stt', 1],
+  'agent:request': ['agent', 'reply'], 'agent:done': ['agent', 'reply', 1], 'agent:error': ['agent', 'reply', 1],
+  'speaker:play': ['speaker', 'clip'], 'speaker:ended': ['speaker', 'clip', 1] };
+function spanOf(e) {
+  const s = SPAN[e.stage + ':' + e.event];
+  if (e.stage === 'tts') {   // clips are made several at once, so pair each by its text
+    const key = 'tts:' + e.data.text;
+    if (e.event === 'request') open[key] = { stage: 'tts', a: e.at, label: e.data.text };
+    else if (open[key]) { spans.push({ ...open[key], b: e.at }); delete open[key]; }
+    return;
+  }
+  if (!s) return;
+  const [stage, key, end] = s;
+  if (!end) open[key] = { stage, a: e.at, label: e.data.text ?? e.event };
+  else if (open[key]) { spans.push({ ...open[key], b: e.at }); delete open[key]; }
+}
+
+const fmt = d => { const s = JSON.stringify(d); return s === '{}' ? '' : s; };
+function row(e) {
+  const div = document.createElement('div'), full = fmt(e.data), short = full.length > 260 ? full.slice(0, 260) + '…' : full;
+  div.style.setProperty('--c', `var(--${e.stage})`);
+  div.innerHTML = `<span>${((e.at - t0) / 1000).toFixed(3)}</span><span class="s">${e.stage}</span><span>${esc(e.event)}</span><span class="d">${esc(short)}</span>`;
+  if (short !== full) { const d = div.lastChild; d.title = 'Click for everything'; d.onclick = () => { d.classList.toggle('full'); d.textContent = d.classList.contains('full') ? full : short; }; }
+  return div;
+}
+const shown = e => !hidden.has(e.stage) && ($('#chunks').checked || !(e.stage === 'agent' && e.event === 'text'));
+function redrawLog() { $('#log').replaceChildren(...events.filter(shown).slice(-400).reverse().map(row)); }
+
+function onEvent(e) {
+  t0 ??= e.at; events.push(e); if (events.length > 4000) events.splice(0, 1000);
+  spanOf(e);
+  const st = stats[e.stage] ?? (stats[e.stage] = { n: 0 });
+  st.n++; $('#n-' + e.stage) && ($('#n-' + e.stage).textContent = st.n);
+  const l = $('#l-' + e.stage);
+  if (l) l.textContent = e.event + (e.data.ms != null ? ` · ${e.data.ms} ms` : '') + (e.data.seconds != null ? ` · ${e.data.seconds} s` : '') + (e.data.text ? ` · “${e.data.text}”` : e.data.args ? ' · ' + e.data.args.join(', ') : '');
+  const box = $('#st-' + e.stage); if (box) { box.classList.add('flash'); setTimeout(() => box.classList.remove('flash'), 120); }
+  if (shown(e)) { $('#log').prepend(row(e)); while ($('#log').children.length > 400) $('#log').lastChild.remove(); }
+}
+
+function onChannels(m) {
+  latest = m;
+  for (const [k, v] of Object.entries(m.out)) (series[k] ??= []).push([m.at, v]);
+  if (m.voice) for (const [k, v] of Object.entries(m.voice)) (series['voice.' + k] ??= []).push([m.at, v]);
+  for (const s of Object.values(series)) while (s.length && s[0][0] < m.at - 6000) s.shift();
+}
+
+const bc = new BroadcastChannel('jaeger-flow');
+bc.onmessage = ({ data: m }) => {
+  connectedAt = performance.now();
+  if (m.type === 'snapshot' && m.character) $('#who').innerHTML = `<b>${esc(m.character)}</b> · body ${esc(m.body)} · brain ${esc(m.brain)} · voice ${esc(m.voice)} · hearing ${m.ears ? 'on' : 'off'} · lip sync ${esc(m.lipSync)} · offered: ${esc([...(m.controls?.reactions ?? []), ...(m.controls?.actions ?? [])].join(' ') || 'feelings only')}`;
+  if (paused) return;
+  if (m.type === 'event') onEvent(m);
+  else if (m.type === 'channels') onChannels(m);
+};
+bc.postMessage({ type: 'hello', fresh: true });
+setInterval(() => bc.postMessage({ type: 'hello' }), 1000);
+
+// Drawing
+function fit(c, h) { const r = devicePixelRatio || 1, w = c.clientWidth; if (c.width !== w * r || c.height !== h * r) { c.width = w * r; c.height = h * r; c.style.height = h + 'px'; } const g = c.getContext('2d'); g.setTransform(r, 0, 0, r, 0, 0); return [g, w]; }
+function drawTimeline(now) {
+  const lanes = Object.keys(STAGES), LH = 26, [g, w] = fit($('#timeline'), lanes.length * LH + 22), L = 100, span = 20000, x = t => L + (w - L - 8) * (1 - (now - t) / span);
+  g.clearRect(0, 0, w, 999); g.font = '11px system-ui';
+  for (let s = 0; s <= 20; s += 5) { g.fillStyle = '#2a3050'; g.fillRect(x(now - s * 1000), 0, 1, lanes.length * LH); g.fillStyle = color('dim'); g.fillText(s ? `-${s}s` : 'now', x(now - s * 1000) - 12, lanes.length * LH + 14); }
+  lanes.forEach((k, i) => { g.fillStyle = color('dim'); g.fillText(STAGES[k][0], 6, i * LH + 17); });
+  const lane = Object.fromEntries(lanes.map((k, i) => [k, i]));
+  const bars = [...spans, ...Object.values(open).map(o => ({ ...o, b: now }))];
+  for (const b of bars) { if (b.b < now - span) continue; const i = lane[b.stage]; g.fillStyle = color(b.stage) + '66'; g.fillRect(x(b.a), i * LH + 5, Math.max(2, x(b.b) - x(b.a)), LH - 10); }
+  for (const e of events) { if (e.at < now - span) continue; const i = lane[e.stage]; if (i == null) continue; g.fillStyle = color(e.stage); g.fillRect(x(e.at) - 1, i * LH + 3, 2, LH - 6); }
+}
+function drawChannels(now) {
+  const c = $('#chan'), keys = Object.keys(latest?.out ?? REST), groups = {};
+  for (const k of keys) (groups[GROUP[k] ?? 'body state'] ??= []).push(k);   // not a named channel: the renderer's own blink, breath and joint values
+  if (latest?.voice) groups['speech'] = ['voice.open', 'voice.wide', 'voice.round'];
+  const RH = 15, rows = Object.values(groups).reduce((n, g) => n + g.length + 1, 0), [g, w] = fit(c, rows * RH + 4), L = 78, V = 46, S = w - L - V - 12;
+  g.clearRect(0, 0, w, 9999); g.font = '11px ui-monospace, Menlo, monospace';
+  let y = 0;
+  for (const [name, ks] of Object.entries(groups)) {
+    g.fillStyle = color('accent'); g.fillText(name, 2, y + 11); y += RH;
+    for (const k of ks) {
+      const s = series[k] ?? [], v = s.at(-1)?.[1] ?? REST[k] ?? 0, rest = REST[k.replace('voice.', '')] ?? 0;
+      const lo = Math.min(-0.2, ...s.map(p => p[1]), rest), hi = Math.max(1, ...s.map(p => p[1]), rest), Y = u => y + RH - 2 - (u - lo) / (hi - lo) * (RH - 4);
+      g.fillStyle = color('dim'); g.fillText(k.replace('voice.', ''), 10, y + 11);
+      g.fillStyle = '#1c2034'; g.fillRect(L, y + 1, S, RH - 2);
+      g.fillStyle = '#3a4270'; g.fillRect(L, Y(rest), S, 1);
+      g.save(); g.beginPath(); g.rect(L, y, S, RH); g.clip();
+      g.strokeStyle = name === 'speech' ? color('speaker') : color('anim'); g.lineWidth = 1.2; g.beginPath();
+      s.forEach(([t, u], i) => { const px = L + S * (1 - (now - t) / 6000); i ? g.lineTo(px, Y(u)) : g.moveTo(px, Y(u)); }); g.stroke(); g.restore();
+      g.fillStyle = Math.abs(v - rest) > 0.02 ? color('ink') : color('dim'); g.fillText(v.toFixed(2).padStart(6), L + S + 4, y + 11);
+      y += RH;
+    }
+  }
+  if (latest) $('#now').innerHTML = `mode <b>${latest.mode}</b> · feeling <b>${latest.emotion}</b> · layers: <b>${latest.layers.gestures}</b> gesture(s)${latest.layers.reaction ? `, eye reaction <b>${latest.layers.reaction}</b>` : ''}${latest.layers.move ? `, move <b>${latest.layers.move}</b>` : ''}${latest.voice ? ' · <b>speaking</b>: mouth from the lip track' : ''}`;
+}
+(function loop() {
+  requestAnimationFrame(loop);
+  const live = performance.now() - connectedAt < 2500;
+  $('#light').classList.toggle('on', live);
+  if (!live && connectedAt) $('#who').textContent = 'Lost the Jaeger Avatar tab. Open it in this browser and this window reconnects.';
+  if (paused) return;
+  const now = performance.timeOrigin + performance.now();
+  drawTimeline(now); drawChannels(now);
+})();
+</script>
+</body>
+</html>

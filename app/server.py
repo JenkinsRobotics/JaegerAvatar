@@ -38,20 +38,25 @@ LMSTUDIO = os.environ.get("LMSTUDIO_URL", "http://localhost:1234")
 GEMMA = os.environ.get("GEMMA_MODEL", "google/gemma-4-e4b")
 USE_GEMMA = os.environ.get("NORI_BRAIN", "gemma") == "gemma"
 STT = os.environ.get("NORI_STT", "base.en")  # any faster-whisper model name
+import settings as app_settings
+SETTINGS_FILE = CACHE / "settings.json"
+config = app_settings.load(SETTINGS_FILE, app_settings.defaults(GEMMA, STT))   # what Settings saved wins over the environment
+GEMMA, STT = config["agent"]["model"], config["hearing"]["model"]
+settings_lock = threading.Lock()   # two saves at once must not undo each other
 HEAR_LIMIT = 16000 * 2 * 30  # 30 s of 16 kHz 16-bit audio; the page sends at most 20 s
 FRAME_LIMIT = 64 * 1024
 MODEL_LIMIT = 200 * 1024 * 1024
 LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
-# An agent outside the avatar drives the body on stage through this link (dev/docs/runtime/EMBEDDING.md).
+# Optional: another local process may drive the body on stage through this link (dev/docs/runtime/EMBEDDING.md).
 CONTROL_TOKEN = os.environ.get("JAEGER_AVATAR_CONTROL_TOKEN") or __import__("secrets").token_urlsafe(18)
 control_link = ControlLink(CONTROL_TOKEN)
 # The page can only talk to this machine, whatever a future bug or a loaded file tries.
 CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: data:; worker-src 'self' blob:"
 
 PERFORM = """You are talking out loud with a person. Your face is animated live from your words.
-Latency-sensitive; begin your visible answer immediately.
-Reply in 1 to 3 short spoken sentences with no lists, markdown or emoji. Be genuinely helpful and answer what was asked.
-Perform with inline tags, placed right before the words they apply to. Act big, like an anime character: use at least two different emotions in every reply, and a sound or gesture where it fits.
+Begin your answer right away. Answer what was asked, fully and helpfully, the way a person would say it out loud: no lists, markdown or emoji.
+Match the length to the question: a sentence or two for small talk, as much as it takes when asked to explain, teach, plan or tell a story.
+Perform with inline tags, placed right before the words they apply to. Let your feelings show and change as you talk, with a sound or gesture where it fits, but never let acting crowd out the answer.
 Emotions: [neutral] [joy] [excited] [love] [sad] [angry] [surprised] [scared] [thinking] [confused] [shy] [smug] [sleepy]
 Sounds, used as stand-alone beats: [laugh] [giggle] [sigh] [gasp] [hmm] [wow] [aww] [yay] [ooh]
 Gestures: [nod] [shake] [tilt] [wink] [shrug] [bounce] [wave]
@@ -144,7 +149,7 @@ def load_stt():
         if stt is None:
             try:
                 from faster_whisper import WhisperModel
-                print(f"Loading speech model {STT} (the first run downloads about 140 MB)...")
+                print(f"Loading speech model {STT} (the first run downloads {app_settings.WHISPER.get(STT, 'it')})...")
                 stt = WhisperModel(STT, device="cpu", compute_type="int8", cpu_threads=6, download_root=str(CACHE / "stt"))
                 hear(b"\0\0" * 16000)  # the first inference is the slow one, so spend it before anyone is waiting
             except Exception as e:  # no network or a bad model name: the mic button says so, typing still works
@@ -158,9 +163,19 @@ def hear(pcm, name=""):
     import numpy as np
     audio = np.frombuffer(pcm[:len(pcm) & ~1], dtype=np.int16).astype(np.float32) / 32768
     # The VAD filter stops Whisper inventing "Thank you." from noise. The prompt is how it learns her name is Vita, not Vida.
-    segments, _ = stt.transcribe(audio, beam_size=1, vad_filter=True, condition_on_previous_text=False, without_timestamps=True,
+    lang = None if config["hearing"]["language"] == "auto" else config["hearing"]["language"]
+    segments, _ = stt.transcribe(audio, language=lang, beam_size=1, vad_filter=True, condition_on_previous_text=False, without_timestamps=True,
                                  initial_prompt=f"A chat with {name}." if name else None)
     return " ".join(s.text.strip() for s in segments if s.no_speech_prob < 0.6).strip()
+
+
+def lm_models():
+    """The chat models LM Studio offers right now."""
+    try:
+        with urllib.request.urlopen(f"{LMSTUDIO}/v1/models", timeout=0.6) as r:
+            return [m["id"] for m in json.load(r)["data"] if "embed" not in m["id"]]
+    except (OSError, ValueError, KeyError):
+        return []
 
 
 def gemma_ready():
@@ -368,6 +383,9 @@ class Handler(SimpleHTTPRequestHandler):
             except (OSError,ValueError,PackError):
                 return self.reply(404,b'{"error":"Unknown pack asset"}')
 
+        if self.path == "/settings":
+            return self.reply(200, json.dumps({**config, "brain": brain(), "lmstudio": LMSTUDIO, "hearing_ready": bool(stt),
+                "options": {"models": lm_models(), "whisper": app_settings.WHISPER, "languages": app_settings.LANGUAGES}}).encode())
         if self.path == "/health":
             return self.reply(200, json.dumps({"brain": brain(), "voice": VOICE if voices.get(VOICE) else None, "ears": bool(stt) or stt is None, "natural": engine.status}).encode())
         if self.path.startswith("/singer/"):     # the experimental singer: progress, then the finished song
@@ -518,6 +536,21 @@ class Handler(SimpleHTTPRequestHandler):
             with wave.open(out, "wb") as w:
                 w.setnchannels(2); w.setsampwidth(2); w.setframerate(engine.sr); w.writeframes(pcm)
             return self.reply(200, out.getvalue(), "audio/wav", {"X-Song": json.dumps({"bpm": 92, "beats": beats})})
+        if self.path == "/settings":
+            global config, GEMMA, STT, stt
+            models = lm_models()
+            with settings_lock:
+                try:
+                    new = app_settings.apply(config, body, models)
+                except ValueError as e:
+                    return self.reply(422, json.dumps({"error": str(e)}).encode())
+                app_settings.save(SETTINGS_FILE, new)
+                config, GEMMA = new, new["agent"]["model"]
+            if new["hearing"]["model"] != STT:   # load the new ears now, so the next thing said isn't the one that waits
+                with stt_lock:
+                    STT, stt = new["hearing"]["model"], None
+                threading.Thread(target=load_stt, daemon=True).start()
+            return self.reply(200, json.dumps(new).encode())
         if self.path == "/say":
             text = str(body.get("text", ""))[:1000].strip()
             if not text:
@@ -556,7 +589,7 @@ class Handler(SimpleHTTPRequestHandler):
                 except (OSError,ValueError):
                     system = system_for(body.get("character"))
                 session=str(body.get('session','default'))+':'+str(body.get('pack','vita'))
-                for text in agent_host.stream(messages[-1]['content'],system,session):
+                for text in agent_host.stream(messages[-1]['content'],system,session,config['agent']):
                     self.wfile.write(f"data: {json.dumps({'text': text})}\n\n".encode())
                     self.wfile.flush()
             except BrokenPipeError:

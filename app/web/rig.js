@@ -20,6 +20,7 @@ const CH = {
   tintR: [0.35, 'tone'], tintG: [0.8, 'tone'], tintB: [1, 'tone'],
 };
 export const CHANNELS = Object.keys(CH);
+export const GROUP = Object.fromEntries(CHANNELS.map(k => [k, CH[k][1]])), REST = Object.fromEntries(CHANNELS.map(k => [k, CH[k][0]]));
 
 // `a` = arousal: scales how hard speech emphasis kicks the body. `s` = transition speed. `c` = tint.
 export const EMOTIONS = {

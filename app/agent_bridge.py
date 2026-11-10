@@ -42,11 +42,11 @@ class AgentHost:
             if not self.ready:raise RuntimeError('JaegerAgent is not ready')
             self.process.stdin.write(json.dumps(data)+'\n');self.process.stdin.flush()
 
-    def stream(self,text,system,session):
+    def stream(self,text,system,session,adapter=None):
         rid=uuid.uuid4().hex;target=queue.Queue()
         with self.lock:self.pending[rid]=target
         try:
-            self.send(dict(op='turn',id=rid,text=text,system=system,session=session))
+            self.send(dict(op='turn',id=rid,text=text,system=system,session=session,adapter=adapter or {}))
             while True:
                 item=target.get(timeout=90)
                 if item.get('error'):raise RuntimeError(item['error'])

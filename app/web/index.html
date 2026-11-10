@@ -65,7 +65,11 @@
   #exhibit { padding:8px 12px 40px; display:grid; gap:14px; }
   #exhibit h3 { margin:6px 0 2px; font-size:18px; }
   #bottomTabs { display:flex; gap:4px; padding:4px; background:var(--panel); border:1px solid var(--line); border-radius:11px; width:max-content; max-width:100%; overflow-x:auto; }
-  #bottomTabs button { padding:6px 12px; }
+  #bottomTabs button, #settingsTabs button { padding:6px 12px; }
+  #settingsTabs { display:flex; gap:4px; margin:12px 0; }
+  #settingsTabs button[aria-selected=true] { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  #settings { width:min(560px,94vw); max-height:88vh; background:var(--panel); color:var(--ink); border:1px solid var(--line); border-radius:16px; padding:20px; } #settings::backdrop { background:#000a; }
+  #settings .row > span:first-child { min-width:120px; } #settings select { max-width:300px; }
   #bottomTabs button[aria-selected=true] { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
   .tabPane { display:none; gap:14px; }
   .tabPane.on { display:grid; }
@@ -250,6 +254,8 @@
     <div class="brand"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#1c2034"/><rect x="14" y="20" width="13" height="24" rx="6" fill="#5fe0d0"/><rect x="37" y="20" width="13" height="24" rx="6" fill="#5fe0d0"/></svg>Jaeger Avatar</div>
     <a href="/demo-packs.html" style="white-space:nowrap">Demo packs</a><button id="libraryOpen">Avatar library · 50</button><div id="tabs" role="tablist" aria-label="Bodies and modes"></div>
     <div class="conn"><i id="light"></i><span id="status" aria-live="polite"></span><span id="privacy">Mic off · Camera off</span></div>
+    <button id="flowOpen" title="Watch every stage live: mic, hearing, agent, voice, animation">Data flow</button>
+    <button id="settingsOpen" title="Agent, voice and hearing">Settings</button>
     <button id="abVoice" title="Switch between Kokoro and the original voice pipeline (V)">Voice: Kokoro</button>
     <span id="level" title="The sound leaving the app. If this moves and you hear nothing, check your output device and the browser tab." aria-hidden="true"><i></i></span>
     <button id="mute" aria-pressed="false" aria-label="Mute her voice" title="Mute her voice">Sound on</button>
@@ -313,7 +319,7 @@
         <h2>Character</h2><div id="representationInfo" class="note"></div><label class="row">Persona <select id="packProfile" aria-label="Persona profile"></select></label>
         <h2>Lip sync</h2><select id="lipSync" aria-label="Lip sync method"><option value="nori">Nori · original</option><option value="kin">KIN vowels + Nori smoothing</option></select><button id="compareLips">Play the same comparison line</button><p class="note">Same recording in both modes. Nori remains the default until you choose.</p>
         <h2>Voice</h2>
-        <div id="voiceBox" class="stack"></div>
+        <button id="voiceSettings" type="button">Voice settings…</button>
       </div>
       <div class="stack" id="singSection">
         <h2>Singing</h2><button id="singerSample">♪ Play Singer A · prepared sample</button>
@@ -390,6 +396,28 @@ Here with you tonight</textarea>
   </div>
 </section>
 <div id="toast" role="status"></div>
+<dialog id="settings" aria-labelledby="settingsTitle">
+  <div class="row"><h2 id="settingsTitle">Settings</h2><button id="settingsClose">Close</button></div>
+  <div id="settingsTabs" role="tablist" aria-label="Settings pages"><button role="tab" data-page="setAgent">Agent</button><button role="tab" data-page="setVoice">Voice (TTS)</button><button role="tab" data-page="setHearing">Hearing (STT)</button></div>
+  <section id="setAgent" class="stack" role="tabpanel">
+    <div class="note" id="agentNow"></div>
+    <label class="row"><span>Model</span><select id="setModel"></select></label>
+    <label class="row"><span>Creativity</span><input id="setTemp" type="range" min="0" max="1.5" step="0.05"><output id="setTempOut"></output></label>
+    <label class="row"><span>Longest reply</span><input id="setTokens" type="number" min="100" max="4000" step="50"><span class="note">tokens</span></label>
+    <div class="note">JaegerAgent through LM Studio. Changes apply from the next reply and keep the conversation.</div>
+  </section>
+  <section id="setVoice" class="stack" role="tabpanel" hidden>
+    <label class="row"><span>Speaking speed</span><input id="setSpeed" type="range" min="0.7" max="1.4" step="0.05"><output id="setSpeedOut"></output></label>
+    <div id="voiceBox" class="stack"></div>
+  </section>
+  <section id="setHearing" class="stack" role="tabpanel" hidden>
+    <div class="note" id="hearingNow"></div>
+    <label class="row"><span>Speech model</span><select id="setStt"></select></label>
+    <label class="row"><span>Language</span><select id="setLang"></select></label>
+    <div class="note">English-only models (.en) always listen for English. A new model downloads on first use and stays on this Mac.</div>
+  </section>
+  <div class="note" id="settingsMsg" aria-live="polite"></div>
+</dialog>
 <dialog id="library"><div class="row"><h2>Avatar library</h2><button id="libraryClose">Close</button></div><input id="librarySearch" type="search" placeholder="Find a character…" aria-label="Find a character"><div id="libraryGrid"></div></dialog>
 <script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/","@pixiv/three-vrm":"./vendor/three-vrm.module.min.js"}}</script>
 <script type="module" src="app.js"></script>
