@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: purge_man
 name: Purge Man
-version: 0.2.0
+version: 0.2.1
 description: A wide Purge Man character image.
 default_profile: mochi
 default_representation: mochi
@@ -14,13 +14,11 @@ profiles:
       author: Unknown
       license: Unspecified
       identity:
-        role: a wide-format character portrait
         voice_tone: low, steady, deliberate
         voice_id: fm_lucas
       prompt:
         custom_instructions: ''
-        speech_patterns:
-        - (unwritten — describe how this character speaks)
+        speech_patterns: []
     card: sources/mochi/card.png
 representations:
   mochi:

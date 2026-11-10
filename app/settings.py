@@ -3,6 +3,7 @@
 Voice settings (which voice, how fast) belong to the viewer and stay in the page.
 """
 import json
+from pathlib import Path
 
 # faster-whisper model names, with roughly what the first use downloads.
 WHISPER = {'tiny.en': '75 MB', 'base.en': '140 MB', 'small.en': '470 MB', 'medium.en': '1.5 GB', 'large-v3-turbo': '1.6 GB'}
@@ -10,7 +11,7 @@ LANGUAGES = {'en': 'English', 'auto': 'Detect automatically'}
 
 
 def defaults(model, stt):
-    return {'agent': {'model': model, 'temperature': 0.7, 'max_tokens': 700}, 'hearing': {'model': stt, 'language': 'en'}}
+    return {'agent': {'model': model, 'temperature': 0.7, 'max_tokens': 700, 'timeout_s': 60, 'skip_thinking': True}, 'hearing': {'model': stt, 'language': 'en'}}
 
 
 def _number(v, lo, hi, kind):
@@ -30,6 +31,10 @@ def apply(current, patch, models):
         raise ValueError('Creativity is 0 to 1.5')
     if 'max_tokens' in a and not _number(a['max_tokens'], 100, 4000, int):
         raise ValueError('Longest reply is 100 to 4000 tokens')
+    if 'timeout_s' in a and not _number(a['timeout_s'], 5, 600, float):
+        raise ValueError('Timeout is 5 to 600 seconds')
+    if 'skip_thinking' in a and not isinstance(a['skip_thinking'], bool):
+        raise ValueError('Skip thinking is on or off')
     if 'model' in h and h['model'] not in WHISPER:
         raise ValueError('Unknown speech model')
     if 'language' in h and h['language'] not in LANGUAGES:
@@ -61,9 +66,11 @@ if __name__ == '__main__':   # python app/settings.py: fails if the checks stop 
     assert apply(base, {'agent': {'model': 'big'}}, ['big'])['agent']['model'] == 'big'
     assert apply(base, {'hearing': {'model': 'large-v3-turbo', 'language': 'auto'}}, [])['hearing']['language'] == 'auto'
     assert apply(base, {'hearing': {'language': 'auto'}}, [])['hearing']['language'] == 'en'
+    assert apply(base, {'agent': {'skip_thinking': False}}, [])['agent']['skip_thinking'] is False
+    assert load(Path('/nonexistent'), base) == base
     for bad in ({'agent': {'model': 'nope'}}, {'agent': {'temperature': 2}}, {'agent': {'temperature': True}},
                 {'agent': {'max_tokens': 99}}, {'agent': {'max_tokens': 700.5}}, {'agent': {'tools': 1}},
-                {'hearing': {'model': '../x'}}, {'voice': {}}, [], {'agent': []}):
+                {'hearing': {'model': '../x'}}, {'voice': {}}, [], {'agent': []}, {'agent': {'skip_thinking': 1}}, {'agent': {'timeout_s': 1}}):
         try:
             apply(base, bad, ['big'])
         except ValueError:

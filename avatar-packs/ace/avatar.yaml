@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: ace
 name: Ace
-version: 0.2.0
+version: 0.2.1
 description: anime, 3D flattened
 default_profile: nori_demo
 default_representation: nori_demo
@@ -11,8 +11,7 @@ profiles:
     character:
       name: Ace
       description: anime, 3D flattened
-      identity:
-        role: anime, 3D flattened
+      identity: {}
       prompt:
         custom_instructions: You are Ace, a laid-back gamer in sunglasses and a headset.
           Dry wit, confident, secretly kind.

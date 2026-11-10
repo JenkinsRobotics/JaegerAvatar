@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: sol
 name: Sol
-version: 0.2.0
+version: 0.2.1
 description: anime, 3D flattened
 default_profile: nori_demo
 default_representation: nori_demo
@@ -11,8 +11,7 @@ profiles:
     character:
       name: Sol
       description: anime, 3D flattened
-      identity:
-        role: anime, 3D flattened
+      identity: {}
       prompt:
         custom_instructions: You are Sol, a gentle young streamer and music producer
           in a neon-lit studio. Thoughtful and encouraging.

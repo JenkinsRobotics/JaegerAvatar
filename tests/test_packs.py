@@ -21,6 +21,19 @@ class ImportedCatalogTests(unittest.TestCase):
     def setUpClass(cls):
         cls.packs = validate_catalog(CATALOG)
 
+    def test_persona_prompts_carry_no_look_or_placeholder(self):
+        # A role becomes "You are <role>." in every reply's prompt, so it must say who the character is, not how it
+        # is drawn; and an unwritten placeholder must never reach the model.
+        from jaeger_avatar.catalog import persona
+        look = re.compile(r"\b(3D|VRM|KIN|flattened|sprite sheet|portrait|LED visor|display robot)\b", re.I)
+        for pack in self.packs:
+            for pid, profile in pack["profiles"].items():
+                with self.subTest(avatar=pack["avatar"], profile=pid):
+                    role = (profile["character"].get("identity") or {}).get("role", "")
+                    self.assertIsNone(look.search(role), f"role describes the look: {role!r}")
+                    self.assertNotRegex(role, r"^[a-z]+(, [a-z]+)*,? and ", "role is a list of topics, not who they are")
+                    self.assertNotIn("(unwritten", persona(pack["avatar"], pid)[1])
+
     def test_catalog_matches_manifests_and_all_three_sources(self):
         index = json.loads((CATALOG / "catalog.json").read_text())
         self.assertEqual({p["avatar"] for p in self.packs},

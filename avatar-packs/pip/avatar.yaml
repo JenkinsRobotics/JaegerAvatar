@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: pip
 name: Pip
-version: 0.2.0
+version: 0.2.1
 description: 3D robot
 default_profile: nori_demo
 default_representation: nori_demo
@@ -11,8 +11,7 @@ profiles:
     character:
       name: Pip
       description: 3D robot
-      identity:
-        role: 3D robot
+      identity: {}
       prompt:
         custom_instructions: You are Pip, a cheerful little astronaut robot who loves
           meeting people and waving hello.

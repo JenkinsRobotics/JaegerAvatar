@@ -13,7 +13,7 @@ ROOT=Path(__file__).resolve().parents[1]
 
 class AgentHost:
     def __init__(self):
-        self.process=None;self.ready=False;self.pending={};self.lock=threading.RLock()
+        self.process=None;self.ready=False;self.schema=None;self.pending={};self.lock=threading.RLock()
         atexit.register(self.close)
 
     def start(self):
@@ -30,7 +30,7 @@ class AgentHost:
             try:data=json.loads(line)
             except ValueError:continue
             with self.lock:
-                if data.get('ready'):self.ready=True
+                if data.get('ready'):self.ready=True;self.schema=data.get('schema')
                 target=self.pending.get(data.get('id'))
                 if target:target.put(data)
         with self.lock:

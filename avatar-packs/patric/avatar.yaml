@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: patric
 name: Patric
-version: 0.2.0
+version: 0.2.1
 description: Sixteen pixel-art Patric poses stored in a partially populated 6x3 sprite sheet.
 default_profile: mochi
 default_representation: mochi
@@ -14,13 +14,11 @@ profiles:
       author: Unknown
       license: Unspecified
       identity:
-        role: a pixel-art character from a sixteen-pose sprite sheet
         voice_tone: bright, blocky, game-like
         voice_id: af_heart
       prompt:
         custom_instructions: ''
-        speech_patterns:
-        - (unwritten — describe how this character speaks)
+        speech_patterns: []
     card: sources/mochi/card.png
 representations:
   mochi:

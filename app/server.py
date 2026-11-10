@@ -385,6 +385,8 @@ class Handler(SimpleHTTPRequestHandler):
 
         if self.path == "/settings":
             return self.reply(200, json.dumps({**config, "brain": brain(), "lmstudio": LMSTUDIO, "hearing_ready": bool(stt),
+                "jaeger_agent": {**(agent_host.schema or {}), "in_app": {"provider": "lmstudio", "base_url": LMSTUDIO.rstrip("/") + "/v1", "model_path": "", "api_key_env": "",
+                    "system_prompt": "built for each character", "max_iterations": 1, "tools_enabled": False, "ctx": "set in LM Studio", "gpu_layers": "set in LM Studio"}},
                 "options": {"models": lm_models(), "whisper": app_settings.WHISPER, "languages": app_settings.LANGUAGES}}).encode())
         if self.path == "/health":
             return self.reply(200, json.dumps({"brain": brain(), "voice": VOICE if voices.get(VOICE) else None, "ears": bool(stt) or stt is None, "natural": engine.status}).encode())
@@ -589,6 +591,8 @@ class Handler(SimpleHTTPRequestHandler):
                 except (OSError,ValueError):
                     system = system_for(body.get("character"))
                 session=str(body.get('session','default'))+':'+str(body.get('pack','vita'))
+                # For the Data flow window: exactly what the agent is given this turn.
+                self.wfile.write(f"data: {json.dumps({'system': system, 'settings': config['agent'], 'sent': messages[-1]['content']})}\n\n".encode())
                 for text in agent_host.stream(messages[-1]['content'],system,session,config['agent']):
                     self.wfile.write(f"data: {json.dumps({'text': text})}\n\n".encode())
                     self.wfile.flush()

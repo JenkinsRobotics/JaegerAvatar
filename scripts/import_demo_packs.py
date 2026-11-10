@@ -72,7 +72,7 @@ def import_demos(nori, kin, output):
         pack['sources'][source]=dict(repository='local avatar demos',original_path=str(nori if source=='nori_demo' else kin),
             dirty_working_tree=True,files=files,license='See app/licenses and source model metadata; mixed provenance')
         pack['profiles'][source]={'source':source,'character':dict(name=ch['name'],description=ch['tag'],
-            identity={'role':ch['tag']},prompt={'custom_instructions':personas.get(ch['id'],ch['intro'])})}
+            identity={},prompt={'custom_instructions':personas.get(ch['id'],ch['intro'])})}
         pack['representations'][source]={'source':source,'format':'avatar/rig-v1','root':str(original.relative_to(folder)),
             'presentation':{'kind':'rig','render':render,'defaults':{**ch,'pack':ident}}}
         if ident=='vita':

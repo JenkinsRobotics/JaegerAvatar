@@ -618,13 +618,14 @@ async function ask(text, { idle = false } = {}) {
   if (!idle) { $('#log').textContent = 'You: ' + text; chat('You', text); selectPanel('talk'); bubble('user', text); }
   sentAt = performance.now(); firstSoundAt = 0;
   rig.mode = 'thinking'; rig.setEmotion('thinking'); streamDone = false;
-  const asked = performance.now(); let chunks = 0;
+  const asked = performance.now(); let chunks = 0, worded = false;
   trace('agent', 'request', { text, turns: history.length, brain: serverBrain, character: current.name, offered: agentActions() });
   const id = runId, parser = new Parser({ clause: !chosenVoice() });   // a natural voice takes a moment per line, so it gets whole sentences rather than a short clause followed by a gap
   let reply = '', replyText = null;
   const feed = t => {
     if (id !== runId) return;
-    if (!chunks++) trace('agent', 'first text', { ms: Math.round(performance.now() - asked) });
+    chunks++;
+    if (!worded && (worded = /[^\s\[]/.test(reply + t))) trace('agent', 'first word', { ms: Math.round(performance.now() - asked), chunk: chunks });   // not the '[' the reply is started with
     trace('agent', 'text', { text: t });
     reply += t;
     (replyText ??= bubble('assistant', '')).textContent = plainText(reply.replace(/\[[^\]]*$/, ''));
@@ -645,6 +646,7 @@ async function ask(text, { idle = false } = {}) {
       for (const p of parts) {
         const m = JSON.parse(p.replace(/^data: /, ''));
         if (m.error) throw new Error(m.error);
+        if (m.system) { trace('agent', 'prompt', { system: m.system, settings: m.settings, sent: m.sent }); continue; }
         feed(m.text);
       }
     }

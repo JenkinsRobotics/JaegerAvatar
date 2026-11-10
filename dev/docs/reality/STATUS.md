@@ -61,6 +61,13 @@ acceptance remains unverified; these tests do not measure tracking accuracy.
   next reply without losing the conversation. Voice: the voice picker and a
   speaking-speed control, kept in this browser. Hearing: the Whisper model and
   language. Agent and hearing settings are saved in `app/.cache/settings.json`.
+  The Agent page also lists every JaegerAgent setting (its `AgentConfig` and
+  `MultimodalConfig`, reported by the agent itself) with the value this app uses
+  and why. The app uses JaegerAgent's agent loop with Gemma in LM Studio; it does
+  not run JaegerAgent's own audio pipeline or its duplex modes, nor Omni.
+- First-word delay: each reply now starts on "[", the first acting tag, so Gemma 4
+  skips its hidden planning. Measured through JaegerAgent on E4B: about 1.0 s to
+  the first word, down from 3.9–12.4 s. "Skip hidden thinking" turns it off.
 - A Data flow window (top bar, opens beside the app) shows every stage live, with
   real timings and contents: mic phrases, Whisper requests and transcripts, the
   agent's streamed text and first-text delay, the commands its tags become, each

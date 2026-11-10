@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: mochi
 name: Mochi
-version: 0.3.0
+version: 0.3.1
 description: ''
 default_profile: jaeger_ai
 default_representation: mochi
@@ -185,8 +185,7 @@ profiles:
     character:
       name: Mochi
       description: display robot
-      identity:
-        role: display robot
+      identity: {}
       prompt:
         custom_instructions: You are Mochi, a tiny desk robot with a pixel face. Curious and sweet.
 representations:
