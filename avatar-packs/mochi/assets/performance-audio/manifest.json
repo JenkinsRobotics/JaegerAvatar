@@ -1,0 +1,478 @@
+{
+  "schema": "mochi-performance-audio/v1",
+  "author": "Jenkins Robotics",
+  "license": "Apache-2.0",
+  "provenance": "Original deterministic procedural Foley/synth; no sampled commercial audio or cloned voices.",
+  "clips": {
+    "squint_wink": {
+      "file": "squint_wink.wav",
+      "duration_ms": 16709,
+      "events": [
+        {
+          "at_ms": 700,
+          "kind": "whoosh"
+        },
+        {
+          "at_ms": 2200,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 5800,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 10000,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 14000,
+          "kind": "pop"
+        }
+      ]
+    },
+    "pong": {
+      "file": "pong.wav",
+      "duration_ms": 16709,
+      "events": [
+        {
+          "at_ms": 500,
+          "kind": "whoosh"
+        },
+        {
+          "at_ms": 2000,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 2700,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 3400,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 4200,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 4900,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 5600,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 6400,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 7100,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 7800,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 8600,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 9300,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 10000,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 10800,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 11500,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 12200,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 13000,
+          "kind": "pop"
+        }
+      ]
+    },
+    "sleep_bubble": {
+      "file": "sleep_bubble.wav",
+      "duration_ms": 16709,
+      "events": [
+        {
+          "at_ms": 2400,
+          "kind": "snore"
+        },
+        {
+          "at_ms": 4300,
+          "kind": "snore"
+        },
+        {
+          "at_ms": 10700,
+          "kind": "snore"
+        },
+        {
+          "at_ms": 12600,
+          "kind": "snore"
+        },
+        {
+          "at_ms": 6600,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 14900,
+          "kind": "pop"
+        }
+      ]
+    },
+    "tongue": {
+      "file": "tongue.wav",
+      "duration_ms": 16709,
+      "events": [
+        {
+          "at_ms": 1200,
+          "kind": "kiss"
+        },
+        {
+          "at_ms": 4600,
+          "kind": "kiss"
+        },
+        {
+          "at_ms": 8000,
+          "kind": "kiss"
+        },
+        {
+          "at_ms": 11400,
+          "kind": "kiss"
+        },
+        {
+          "at_ms": 14800,
+          "kind": "kiss"
+        }
+      ]
+    },
+    "anger": {
+      "file": "anger.wav",
+      "duration_ms": 16709,
+      "events": [
+        {
+          "at_ms": 1300,
+          "kind": "huff"
+        },
+        {
+          "at_ms": 4500,
+          "kind": "huff"
+        },
+        {
+          "at_ms": 7700,
+          "kind": "huff"
+        },
+        {
+          "at_ms": 10900,
+          "kind": "huff"
+        },
+        {
+          "at_ms": 14100,
+          "kind": "huff"
+        }
+      ]
+    },
+    "speedometer": {
+      "file": "speedometer.wav",
+      "duration_ms": 16709,
+      "events": [
+        {
+          "at_ms": 400,
+          "kind": "whoosh"
+        },
+        {
+          "at_ms": 1250,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 3000,
+          "kind": "rev"
+        },
+        {
+          "at_ms": 3958,
+          "kind": "rev"
+        },
+        {
+          "at_ms": 7167,
+          "kind": "whoosh"
+        },
+        {
+          "at_ms": 9600,
+          "kind": "whoosh"
+        }
+      ]
+    },
+    "scare": {
+      "file": "scare.wav",
+      "duration_ms": 16709,
+      "events": [
+        {
+          "at_ms": 1500,
+          "kind": "yawn"
+        },
+        {
+          "at_ms": 5500,
+          "kind": "yawn"
+        },
+        {
+          "at_ms": 9500,
+          "kind": "yawn"
+        },
+        {
+          "at_ms": 13500,
+          "kind": "yawn"
+        }
+      ]
+    },
+    "tired": {
+      "file": "tired.wav",
+      "duration_ms": 16709,
+      "events": [
+        {
+          "at_ms": 2000,
+          "kind": "breath"
+        },
+        {
+          "at_ms": 6000,
+          "kind": "breath"
+        },
+        {
+          "at_ms": 10000,
+          "kind": "breath"
+        },
+        {
+          "at_ms": 14000,
+          "kind": "breath"
+        }
+      ]
+    },
+    "hearts_kiss": {
+      "file": "hearts_kiss.wav",
+      "duration_ms": 16709,
+      "events": [
+        {
+          "at_ms": 750,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 1958,
+          "kind": "kiss"
+        },
+        {
+          "at_ms": 4750,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 5958,
+          "kind": "kiss"
+        },
+        {
+          "at_ms": 8750,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 9958,
+          "kind": "kiss"
+        },
+        {
+          "at_ms": 12750,
+          "kind": "pop"
+        },
+        {
+          "at_ms": 13958,
+          "kind": "kiss"
+        }
+      ]
+    },
+    "yawn": {
+      "file": "yawn.wav",
+      "duration_ms": 16709,
+      "events": [
+        {
+          "at_ms": 3250,
+          "kind": "breath"
+        },
+        {
+          "at_ms": 9542,
+          "kind": "breath"
+        },
+        {
+          "at_ms": 5667,
+          "kind": "yawn"
+        },
+        {
+          "at_ms": 11958,
+          "kind": "yawn"
+        }
+      ]
+    }
+  },
+  "reactions": {
+    "heart": {
+      "file": "reaction_heart.wav",
+      "duration_ms": 650,
+      "events": [
+        {
+          "at_ms": 0,
+          "kind": "kiss"
+        }
+      ]
+    },
+    "wink": {
+      "file": "reaction_wink.wav",
+      "duration_ms": 650,
+      "events": [
+        {
+          "at_ms": 0,
+          "kind": "pop"
+        }
+      ]
+    },
+    "wake": {
+      "file": "reaction_wake.wav",
+      "duration_ms": 650,
+      "events": [
+        {
+          "at_ms": 0,
+          "kind": "pop"
+        }
+      ]
+    },
+    "doze": {
+      "file": "reaction_doze.wav",
+      "duration_ms": 650,
+      "events": [
+        {
+          "at_ms": 0,
+          "kind": "breath"
+        }
+      ]
+    },
+    "sparkle": {
+      "file": "reaction_sparkle.wav",
+      "duration_ms": 650,
+      "events": [
+        {
+          "at_ms": 0,
+          "kind": "pop"
+        }
+      ]
+    }
+  },
+  "emotions": {
+    "joy": {
+      "file": "emotion_joy.wav",
+      "duration_ms": 800,
+      "events": [
+        {
+          "at_ms": 0,
+          "kind": "pop"
+        }
+      ]
+    },
+    "excited": {
+      "file": "emotion_excited.wav",
+      "duration_ms": 800,
+      "events": [
+        {
+          "at_ms": 0,
+          "kind": "pop"
+        }
+      ]
+    },
+    "love": {
+      "file": "emotion_love.wav",
+      "duration_ms": 800,
+      "events": [
+        {
+          "at_ms": 0,
+          "kind": "kiss"
+        }
+      ]
+    },
+    "sad": {
+      "file": "emotion_sad.wav",
+      "duration_ms": 800,
+      "events": [
+        {
+          "at_ms": 0,
+          "kind": "breath"
+        }
+      ]
+    },
+    "angry": {
+      "file": "emotion_angry.wav",
+      "duration_ms": 800,
+      "events": [
+        {
+          "at_ms": 0,
+          "kind": "huff"
+        }
+      ]
+    },
+    "surprised": {
+      "file": "emotion_surprised.wav",
+      "duration_ms": 800,
+      "events": [
+        {
+          "at_ms": 0,
+          "kind": "yawn"
+        }
+      ]
+    },
+    "scared": {
+      "file": "emotion_scared.wav",
+      "duration_ms": 800,
+      "events": [
+        {
+          "at_ms": 0,
+          "kind": "yawn"
+        }
+      ]
+    },
+    "sleepy": {
+      "file": "emotion_sleepy.wav",
+      "duration_ms": 800,
+      "events": [
+        {
+          "at_ms": 0,
+          "kind": "breath"
+        }
+      ]
+    },
+    "laughing": {
+      "file": "emotion_laughing.wav",
+      "duration_ms": 800,
+      "events": [
+        {
+          "at_ms": 0,
+          "kind": "yawn"
+        }
+      ]
+    },
+    "confused": {
+      "file": "emotion_confused.wav",
+      "duration_ms": 800,
+      "events": [
+        {
+          "at_ms": 0,
+          "kind": "pop"
+        }
+      ]
+    }
+  }
+}

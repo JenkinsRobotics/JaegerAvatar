@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: reliability_auditor
 name: Reliability Auditor
-version: 0.1.0
+version: 0.2.0
 description: Engineering-focused JaegerAI character for security, testing, and incident analysis, presented
   through ARES.
 default_profile: jaeger_ai

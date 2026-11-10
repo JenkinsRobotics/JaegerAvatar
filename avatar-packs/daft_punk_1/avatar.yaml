@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: daft_punk_1
 name: Daft Punk 1
-version: 0.1.0
+version: 0.2.0
 description: A wide Daft Punk face with animated and still artwork.
 default_profile: mochi
 default_representation: mochi

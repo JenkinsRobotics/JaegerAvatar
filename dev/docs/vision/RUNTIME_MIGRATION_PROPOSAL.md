@@ -156,6 +156,8 @@ owning runtime:
 ## Decisions needed
 
 1. Confirm Nori's engine as the base, with KIN as a parts source.
-2. JP01's face: a browser kiosk on the robot, or frames rendered elsewhere.
+2. ~~JP01's face: a browser kiosk on the robot, or frames rendered elsewhere.~~
+   Settled ([one engine design](20261109_one_engine_design.md)): the engine runs
+   on the robot and streams frames to each display at its native size.
 3. Whether GPL components may ship in products built on Jaeger Avatar.
 4. Who drafts `/act/display/pose` and the lip-sync event changes in JaegerOS.

@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: mochi
 name: Mochi
-version: 0.2.1
+version: 0.3.0
 description: ''
 default_profile: jaeger_ai
 default_representation: mochi
@@ -91,6 +91,33 @@ profiles:
 
 
           I am not sarcastic. I am not a butler. I am a companion who is glad you talked to me.'
+      performance:
+        sounds:
+          neutral: Hi hi!
+          joy: '[yay] Yippee!'
+          excited: '[wow] Ooh, what is it?'
+          love: Aww! Mochi loves you! Mwah!
+          sad: '[aww] Oh no...'
+          angry: Hmph! Not fair!
+          surprised: '[gasp] Whoa!'
+          scared: Eep!
+          thinking: '[hmm] Let Mochi think.'
+          confused: Huh? What does that mean?
+          shy: '[giggle] Hehe, stop it.'
+          smug: Hehe. Mochi knew it!
+          sleepy: Mmm... sleepy beep.
+          laughing: '[giggle] Hehehe!'
+          singing: Beep boop, la la la!
+          blink: Hm?
+          wink: '[giggle]'
+          sideeye: Hmm, really?
+          sparkle: '[ooh] Sparkly!'
+          heart: Mwah!
+          roll: Pfft, silly.
+          peek: Peekaboo!
+          doze: '[sigh] Just a tiny nap.'
+          groove: Boop boop be-doop!
+          wake: Oh! Mochi's awake!
       traits:
         hexaco:
           openness: 0.9
@@ -342,11 +369,39 @@ representations:
       render:
         adapter: kin-momo
         preset: momo
+      assets:
+        performance_0: assets/performance-audio/manifest.json
+        performance_1: assets/performance-audio/squint_wink.wav
+        performance_2: assets/performance-audio/pong.wav
+        performance_3: assets/performance-audio/sleep_bubble.wav
+        performance_4: assets/performance-audio/tongue.wav
+        performance_5: assets/performance-audio/anger.wav
+        performance_6: assets/performance-audio/speedometer.wav
+        performance_7: assets/performance-audio/scare.wav
+        performance_8: assets/performance-audio/tired.wav
+        performance_9: assets/performance-audio/hearts_kiss.wav
+        performance_10: assets/performance-audio/yawn.wav
+        performance_11: assets/performance-audio/reaction_heart.wav
+        performance_12: assets/performance-audio/reaction_wink.wav
+        performance_13: assets/performance-audio/reaction_wake.wav
+        performance_14: assets/performance-audio/reaction_doze.wav
+        performance_15: assets/performance-audio/reaction_sparkle.wav
+        performance_16: assets/performance-audio/emotion_joy.wav
+        performance_17: assets/performance-audio/emotion_excited.wav
+        performance_18: assets/performance-audio/emotion_love.wav
+        performance_19: assets/performance-audio/emotion_sad.wav
+        performance_20: assets/performance-audio/emotion_angry.wav
+        performance_21: assets/performance-audio/emotion_surprised.wav
+        performance_22: assets/performance-audio/emotion_scared.wav
+        performance_23: assets/performance-audio/emotion_sleepy.wav
+        performance_24: assets/performance-audio/emotion_laughing.wav
+        performance_25: assets/performance-audio/emotion_confused.wav
       defaults:
         id: mochi3d
         tag: fixed 3D shell · procedural eyes
         library: true
         shell_label: mochi
+        performance_audio: assets/performance-audio/manifest.json
         kokoro: af_heart
         led: true
 sources:

@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: crazy_eyes
 name: Crazy Eyes
-version: 0.1.0
+version: 0.2.0
 description: The original nested cyan rings and crosshair irises, rigged to look, blink, and move.
 default_profile: mochi
 default_representation: mochi

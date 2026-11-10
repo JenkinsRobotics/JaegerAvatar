@@ -20,8 +20,9 @@ to its original physical mechanism and animatronics control scope.
    procedural assets; qualify a first supported representation before expanding.
 3. Configure expressions, mouth shapes, gaze, gestures and reusable clips.
 4. Save a portable avatar pack with explicit control/capability declarations.
-5. Run the character with embedded JaegerAgent, or attach to an existing JaegerAI
-   instance. Provide manual/scripted control without requiring a conversational model.
+5. Drive the character from an agent outside the avatar through the control link
+   (`avatar-control/v1`), or by hand or script without a conversational model. The
+   demo app connects a real agent, TTS and STT only to demonstrate that control.
 
 Recording, streaming, tracking, multiple representations and richer authoring
 follow a complete first character workflow. Full 3D modelling/sculpting, a new
@@ -29,15 +30,19 @@ agent engine and physical actuator calibration are outside the initial scope.
 
 ## Ownership
 
-Avatar owns its presentation runtime, character editor and interaction UI.
-JaegerAgent supplies the reusable agent engine. JaegerOS supplies runtime
+Avatar owns its presentation runtime (the engine), the control contract and the
+demo app that tests every output. Authoring tools and editors belong to Aether
+Animation, which produces the packs. The agent, TTS and STT live outside the
+avatar; JaegerAgent supplies a reusable agent engine a host may connect. JaegerOS supplies runtime
 infrastructure. JaegerAI remains the complete general-purpose assistant product
 and can use an avatar as an optional interface. Mochi demonstrates reusable
-character/robot capabilities for JP01. Aether Animation owns physical rig motion.
+character/robot capabilities for JP01 and keeps only what a player needs; its
+editors move to Aether Animation. Aether Animation authors rigs, controllable
+nodes, sprites and bitmaps, and owns physical rig motion.
 
 Keep reusable rendering inside this repository initially; extract a versioned
 component when an actual second consumer requires it. JaegerAI should reuse that
-component or connect to Avatar, rather than reimplementing the renderer/editor.
+component or connect to Avatar, rather than reimplementing the renderer.
 
 ## Avatar packs
 

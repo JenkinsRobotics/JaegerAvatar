@@ -52,7 +52,7 @@ def from_wav(data):
         return np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16).astype(np.float32) / 32768, w.getframerate()
 
 
-def clean(x, sr):
+def clean(x, sr, trim=None):
     """Trims dead air, so the voice starts when the mouth does, softens the edges, and evens out the level with no clipping.
 
     The rumble filter and the level are local-avatar-demo's: by average loudness, so quiet lines aren't left quiet, within peak headroom.
@@ -66,7 +66,10 @@ def clean(x, sr):
     level = np.abs(x)
     loud = np.nonzero(level > max(0.012, level.max() * 0.03))[0]
     if len(loud):
-        x = x[max(0, loud[0] - int(sr * 0.012)):min(len(x), loud[-1] + int(sr * 0.09))]
+        start = max(0, loud[0] - int(sr * 0.012))
+        x = x[start:min(len(x), loud[-1] + int(sr * 0.09))]
+        if trim is not None:
+            trim.append(start / sr)     # lip marks are timed on the untrimmed audio
     fade = min(int(sr * 0.006), len(x) // 2)
     if fade:
         x[:fade] *= np.linspace(0, 1, fade)
@@ -77,6 +80,23 @@ def clean(x, sr):
 
 # The clone model's one delivery control: a little looser when the feeling is big, steadier when it's quiet.
 LOOSENESS = {"excited": 0.95, "joy": 0.88, "surprised": 0.92, "scared": 0.92, "angry": 0.9, "sad": 0.7, "sleepy": 0.65, "shy": 0.72, "thinking": 0.72}
+
+
+LIPS = {"p": "p", "b": "p", "m": "p", "f": "f", "v": "f"}   # lips press shut, or the lower lip tucks under the teeth
+
+
+def lip_marks(phonemes, frames, vocab, offset=0.0):
+    """[start, end, kind] in seconds for each closure, from Kokoro's own phoneme durations (25 ms frames, <bos> first).
+    Checked by ear and level on "Mom bought a big puppy": each b/p's silent closure falls inside its mark.
+
+    The model skips phonemes it has no id for, so they're skipped here too, keeping each duration on its sound.
+    """
+    marks, t = [], offset + max(0, frames[0] - 3) * 0.025   # the sound runs 3 frames ahead of <bos>, as Kokoro's own timestamps assume
+    for ph, n in zip([p for p in phonemes if p in vocab], frames[1:-1]):
+        if ph in LIPS:
+            marks.append([round(t, 3), round(t + n * 0.025, 3), LIPS[ph]])
+        t += n * 0.025
+    return marks
 
 
 class MlxKokoro:
@@ -92,12 +112,16 @@ class MlxKokoro:
         mx.set_cache_limit(128 * 1024 * 1024)
         self.model = load_model(KOKORO_MLX)
 
-    def create(self, text, voice, speed=1.0, lang="en-us"):
+    def create(self, text, voice, speed=1.0, lang="en-us", marks=None):
         import numpy as np
         # The model's own generate() rebuilds its voice and pipeline every call; the cached pipeline keeps them.
         pipeline = self.model._get_pipeline("b" if lang == "en-gb" else "a")
+        parts = []
         with GPU:
-            parts = [np.array(r.audio, dtype=np.float32).reshape(-1) for r in pipeline(text, voice=voice, speed=speed)]
+            for r in pipeline(text, voice=voice, speed=speed):
+                if marks is not None and r.pred_dur is not None:
+                    marks += lip_marks(r.phonemes, r.pred_dur.tolist(), self.model.vocab, sum(map(len, parts)) / 24000)
+                parts.append(np.array(r.audio, dtype=np.float32).reshape(-1))
         return (np.concatenate(parts) if parts else np.zeros(1, np.float32)), 24000
 
 
@@ -306,24 +330,36 @@ class Engine:
             self.songs[key] = done["result"]
         return self.songs[key]
 
-    def speak(self, voice, text, emotion=None, speed=1.0, turn=0):
-        """Returns samples at self.sr, or None if the turn was interrupted before it got this far."""
+    def speak(self, voice, text, emotion=None, speed=1.0, turn=0, marks=None):
+        """Returns samples at self.sr, or None if the turn was interrupted before it got this far.
+
+        marks, if given, gets the lip closures ([start, end, "p" or "f"] in seconds). Only Kokoro on MLX knows them.
+        """
         key = (voice, text, round(speed, 2))
+        found = []
         if key in self.short:
-            return self.short[key]
+            x, found = self.short[key]
+            if marks is not None:
+                marks += found
+            return x
         kind, _, name = voice.partition(":")
         if kind == "kokoro":
             if name not in KOKORO_VOICES:
                 raise ValueError("no such voice")
             done = {"event": threading.Event()}
-            self.lines.put((turn, dict(text=text, voice=name, speed=max(0.6, min(1.5, speed)), lang="en-gb" if name[0] == "b" else "en-us"), done))
+            args = dict(text=text, voice=name, speed=max(0.6, min(1.5, speed)), lang="en-gb" if name[0] == "b" else "en-us")
+            if self.backend == "mlx":
+                args["marks"] = found
+            self.lines.put((turn, args, done))
             if not done["event"].wait(60):
                 raise RuntimeError("the voice took too long")
             if "error" in done:
                 raise RuntimeError(done["error"])
             if done.get("result") is None:
                 return None
-            x = clean(*done["result"])
+            trim = []
+            x = clean(*done["result"], trim)
+            found = [[max(0, round(a - trim[0], 3)), round(b - trim[0], 3), k] for a, b, k in found if b > trim[0]] if trim else found
         elif kind == "clone":
             self.clone_path(name)
             x = self._call(lambda: self._speak_clone(name, text, emotion), turn)
@@ -332,7 +368,9 @@ class Engine:
         if x is not None and len(text) <= 12:
             if len(self.short) > 128:
                 self.short.pop(next(iter(self.short)))
-            self.short[key] = x
+            self.short[key] = (x, found)
+        if marks is not None:
+            marks += found
         return x
 
 

@@ -32,14 +32,22 @@ available. JaegerAI is not required. The current agent has no tools enabled.
 
 ## Characters and packs
 
-**51 avatar packs, 57 persona profiles and 99 representations; every pack has a live rig.** The existing
+**56 avatar packs, 62 persona profiles and 104 representations; every pack has a live rig.** The existing
 Mochi, JaegerAI and JaegerAgent library remains intact, including Clanker and the
 sculpted Jaeger artwork. **Avatar library** shows live rigs, portraits, video
 representations and source-only entries separately. Imported Python/MScript
 artwork is preserved but not executed by the browser.
 
-Thirteen live representations are included: Vita, Vita · KIN, Mochi, Vee, Nori,
-Ace, Sol, Pip, Bo, Rook, Maya, Momo and the archived Aster VRM. Vita's two looks
+Fourteen live representations are included: Vita, Vita · KIN, Mochi, Vee, Nori,
+Ace, Sol, Pip, Bo, Rook, Maya, Momo, JP01 and the archived Aster VRM. JP01 is
+Jenkins Robotics' pan-tilt display head: Mochi's face on a square screen, with its
+side LED rings and the head firmware's wake-up. It can also wear other faces, each a
+library pack: JP01 Matrix (the firmware's blue LED eyes), JP01 T-Face (the warm
+pixel face from the real build) JP01 Ring Eyes (the JX screen face) and JP01 Neon (line-art LED emotes, a grin,
+<3, o_o, uwu and X_X, that switch with its mood). The Face menu under the stage switches
+any JP01 between all of these and Mochi eyes with a mouth, lips or a voice waveform (lip synced
+with Vita's vowel shapes).
+JP01's body is the real Onshape assembly, opening on its top half like Vita. Vita's two looks
 share a pack and conversation. Persona selection in Studio is independent of
 appearance. Existing Mochi defaults and its original source variants are preserved.
 

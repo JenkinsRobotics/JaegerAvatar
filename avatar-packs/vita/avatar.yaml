@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: vita
 name: Vita
-version: 0.1.0
+version: 0.2.0
 description: artist model, flattened
 default_profile: nori_demo
 default_representation: nori_demo
@@ -18,6 +18,43 @@ profiles:
           cat ears who dreams of singing on big stages. Caring underneath.
       author: Jenkins Robotics
       license: Persona Apache-2.0; model CC0 (VRoid Project AvatarSample_F, see sources/nori_demo/LICENSE.txt)
+      performance:
+        sounds:
+          neutral: Hey there!
+          joy: '[yay]'
+          excited: '[wow] This is so exciting!'
+          love: Aww, I love you! Mwah!
+          sad: '[sigh] Oh no.'
+          angry: Hmph!
+          surprised: '[gasp]'
+          scared: Eek!
+          thinking: '[hmm]'
+          confused: Huh?
+          shy: '[giggle] Oh, stop it.'
+          smug: Heh. Told you.
+          sleepy: Mmm, so sleepy.
+          laughing: '[laugh] Hahaha!'
+          singing: La la laa, this one is for you!
+          blink: Hm?
+          wink: '[giggle]'
+          sideeye: Really?
+          sparkle: '[ooh] Shiny!'
+          heart: Mwah!
+          roll: Ugh, whatever.
+          peek: Peekaboo!
+          doze: '[sigh] Just five more minutes.'
+          groove: La la la!
+          wake: Oh! I am up!
+          spin: Wheee!
+          dance: Let's dance!
+          hop: Hup!
+          celebrate: '[yay] We did it!'
+          clap: Bravo!
+          bow: Thank you, thank you.
+          point: Over there!
+          wave: Hi there!
+          nod: Mm-hm.
+          bounce: '[yay]'
       traits:
         hexaco:
           openness: 0.8

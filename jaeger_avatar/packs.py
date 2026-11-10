@@ -13,11 +13,15 @@ import yaml
 
 SCHEMA = "avatar/v1"
 ID = re.compile(r"^[a-z][a-z0-9_]*$")
-PROFILE_FIELDS = ("identity", "prompt", "traits", "lore", "level", "revision", "neutral")
+PROFILE_FIELDS = ("identity", "prompt", "traits", "lore", "level", "revision", "neutral", "performance")
 PRESENTATION_FIELDS = (
     "kind", "assets", "default_asset", "render", "expressions", "mouth_states",
     "default_expression", "default_mouth", "motion_scripts", "moods", "animation_sets",
 )
+
+
+SCREEN_LOOK = "avatar/screen-look-v1"
+SCREEN_STYLE = {"eye": {"pill", "anime", "visor"}, "mouth": {"none", "smile", "cat", "grille", "wave"}}
 
 
 class PackError(ValueError):
@@ -64,6 +68,31 @@ def check_data(value: object) -> None:
 LOOK_FILTERS = {"hue", "saturate", "brightness", "contrast", "sepia", "grayscale"}
 LOOK_COLOURS = {"hairTip", "ring", "brow", "lash", "cloth", "clothSh", "rim"}
 LOOK_PAIRS = {"skin", "hair", "iris"}  # [light, shadow]
+
+
+def screen_look(root: Path, render: dict) -> dict:
+    """A character's locked screen look: style data for one renderer version, plus the frame fingerprints it was approved with."""
+    data = json.loads(local_path(root, render.get("look_file")).read_text(encoding="utf-8"))
+    style, rgb = data.get("style"), lambda c: isinstance(c, list) and len(c) == 3 and all(isinstance(n, int) and 0 <= n <= 255 for n in c)
+    if data.get("renderer") != "screen-face/1" or not data.get("displays") or set(data["displays"]) - {"square", "wide"}:
+        raise PackError("A screen look needs renderer screen-face/1 and square and/or wide displays")
+    if not isinstance(style, dict) or set(style) - {*SCREEN_STYLE, "tint", "tint_mix", "accent"} or any(style.get(k) not in v for k, v in SCREEN_STYLE.items()):
+        raise PackError("Unknown screen look style")
+    if not all(rgb(style[k]) for k in ("tint", "accent") if k in style) or not 0 <= style.get("tint_mix", .5) <= 1:
+        raise PackError("Screen look colours are [r, g, b] 0-255 and tint_mix 0-1")
+    if not isinstance(data.get("frames"), dict):
+        raise PackError("A screen look needs its frame fingerprints")
+    return data
+
+
+def check_controls(presentation: dict) -> None:
+    """The controls an agent may drive this body with: names only, the engine performs them."""
+    controls = presentation.get("controls", {})
+    ok = isinstance(controls, dict) and not set(controls) - {"emotions", "reactions", "actions"} and all(
+        isinstance(v, list) and len(v) <= 64 and len(set(v)) == len(v) and all(isinstance(n, str) and ID.match(n) for n in v)
+        for v in controls.values())
+    if not ok:
+        raise PackError("controls lists names: emotions, reactions, actions")
 
 
 def check_look(render: dict) -> None:
@@ -164,7 +193,10 @@ def load_pack(folder: Path, *, verify_sources: bool = False) -> dict:
         permitted = {"name", "description", "author", "license", *PROFILE_FIELDS}
         if set(profile["character"]) - permitted:
             raise PackError("Unsupported profile data; runtime state does not belong in a pack")
-        for field in ("identity", "prompt", "traits", "lore"):
+        sounds = profile["character"].get("performance", {}).get("sounds", {})
+        if not isinstance(sounds, dict) or not all(ID.fullmatch(k) and isinstance(v, str) and len(v) <= 200 for k, v in sounds.items()):
+            raise PackError("performance.sounds maps expression names to short lines")
+        for field in ("identity", "prompt", "traits", "lore", "performance"):
             if not isinstance(profile["character"].get(field, {}), dict):
                 raise PackError(f"character.{field} must be a mapping")
         if profile.get("card"):
@@ -176,8 +208,10 @@ def load_pack(folder: Path, *, verify_sources: bool = False) -> dict:
         presentation = representation.get("presentation")
         if not root.is_dir() or not isinstance(presentation, dict):
             raise PackError("A representation needs a directory root and presentation mapping")
-        if representation.get("format") not in {"character/v1", "avatar/rig-v1"}:
+        if representation.get("format") not in {"character/v1", "avatar/rig-v1", SCREEN_LOOK}:
             raise PackError("Unsupported presentation format")
+        if representation.get("format") == SCREEN_LOOK:
+            screen_look(root, presentation.get("render", {}))
         if representation.get("format") == "avatar/rig-v1":
             render = presentation.get("render", {})
             presets = {
@@ -185,13 +219,14 @@ def load_pack(folder: Path, *, verify_sources: bool = False) -> dict:
                 "nori-anime": {"nori", "ace", "sol"},
                 "nori-3d": {"astro", "cube", "droid", "human", "truth"},
                 "jaeger-study": {'daft_punk_2', 'tars', 'kamina', 'jarvis', 'eve', 'patric', 'helldiver', 'anakin_skywalker', 'glados', 'daft_punk_1', 'simon', 'hal_9000', 'paul_atreides', 'eren_yeager', 'bender', 'lelouch'},
-                "nori-led": {"mochi", "visor"}, "kin-momo": {"momo"},
+                "nori-led": {"mochi", "visor"}, "kin-momo": {"momo", "jp01"},
             }
             if render.get("preset") not in presets.get(render.get("adapter"), set()):
                 raise PackError("Unknown built-in avatar rig or preset")
             if render["adapter"].endswith("vrm") and not render.get("asset"):
                 raise PackError("VRM representations require a model asset")
             check_look(render)
+        check_controls(presentation)
         for relative in presentation_references(presentation):
             local_path(root, relative)
         for alias, relative in representation.get("path_aliases", {}).items():

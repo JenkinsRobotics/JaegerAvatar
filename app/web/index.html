@@ -17,7 +17,7 @@
   kbd { font:11px ui-monospace,Menlo,monospace; color:var(--dim); border:1px solid var(--line); border-radius:4px; padding:0 4px; margin-left:auto; }
   .tiny { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
 
-  #app { display:grid; grid-template-columns:minmax(0,1fr) 352px; grid-template-rows:auto minmax(0,1fr) auto auto; gap:10px; height:100%; padding:0 12px 12px; }
+  #app { display:grid; grid-template-columns:minmax(0,1fr) 352px; grid-template-rows:auto minmax(0,1fr) auto auto auto; gap:10px; height:100%; padding:0 12px 12px; }
   header { grid-column:1/-1; display:flex; align-items:center; gap:14px; padding:10px 2px 0; min-width:0; }
   .brand { display:flex; align-items:center; gap:8px; font-size:17px; font-weight:700; letter-spacing:-.01em; }
   .brand svg { width:26px; height:26px; }
@@ -50,6 +50,61 @@
   #views { position:absolute; right:12px; top:50%; transform:translateY(-50%); z-index:4; display:flex; flex-direction:column; gap:5px; }
   #views button { min-width:38px; min-height:30px; padding:4px 6px; background:rgba(10,12,20,.55); backdrop-filter:blur(8px); border-color:#ffffff22; color:#fff; font-size:12.5px; }
   #views button[aria-pressed=true] { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:650; }
+  #views button:disabled { opacity:.35; cursor:not-allowed; }
+  #tabs .who { padding:4px 8px 4px 6px; font-weight:650; white-space:nowrap; align-self:center; }
+  #assets { grid-column:1; min-width:0; padding:8px 10px; background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+  #assetGroups { display:flex; gap:16px; overflow-x:auto; padding-top:6px; }
+  #assetGroups .group { flex:0 0 auto; max-width:420px; }
+  #assetGroups .chips { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; max-height:96px; overflow-y:auto; }
+  #assetGroups button { padding:3px 8px; font-size:12px; }
+  #assetGroups button[aria-pressed=true] { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  #assetGroups img { height:56px; display:block; }
+  #assets { position:relative; }
+  #toExhibit { position:absolute; top:8px; right:12px; color:var(--accent); text-decoration:none; }
+  /* The exhibit, below the app: how this avatar is animated, its face sheet and the files its pack ships */
+  #exhibit { padding:8px 12px 40px; display:grid; gap:14px; }
+  #exhibit h3 { margin:6px 0 2px; font-size:18px; }
+  #bottomTabs { display:flex; gap:4px; padding:4px; background:var(--panel); border:1px solid var(--line); border-radius:11px; width:max-content; max-width:100%; overflow-x:auto; }
+  #bottomTabs button { padding:6px 12px; }
+  #bottomTabs button[aria-selected=true] { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  .tabPane { display:none; gap:14px; }
+  .tabPane.on { display:grid; }
+  #hwList { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-start; }
+  #hwList .hwCard { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px; display:grid; gap:8px; justify-items:start; }
+  #exhibit .hwView { display:grid; gap:6px; justify-items:start; }
+  #exhibit .hwView canvas { image-rendering:pixelated; border-radius:8px; background:#05070b; max-width:100%; }
+  #exhibit .standIn { max-width:300px; color:var(--muted, #9aa3b2); }
+  #inLog { display:grid; gap:2px; max-height:420px; overflow-y:auto; font:12.5px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:10px 12px; }
+  #inLog .row { display:grid; grid-template-columns:86px 120px 1fr; gap:10px; }
+  #inLog .t { color:var(--muted, #9aa3b2); }
+  #inLog .k { color:var(--accent); }
+  #agentInfo { display:grid; gap:12px; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); }
+  #agentInfo .panel h4 { margin:0 0 6px; font-size:14px; }
+  #agentInfo code { font-size:12px; }
+  #exhibit .lead { margin:0; color:var(--muted, #9aa3b2); max-width:760px; }
+  #exhibit .panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px 14px; }
+  #exhibit .style h4 { margin:2px 0 6px; font-size:16px; }
+  #exhibit .style p { margin:0 0 8px; max-width:820px; }
+  #exhibit dl { display:grid; grid-template-columns:auto 1fr; gap:3px 12px; margin:0; font-size:13px; }
+  #exhibit dt { color:var(--muted, #9aa3b2); }
+  #exhibit dd { margin:0; }
+  #exStyles { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  #exStyles button { font-size:12.5px; padding:4px 9px; }
+  #exStyles button[aria-pressed=true] { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  #exSheet { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; }
+  #exSheet .sheetHead, #exSheet .lead { grid-column:1/-1; margin-top:6px; }
+  #exhibit figure { margin:0; text-align:center; font-size:12px; }
+  #exhibit figure canvas { width:100%; border-radius:8px; display:block; background:#05070b; }
+  .sheetWork { position:fixed; left:-10000px; top:0; width:300px; height:190px; overflow:hidden; }
+  .sheetWork canvas { width:300px; height:190px; }
+  #exFiles { display:grid; gap:12px; }
+  #exhibit .asset { display:grid; gap:6px; }
+  #exhibit .asset .row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-start; }
+  #exhibit .asset img, #exhibit .asset video { max-height:140px; max-width:100%; border-radius:8px; background:#05070b; cursor:pointer; }
+  #exhibit .asset.sprite > img { max-height:none; width:100%; max-width:1152px; image-rendering:pixelated; cursor:crosshair; }
+  #exhibit .asset canvas { image-rendering:pixelated; border-radius:6px; background:#05070b; }
+  #exhibit .asset .col { display:grid; gap:6px; align-content:start; max-width:520px; }
+  #exhibit .asset p { margin:0; font-size:12.5px; color:var(--muted, #9aa3b2); }
   #recBadge { position:absolute; left:12px; top:12px; z-index:4; padding:3px 10px; border-radius:8px; background:rgba(10,12,20,.72); color:#fff; font-size:12.5px; font-variant-numeric:tabular-nums; }
   #recBadge::before { content:""; display:inline-block; width:8px; height:8px; margin-right:7px; border-radius:50%; background:var(--hot); }
   #soundGate { position:absolute; left:50%; top:14px; transform:translateX(-50%); z-index:5; background:var(--warm); border-color:var(--warm); color:#2b1a05; font-weight:650; white-space:nowrap; }
@@ -91,7 +146,7 @@
   #mic[data-state=hearing] { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600; }
   #mic[data-state=working] { border-color:var(--accent); }
 
-  aside { grid-row:2/5; grid-column:2; min-height:0; display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+  aside { grid-row:2/6; grid-column:2; min-height:0; display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
   #panelTabs { display:flex; gap:4px; padding:6px; border-bottom:1px solid var(--line); flex-shrink:0; }
   #panelTabs button { flex:1; border:0; background:transparent; color:var(--dim); border-radius:9px; padding:7px; }
   #panelTabs button:hover { background:var(--panel2); color:var(--ink); }
@@ -147,7 +202,7 @@
   #exit { position:absolute; right:12px; top:12px; display:none; z-index:4; background:rgba(8,9,12,.6); color:#fff; }
   #plate { position:absolute; left:14px; top:12px; display:none; z-index:3; padding:4px 11px; border-radius:8px; background:rgba(8,9,12,.6); color:#fff; font-weight:650; font-size:14px; }
   body.stream #app { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) auto; padding:0; gap:0; }
-  body.stream header, body.stream aside, body.stream #log, body.stream #bar, body.stream #streamBtn, body.stream #views { display:none; }
+  body.stream header, body.stream aside, body.stream #log, body.stream #bar, body.stream #streamBtn, body.stream #views, body.stream #assets, body.stream #exhibit { display:none; }
   body.stream main { border:0; border-radius:0; }
   body.stream #chat { display:flex; }
   body.stream #exit, body.stream #plate { display:block; }
@@ -193,7 +248,7 @@
 <div id="app">
   <header>
     <div class="brand"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#1c2034"/><rect x="14" y="20" width="13" height="24" rx="6" fill="#5fe0d0"/><rect x="37" y="20" width="13" height="24" rx="6" fill="#5fe0d0"/></svg>Jaeger Avatar</div>
-    <a href="/demo-packs.html" style="white-space:nowrap">Demo packs</a><button id="libraryOpen">Avatar library · 50</button><div id="tabs" role="tablist" aria-label="Character"></div>
+    <a href="/demo-packs.html" style="white-space:nowrap">Demo packs</a><button id="libraryOpen">Avatar library · 50</button><div id="tabs" role="tablist" aria-label="Bodies and modes"></div>
     <div class="conn"><i id="light"></i><span id="status" aria-live="polite"></span><span id="privacy">Mic off · Camera off</span></div>
     <button id="abVoice" title="Switch between Kokoro and the original voice pipeline (V)">Voice: Kokoro</button>
     <span id="level" title="The sound leaving the app. If this moves and you hear nothing, check your output device and the browser tab." aria-hidden="true"><i></i></span>
@@ -227,6 +282,7 @@
     </div>
   </div>
   <div id="dock"><div id="log"></div></div>
+  <section id="assets" aria-label="Pack assets"><div class="tiny" id="assetsTitle">Pack assets</div><a id="toExhibit" href="#exhibit" class="tiny">How this is animated ↓</a><div id="assetGroups"></div></section>
   <aside>
     <div id="panelTabs" role="tablist" aria-label="Controls">
       <button id="performTab" role="tab" aria-controls="performPanel" data-panel="perform" aria-selected="true">Perform</button>
@@ -310,6 +366,29 @@ Here with you tonight</textarea>
     </section>
   </aside>
 </div>
+<section id="exhibit" aria-label="Inputs, outputs, agent and how it is animated">
+  <div id="bottomTabs" role="tablist" aria-label="Under the stage">
+    <button role="tab" data-pane="paneOutputs">Outputs</button><button role="tab" data-pane="paneInputs">Inputs</button><button role="tab" data-pane="paneAgent">Agent controls</button><button role="tab" data-pane="paneHow">How this is animated</button>
+  </div>
+  <div class="tabPane" id="paneOutputs" role="tabpanel">
+    <p class="lead">What leaves the avatar: the stage above is the high-resolution digital twin; below is the exact stream each real device would receive, at its native size. The device decodes the stream and lights its own pixels.</p>
+    <div id="hwList"></div>
+  </div>
+  <div class="tabPane" id="paneInputs" role="tabpanel">
+    <p class="lead">What comes into the avatar: every command it is given, as it arrives. Feelings, moves and speech come from the agent, a reel, or the buttons on this page; speech arrives as audio with its lip timing.</p>
+    <div id="inLog"></div>
+  </div>
+  <div class="tabPane" id="paneAgent" role="tabpanel">
+    <p class="lead">What an agent controls: the controls this pack declares, exactly as they are offered to the agent, and the services driving it. The agent, voice and hearing live outside the avatar; this app connects them to show that control.</p>
+    <div id="agentInfo"></div>
+  </div>
+  <div class="tabPane" id="paneHow" role="tabpanel">
+  <div><h3 id="exTitle">How this avatar is animated</h3><p class="lead">Every avatar here is also a way of animating a character. This shows how the one on stage moves, every face it can make, and the files its pack ships.</p></div>
+  <div class="panel" id="exStyle"></div>
+  <div class="panel"><div class="tiny" style="display:flex;justify-content:space-between;align-items:center">Face sheet: every feeling, reaction and mouth shape at its setpoint, drawn by this render's own code. A preview only; the live animation never uses it.<button id="exPng">Export PNG</button></div><div id="exSheet"></div></div>
+  <div class="panel"><div class="tiny">Files in this pack</div><div id="exFiles"></div></div>
+  </div>
+</section>
 <div id="toast" role="status"></div>
 <dialog id="library"><div class="row"><h2>Avatar library</h2><button id="libraryClose">Close</button></div><input id="librarySearch" type="search" placeholder="Find a character…" aria-label="Find a character"><div id="libraryGrid"></div></dialog>
 <script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/","@pixiv/three-vrm":"./vendor/three-vrm.module.min.js"}}</script>

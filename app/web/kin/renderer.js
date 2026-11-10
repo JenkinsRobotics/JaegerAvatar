@@ -5,7 +5,8 @@ import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js'
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {VRMLoaderPlugin,VRMUtils} from '@pixiv/three-vrm';
 import {bindFace,applyFace} from './vrm-face.js';
-import {FaceAnimator,drawFace} from './eyes.js?v=momo-2';
+import {FaceAnimator,drawFace,REACTIONS,FACE_MOODS} from './eyes.js?v=momo-4';
+import {WAKE,wakeFace,ringLevels,addRing,FACES} from './jp01.js';import './styles.js';
 const clamp=THREE.MathUtils.clamp;
 function mesh(geometry,color,roughness=.55,metalness=0){return new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({color,roughness,metalness}));}
 function rounded(w,h,d,r,color){return mesh(new RoundedBoxGeometry(w,h,d,5,r),color);}
@@ -41,7 +42,7 @@ export function requiredPelvisDrop(hip,foot,length){
 
 export class AvatarStage {
  constructor(container,canvas=null,options={}){
-  this.label=options.label||'momo';
+  this.label=options.label||'momo';this.shape=options.shape||'momo';this.faceStyle=options.face;
   this.container=container;this.character='robot';this.onTwos=false;this.turn=0;this.targetTurn=0;this.lastPose=-1;this.frame=0;this.ready=false;this.disposed=false;
   this.renderer=new THREE.WebGLRenderer({canvas:canvas||undefined,antialias:true,alpha:true,preserveDrawingBuffer:true});this.renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));this.renderer.outputColorSpace=THREE.SRGBColorSpace;this.renderer.toneMapping=THREE.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.3;container.appendChild(this.renderer.domElement);this.renderer.domElement.setAttribute('aria-label','Animated companion. Move your pointer to guide its gaze.');
   this.scene=new THREE.Scene();this.camera=new THREE.PerspectiveCamera(24,1,.1,100);this.camera.position.set(0,1.28,6.8);this.camera.lookAt(0,1.07,0);
@@ -51,7 +52,7 @@ export class AvatarStage {
   const fill=this.fill=new THREE.PointLight(0xff9f62,8,5);fill.position.set(-2,.5,1);this.scene.add(fill);
   this.cast=new THREE.Group();this.scene.add(this.cast);
   this.shadow=this.makeShadow();this.scene.add(this.shadow);
-  this.robot=this.makeMomo();this.cast.add(this.robot);
+  this.robot=this.shape==='jp01'?this.makeJP01():this.makeMomo();this.cast.add(this.robot);
   this.anime=new THREE.Group();this.anime.visible=false;this.cast.add(this.anime);
   this.makeParticles();
   this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(container);this.resize();
@@ -81,6 +82,69 @@ export class AvatarStage {
   add(root,new THREE.Mesh(new THREE.PlaneGeometry(.29,.0725),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false})),.48,-.545,.437);
   return root;
  }
+ // Seconds into JP01's wake-up: once when it first appears, and again whenever the Wake up reaction plays.
+ wakeAge(v,t){
+  this.bootAt??=t;const keys=Object.keys(REACTIONS),key=keys[Math.round((v.faceReaction||0)*keys.length)-1];
+  if(key==='wake')return clamp(v.faceProgress||0,0,1)*WAKE;
+  return t-this.bootAt<WAKE?Math.max(0,t-this.bootAt):null;
+ }
+ // JP01: Jenkins Robotics' pan-tilt display head. A blue box with a square screen on a turret neck; the
+ // face is Mochi's, laid out larger and closer together for the square display.
+ makeJP01(){
+  this.fill.color.set(0xb4c8ff);this.ambient.color.set(0xeef2ff);// cool workshop light: the stage's warm fill turns grey metal pink
+  const root=new THREE.Group();root.position.y=.82;
+  const blue=new THREE.MeshPhysicalMaterial({color:0x4f86bf,roughness:.42,metalness:.05,clearcoat:.3,clearcoatRoughness:.45});
+  const steel=(c=0xb9bec4)=>new THREE.MeshStandardMaterial({color:c,roughness:.38,metalness:.55});
+  // Turret neck: flange, two drive stages and a collar, rising from the floor (root y=-.82) to the head.
+  const flange=add(root,new THREE.Mesh(new THREE.CylinderGeometry(.34,.36,.05,8),steel(0xa9aeb4)),0,-.775,0);flange.rotation.y=Math.PI/8;
+  add(root,new THREE.Mesh(new THREE.CylinderGeometry(.24,.27,.08,40),steel()),0,-.71,0);
+  for(const [y,r] of [[-.57,.2],[-.42,.205],[-.28,.19]]){add(root,new THREE.Mesh(new THREE.CylinderGeometry(r,r,.13,40),steel()),0,y,0);add(root,new THREE.Mesh(new THREE.TorusGeometry(r+.002,.008,8,40),steel(0x6f757c)),0,y+.066,0).rotation.x=Math.PI/2;}
+  add(root,new THREE.Mesh(new THREE.CylinderGeometry(.16,.18,.1,40),steel(0x9aa0a7)),0,-.17,0);
+  const head=this.pan=this.tilt=add(root,new THREE.Group(),0,-.12,0);// pivot at the top of the neck
+  const H=1.0,y0=.62;// head height and centre above the pivot
+  add(head,new THREE.Mesh(new RoundedBoxGeometry(1.06,H,1.16,6,.09),blue),0,y0,-.06);
+  add(head,new THREE.Mesh(new RoundedBoxGeometry(.98,.16,.9,4,.06),blue),0,y0+H/2+.03,-.2);// raised top rail toward the back
+  // Square screen in a dark bezel, with a bolted chin plate below it.
+  const S=.8,r=.07,shape=new THREE.Shape();
+  shape.moveTo(-S/2+r,-S/2);shape.lineTo(S/2-r,-S/2);shape.quadraticCurveTo(S/2,-S/2,S/2,-S/2+r);shape.lineTo(S/2,S/2-r);shape.quadraticCurveTo(S/2,S/2,S/2-r,S/2);shape.lineTo(-S/2+r,S/2);shape.quadraticCurveTo(-S/2,S/2,-S/2,S/2-r);shape.lineTo(-S/2,-S/2+r);shape.quadraticCurveTo(-S/2,-S/2,-S/2+r,-S/2);
+  add(head,new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.04,bevelEnabled:true,bevelThickness:.02,bevelSize:.02,bevelSegments:4,curveSegments:12}),new THREE.MeshPhysicalMaterial({color:0x091416,roughness:.24,metalness:.18,clearcoat:.8})),0,y0+.07,.5);
+  this.face=document.createElement('canvas');this.face.width=this.face.height=1024;this.ctx=this.face.getContext('2d');this.faceTexture=new THREE.CanvasTexture(this.face);this.faceTexture.colorSpace=THREE.SRGBColorSpace;this.faceTexture.minFilter=THREE.LinearMipmapLinearFilter;this.faceTexture.anisotropy=Math.min(8,this.renderer?.capabilities.getMaxAnisotropy()||1);
+  this.faceLayout={scale:1.55,spread:.8};
+  this.screen=add(head,new THREE.Mesh(new THREE.PlaneGeometry(.74,.74),new THREE.MeshBasicMaterial({map:this.faceTexture,transparent:true,toneMapped:false,depthWrite:false})),0,y0+.07,.565);
+  this.faceAnimator=new FaceAnimator();
+  add(head,new THREE.Mesh(new RoundedBoxGeometry(.9,.13,.08,4,.03),blue),0,y0-.42,.5);
+  for(const x of [-.3,0,.3]){const bolt=add(head,mesh(new THREE.CylinderGeometry(.022,.022,.02,20),0x4d5560,.4,.6),x,y0-.42,.545);bolt.rotation.x=Math.PI/2;}
+  // Side drive hubs: the tilt axis.
+  for(const side of [-1,1]){
+   const hub=add(head,new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,.04,48),blue),side*.535,y0-.02,.04);hub.rotation.z=Math.PI/2;
+   const ring=add(head,new THREE.Mesh(new THREE.TorusGeometry(.2,.018,10,48),steel(0x7d8b99)),side*.56,y0-.02,.04);ring.rotation.y=Math.PI/2;
+   const cap=add(head,new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.05,40),steel()),side*.56,y0-.02,.04);cap.rotation.z=Math.PI/2;
+  }
+  this.rings=[-1,1].flatMap(side=>addRing(THREE,head,[side*.592,y0-.02,.04],side,.165,.03));// the two 24-LED side rings
+  const label=document.createElement('canvas');label.width=256;label.height=64;const ink=label.getContext('2d');ink.fillStyle='#2c3e52';ink.font='600 30px sans-serif';ink.textAlign='center';ink.fillText([...this.label.slice(0,12)].join(' '),128,43);const texture=new THREE.CanvasTexture(label);texture.colorSpace=THREE.SRGBColorSpace;
+  add(head,new THREE.Mesh(new THREE.PlaneGeometry(.26,.065),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false})),-.33,y0+H/2-.085,.522);
+  const body=this.jp01Body=new THREE.Group();body.add(...root.children);body.scale.setScalar(.84);body.position.y=-.15;root.add(body);// fit flange-to-rail in the robot camera frame
+  return root;
+ }
+ // The real JP01 CAD (Onshape assembly, metres, Y up, facing +Z, floor at 0), prepared offline: hardware and
+ // internals removed, head turned to face front. Nodes: Torso, PanPivot > Pan (neck) > TiltPivot > Tilt (head),
+ // with Screen (the 64x64 LED panel's centre) and Ring (the NeoPixel hub) marked on the head.
+ async loadJP01(url){
+  try{
+   const gltf=await new GLTFLoader().loadAsync(url),model=gltf.scene,get=n=>model.getObjectByName(n);
+   const pan=get('PanPivot'),tilt=get('TiltPivot'),screen=get('Screen'),ring=get('Ring');
+   if(!pan||!tilt||!screen||!ring)throw new Error('JP01 model is missing its pivots');
+   const k=1.47;model.scale.setScalar(k);model.position.y=-.82;this.jp01Full=true;this.frameCamera();// 1.09 m robot; portrait framing shows its top half
+   model.traverse(o=>{if(o.isMesh){const m=o.material;m.color?.multiplyScalar(.62);m.roughness=Math.max(m.roughness??1,.5);m.metalness=Math.min(m.metalness??0,.25);}});// CAD whites and greys otherwise burn out under the stage lights
+   // The face: the 160 mm panel (64 LEDs at 2.5 mm), a black backing just in front of the CAD's screen face.
+   const S=.16;add(screen,new THREE.Mesh(new THREE.PlaneGeometry(S,S),new THREE.MeshBasicMaterial({color:0x040707})),0,0,.004);
+   add(screen,new THREE.Mesh(new THREE.PlaneGeometry(S*.98,S*.98),this.screen.material),0,0,.0045);
+   // The 24-LED rings: the CAD's one on its hub, and its twin on the other side (the firmware drives two).
+   const r=ring.position,mid=screen.position.x,rings=[[r.x,r.x<mid?-1:1],[2*mid-r.x,r.x<mid?1:-1]].flatMap(([x,side])=>addRing(THREE,tilt,[x+side*.004,r.y,r.z],side,.028,.0055));
+   this.robot.add(model);this.jp01Body.visible=false;this.pan=pan;this.tilt=tilt;this.rings=rings;return true;
+  }catch(e){console.warn('JP01 model unavailable; keeping the procedural head',e);return false;}
+ }
+
  // Retained source geometry for the earlier Pip study.
  makeRobot(){
   const root=new THREE.Group();root.position.y=.38;
@@ -175,6 +239,9 @@ export class AvatarStage {
  }
  setCharacter(name){this.classic=name==='vita-kin';this.character=this.classic?'anime':name;this.renderer.domElement.hidden=name!=='robot'&&!this.classic;this.imported.canvas.hidden=name==='robot'||this.classic;this.robot.visible=name==='robot';this.anime.visible=this.classic;this.targetTurn=0;const anime=this.character==='anime';this.portrait=anime;this.frameCamera();this.ambient.intensity=anime?.55:2.3;this.key.intensity=anime?1.05:3.2;this.rim.intensity=anime?.6:2.7;this.fill.intensity=anime?.4:8;this.renderer.toneMappingExposure=anime?1:1.3;}
  frameCamera(){
+  if(this.jp01Full&&this.character==='robot'&&this.portrait){// JP01's top half, waist to head, like Vita's portrait view
+   const d=Math.max(.62/(Math.tan(this.camera.fov*Math.PI/360)*Math.max(.3,this.camera.aspect)),2.75);
+   this.cameraPortrait=this.portrait;this.cameraCharacter=this.character;this.camera.position.set(0,1.18,d);this.camera.lookAt(0,1.13,0);return;}
   const anime=this.character==='anime',focus=(this.headHeight||1.5)-.04;
   const fit=(anime?(this.portrait?.48:.65):(this.portrait?.82:1.03))/(Math.tan(this.camera.fov*Math.PI/360)*Math.max(.3,this.camera.aspect));
   const distance=Math.max(fit,anime?(this.portrait?2.15:5.1):(this.portrait?3.1:4.0));
@@ -195,10 +262,10 @@ export class AvatarStage {
   }return group;
  }
  updateEffects(v,t){
-  const head=this.character==='anime'&&this.vrm?this.bones.getNormalizedBoneNode('head'):this.head;
+  const head=this.character==='anime'&&this.vrm?this.bones.getNormalizedBoneNode('head'):this.tilt||this.head;
   const anchor=head?.getWorldPosition(new THREE.Vector3())||new THREE.Vector3(0,1.4,0);
   for(const sprite of this.effectSprites){const {kind,index:i}=sprite.userData;const strength=kind==='heart'?v.heart:kind==='star'?v.stars:kind==='surprise'?v.surprise:Math.max(0,v.tint);
-   sprite.visible=strength>.3;const phase=(t*.42+i*.31)%1;sprite.material.opacity=clamp(strength,0,1)*Math.sin(phase*Math.PI)*.85;sprite.position.copy(anchor).add(new THREE.Vector3((i%2?1:-1)*(.28+i*.06),.15+phase*.28,.18));sprite.scale.setScalar(.09+Math.sin(phase*Math.PI)*.065);
+   sprite.visible=strength>.3;const phase=(t*.42+i*.31)%1;sprite.material.opacity=clamp(strength,0,1)*Math.sin(phase*Math.PI)*.85;const k=this.shape==='jp01'?.6:1;sprite.position.copy(anchor).add(new THREE.Vector3((i%2?1:-1)*(.28+i*.06)*k,(.15+phase*.28)*k,.18));sprite.scale.setScalar((.09+Math.sin(phase*Math.PI)*.065)*k);// JP01's head is framed closer
   }
  }
  applyArm(limb,v,root){
@@ -255,14 +322,19 @@ export class AvatarStage {
   const showPose=!this.onTwos||Math.floor(t*12)!==this.lastPose;
   if(this.character==='robot'){
    this.robot.position.set(0,.82,0);this.robot.rotation.set(0,0,0);
+   const wake=this.shape==='jp01'?this.wakeAge(v,t):null,asleep=wake==null?0:1-Math.min(1,wake/WAKE)**2;
+   if(this.pan){this.pan.rotation.y=clamp((v.headY||0)*.45,-.45,.45)*(1-asleep);this.tilt.rotation.x=clamp(-(v.headX||0)*.3,-.25,.25)+.28*asleep;}// JP01 pans at the neck and tilts at the hubs (no roll axis); it wakes from a bowed head
    if(this.facePainter){this.ctx.save();try{this.facePainter(this.ctx,v,dt,t);}finally{this.ctx.restore();}}
-   else {const face=this.faceAnimator.update(v,dt,t);drawFace(this.ctx,face,t);}
+   else {const face=wakeFace(this.faceAnimator.update(v,dt,t),wake),look=FACES[this.faceStyle];
+    const keys=Object.keys(REACTIONS),mood=FACE_MOODS[Math.round(clamp(v.faceMood||0,0,1)*(FACE_MOODS.length-1))],reaction=keys[Math.round((v.faceReaction||0)*keys.length)-1];
+    const lit=look?look.paint(this.ctx,face,clamp(v.jaw||0,0,1),{mood,reaction,t,v,layout:this.faceLayout}):drawFace(this.ctx,face,t,this.faceLayout);// JP01 can wear other faces
+    if(this.rings){const levels=ringLevels(wake,t,v.jaw),[r,g,b]=lit||look?.ring||[face.red,face.green,face.blue];this.rings.forEach((led,i)=>led.material.color.setRGB(r/255*levels[i%24],g/255*levels[i%24],b/255*levels[i%24]));}}
    this.faceTexture.needsUpdate=true;
   }else if(showPose){this.anime.position.set(0,v.lift,0);this.poseAnime(v,this.onTwos?0:dt,t);this.lastPose=Math.floor(t*12);}
   if(this.character==='anime'&&this.onTwos)this.vrm?.update(dt);
   if(this.character==='anime'&&this.facePose&&this.faceBindings?.detailed)applyFace(this.faceBindings,this.facePose,this.onTwos);
   this.shadow.position.x=this.character==='robot'?0:v.shiftX;this.shadow.scale.setScalar(this.character==='robot'?.75:1-Math.min(.3,Math.max(0,v.lift)*.7));this.shadow.material.opacity=this.character==='robot'?.9:1-Math.min(.5,Math.max(0,v.lift));
-  if(this.character==='anime')this.updateEffects(v,t);else for(const sprite of this.effectSprites)sprite.visible=false;this.dust.rotation.y=0;this.renderer.render(this.scene,this.camera);this.frame++;
+  if(this.character==='anime'||this.shape==='jp01')this.updateEffects(v,t);else for(const sprite of this.effectSprites)sprite.visible=false;this.dust.rotation.y=0;this.renderer.render(this.scene,this.camera);this.frame++;
  }
  screenshot(){return this.canvas.toDataURL('image/png');}
  turnaround(){

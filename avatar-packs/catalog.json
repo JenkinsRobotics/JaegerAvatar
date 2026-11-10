@@ -218,6 +218,36 @@
       ]
     },
     {
+      "avatar": "jp01",
+      "name": "JP01",
+      "manifest": "jp01/avatar.yaml",
+      "sources": []
+    },
+    {
+      "avatar": "jp01_matrix",
+      "name": "JP01 Matrix",
+      "manifest": "jp01_matrix/avatar.yaml",
+      "sources": []
+    },
+    {
+      "avatar": "jp01_neon",
+      "name": "JP01 Neon",
+      "manifest": "jp01_neon/avatar.yaml",
+      "sources": []
+    },
+    {
+      "avatar": "jp01_ring",
+      "name": "JP01 Ring Eyes",
+      "manifest": "jp01_ring/avatar.yaml",
+      "sources": []
+    },
+    {
+      "avatar": "jp01_tface",
+      "name": "JP01 T-Face",
+      "manifest": "jp01_tface/avatar.yaml",
+      "sources": []
+    },
+    {
       "avatar": "kamina",
       "name": "Kamina",
       "manifest": "kamina/avatar.yaml",

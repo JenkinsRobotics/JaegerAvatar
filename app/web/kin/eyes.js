@@ -30,7 +30,7 @@ export function faceTarget(v,t){
  p.x+=(v.gazeX||0)*54;p.y-=(v.gazeY||0)*28;
  p.blinkL=clamp(Math.max(v.winkL||0,v.faceBlink||0));p.blinkR=clamp(Math.max(v.winkR||0,v.faceBlink||0));
  // Small, deliberate eye movements, with long holds instead of perpetual wobble.
- const looks=[[0,0],[.3,-.08],[0,0],[-.25,.06],[.1,.13],[0,0]],beat=t/4.7,j=Math.floor(beat)%looks.length,u=ease((beat%1)/.065),a=looks[(j+looks.length-1)%looks.length],b=looks[j];
+ const looks=[[0,0],[.3,-.08],[0,0],[-.25,.06],[.1,.13],[0,0]],beat=(Number.isFinite(t)?Math.max(t,0):0)/4.7,j=Math.floor(beat)%looks.length,u=ease((beat%1)/.065),a=looks[(j+looks.length-1)%looks.length],b=looks[j];
  if(['neutral','listening','thinking'].includes(name)){p.x+=(a[0]+(b[0]-a[0])*u)*28;p.y+=(a[1]+(b[1]-a[1])*u)*20;}
  if(name==='love'){const beat=t%2.4,thump=pulse(beat,.1,.1,.02,.22)+.6*pulse(beat,.43,.09,.01,.18);p.width*=1+.055*thump;p.height*=1+.055*thump;}
  if(name==='scared')p.x+=Math.sin(t*29)*1.6;
@@ -71,20 +71,24 @@ export function eyeContour(p,side,steps=64){
   points.push([x*c-y*s,x*s+y*c]);
  }return points;
 }
-function path(ctx,points){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();}
-export function drawFace(ctx,p,t){
- ctx.clearRect(0,0,1024,640);const color=`rgb(${Math.round(clamp(p.red,0,255))},${Math.round(clamp(p.green,0,255))},${Math.round(clamp(p.blue,0,255))})`;
+export function path(ctx,points){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();}
+// layout fits the 1024x640 face onto other screens: scale enlarges it about the centre (dy moves it up or down) and
+// spread pulls the eyes and cheek marks together (JP01's square screen wants a bigger, more compact face).
+export function drawFace(ctx,p,t,{scale=1,spread=1,dy=0,eye=null}={}){// eye(ctx,p,side,color,contour) swaps how an eye is drawn; its animation, brows and marks stay
+ const W=ctx.canvas.width,H=ctx.canvas.height;ctx.clearRect(0,0,W,H);ctx.save();ctx.translate(W/2,H/2+dy);ctx.scale(scale,scale);ctx.translate(-512,-320);
+ const color=`rgb(${Math.round(clamp(p.red,0,255))},${Math.round(clamp(p.green,0,255))},${Math.round(clamp(p.blue,0,255))})`;
  for(const side of [-1,1]){
-  ctx.save();ctx.translate(512+side*p.spread+p.x,288+p.y);const contour=eyeContour(p,side);ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=17;path(ctx,contour);ctx.fill();ctx.shadowBlur=0;
-  if(p.ring>.01){ctx.globalCompositeOperation='destination-out';ctx.save();ctx.scale(clamp(p.ring,0,.84),clamp(p.ring,0,.84));path(ctx,contour);ctx.fill();ctx.restore();ctx.globalCompositeOperation='source-over';}
+  ctx.save();ctx.translate(512+side*p.spread*spread+p.x,288+p.y);const contour=eyeContour(p,side);if(eye)eye(ctx,p,side,color,contour);else{ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=17;path(ctx,contour);ctx.fill();ctx.shadowBlur=0;}
+  if(!eye&&p.ring>.01){ctx.globalCompositeOperation='destination-out';ctx.save();ctx.scale(clamp(p.ring,0,.84),clamp(p.ring,0,.84));path(ctx,contour);ctx.fill();ctx.restore();ctx.globalCompositeOperation='source-over';}
   if(p.brows>.01){ctx.globalAlpha=clamp(p.brows);ctx.strokeStyle=color;ctx.lineWidth=8;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-58,-143-p.browLift-side*p.browSlope*55);ctx.quadraticCurveTo(0,-152-p.browLift,58,-143-p.browLift+side*p.browSlope*55);ctx.stroke();}
   ctx.restore();
  }
  // Secondary marks stay within the display, so the character's silhouette remains fixed.
  ctx.save();ctx.strokeStyle='#ffa8ba';ctx.lineWidth=7;ctx.lineCap='round';ctx.globalAlpha=clamp(p.blush)*.65;
- for(const side of [-1,1])for(let i=0;i<3;i++){const x=512+side*302+i*19;ctx.beginPath();ctx.moveTo(x,397);ctx.lineTo(x-9,423);ctx.stroke();}ctx.restore();
- if(p.tear>.02){ctx.save();ctx.fillStyle='#9dcfff';for(const side of [-1,1]){const phase=(t*.48+(side>0?.4:0))%1;ctx.globalAlpha=clamp(p.tear)*Math.sin(phase*Math.PI);ctx.beginPath();ctx.ellipse(512+side*245+p.x,340+phase*147,8,13,0,0,Math.PI*2);ctx.fill();}ctx.restore();}
+ for(const side of [-1,1])for(let i=0;i<3;i++){const x=512+side*302*spread+i*19;ctx.beginPath();ctx.moveTo(x,397);ctx.lineTo(x-9,423);ctx.stroke();}ctx.restore();
+ if(p.tear>.02){ctx.save();ctx.fillStyle='#9dcfff';for(const side of [-1,1]){const phase=(t*.48+(side>0?.4:0))%1;ctx.globalAlpha=clamp(p.tear)*Math.sin(phase*Math.PI);ctx.beginPath();ctx.ellipse(512+side*245*spread+p.x,340+phase*147,8,13,0,0,Math.PI*2);ctx.fill();}ctx.restore();}
  if(p.sparkles>.02){ctx.save();ctx.fillStyle=color;for(let i=0;i<5;i++){const phase=(t*.4+i*.19)%1,alpha=Math.sin(phase*Math.PI)*clamp(p.sparkles);ctx.globalAlpha=alpha*.85;const x=[190,800,500,237,772][i],y=[154,165,110,442,426][i]-phase*15,r=6+alpha*7;ctx.beginPath();ctx.moveTo(x,y-r);ctx.quadraticCurveTo(x+2,y-2,x+r,y);ctx.quadraticCurveTo(x+2,y+2,x,y+r);ctx.quadraticCurveTo(x-2,y+2,x-r,y);ctx.quadraticCurveTo(x-2,y-2,x,y-r);ctx.fill();}ctx.restore();}
  if(p.dots>.02){ctx.save();ctx.fillStyle=color;for(let i=0;i<3;i++){ctx.globalAlpha=clamp(p.dots)*(.25+.75*(.5+.5*Math.sin(t*3-i*.8)));ctx.beginPath();ctx.arc(476+i*36,465,7,0,Math.PI*2);ctx.fill();}ctx.restore();}
  for(const [field,glyph,x,y] of [['question','?',765,138],['sleep','z',768,167],['notes','♪',205,150]])if(p[field]>.02){ctx.save();ctx.fillStyle=color;ctx.globalAlpha=clamp(p[field])*.7;ctx.font='46px Georgia';ctx.fillText(glyph,x,y-Math.sin(t*1.7)*5);if(field==='sleep'){ctx.font='28px Georgia';ctx.globalAlpha*=.7;ctx.fillText('z',803,119-Math.sin(t*1.7)*5);}ctx.restore();}
+ ctx.restore();
 }

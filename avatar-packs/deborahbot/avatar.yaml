@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: deborahbot
 name: Deborahbot 5000
-version: 0.1.0
+version: 0.2.0
 description: Deborahbot's nearly blank black display and colour-changing corner light, with her elaborate
   fixed red childlike drawing when a face is required.
 default_profile: mochi

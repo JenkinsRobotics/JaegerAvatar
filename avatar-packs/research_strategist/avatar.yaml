@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: research_strategist
 name: Research Strategist
-version: 0.1.0
+version: 0.2.0
 description: Engineering-focused JaegerAI character for synthesis and trade-offs, presented through ARES.
 default_profile: jaeger_ai
 default_representation: jaeger_ai

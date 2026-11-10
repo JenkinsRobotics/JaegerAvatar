@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: tars
 name: TARS
-version: 0.1.0
+version: 0.2.0
 description: ''
 default_profile: jaeger_ai
 default_representation: mochi

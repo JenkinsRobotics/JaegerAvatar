@@ -134,6 +134,11 @@ except ValueError:
     pass
 clean_x = voice_engine.clean(np.concatenate([np.zeros(12000), second, np.zeros(12000)]).astype(np.float32), 24000)
 assert len(clean_x) < 24000 * 4.3 and abs(clean_x[0]) < 0.01 and np.abs(clean_x).max() < 0.9, "dead air should be trimmed and the level safe"
+trim = []
+voice_engine.clean(np.concatenate([np.zeros(12000), np.sin(np.arange(24000) / 5) * 0.5]).astype(np.float32), 24000, trim)
+assert abs(trim[0] - 0.488) < 0.005, f"lip marks need the trimmed lead-in, got {trim}"
+# "mˈɑ?f": <bos> is 4 frames (the sound starts 3 before it ends), "?" has no id so gets no frame; 25 ms frames
+assert voice_engine.lip_marks("mˈɑ?f", [4, 2, 1, 3, 2, 4], {"m": 1, "ˈ": 2, "ɑ": 3, "f": 4}) == [[0.025, 0.075, "p"], [0.175, 0.225, "f"]]
 kept = voice_engine.CLONES.exists() and set(voice_engine.CLONES.iterdir())
 vid = engine.add_clone("Test tone", sample, True)
 assert any(v["id"] == vid and v["kind"] == "clone" for v in engine.list())

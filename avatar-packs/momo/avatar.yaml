@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: momo
 name: Momo
-version: 0.1.1
+version: 0.2.0
 description: KIN desk companion
 default_profile: kin_demo
 default_representation: kin_demo

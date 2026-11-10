@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: patric
 name: Patric
-version: 0.1.0
+version: 0.2.0
 description: Sixteen pixel-art Patric poses stored in a partially populated 6x3 sprite sheet.
 default_profile: mochi
 default_representation: mochi

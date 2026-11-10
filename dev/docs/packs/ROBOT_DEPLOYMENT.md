@@ -6,6 +6,11 @@ of `avatar/v1`. No downstream schema was silently changed. JP01's inspected
 JaegerOS topology exposes controllers but does not specify an avatar playback
 runtime or display dimensions; those remain a deployment prerequisite.
 
+Direction ([one engine design](../vision/20261109_one_engine_design.md)): Jaeger
+Avatar becomes the engine on the device and hands each display a video stream at
+its size (JP01: a 64 × 64 face and two 24 × 1 LED rings; Mochi: 256 × 256). The
+JaegerAnimation path below is the bridge until that evaluation.
+
 ## Build and verify
 
 From the JaegerAvatar repository:

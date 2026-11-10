@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: jaeger_bronze
 name: Jaeger (Bronze)
-version: 0.1.0
+version: 0.2.0
 description: Bronze Jaeger design study preserved from the design-tokens branch, including full and face
   crops at the original resolutions. Draft persona and a built-in rig added in Jaeger Avatar. Draft persona
   and a built-in rig added in Jaeger Avatar.

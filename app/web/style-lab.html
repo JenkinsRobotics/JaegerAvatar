@@ -1,0 +1,54 @@
+<!doctype html>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Style Lab</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  body{margin:0;padding:16px;background:#0b0d14;color:#dde3f0;font:14px system-ui,sans-serif}
+  h1{font-size:18px;margin:0 0 4px} p{margin:0 0 14px;color:#9aa3b8}
+  table{border-collapse:collapse} th{font-weight:600;font-size:12px;color:#9aa3b8;padding:4px 6px;text-align:center}
+  th.row{text-align:right;color:#dde3f0;font-size:13px} td{padding:3px}
+  .pair{display:flex;flex-direction:column;gap:3px;align-items:center}
+  canvas{background:#000;border-radius:6px;display:block}
+  .sq{width:120px;height:120px} .wide{width:120px;height:75px}
+</style>
+<h1>Style Lab</h1>
+<p>Each character style, drawn from the same face engine on a square screen (JP01) and a wide screen (Momo/Mochi). Pause: click.</p>
+<table id="grid"></table>
+<script type="module">
+import { FaceAnimator, FACE_MOODS, REACTIONS } from './kin/eyes.js';
+import { FACES } from './kin/jp01.js';
+import { STYLES, RENDERER, fromPack, styledFace } from './kin/styles.js';
+// Locked looks come from the packs themselves, exactly as a robot would receive them.
+for (const pack of await (await fetch('/api/avatars')).json()) {
+  const look = pack.representations.find(r => r.format === 'avatar/screen-look-v1')?.screen;
+  if (look?.renderer === RENDERER) { STYLES['pack:' + pack.id] = fromPack(look.style, pack.name + ' (pack, locked)'); FACES['style:pack:' + pack.id] = styledFace(STYLES['pack:' + pack.id]); }
+}
+const COLS = [['neutral'], ['joy'], ['love'], ['angry'], ['surprised'], ['sad'], ['smug'], ['neutral', 'wink'], ['neutral', null, 'aa'], ['joy', null, 'ee']];
+const label = ([m, r, s]) => s ? `talk “${s}”` : r ?? m;
+const grid = document.querySelector('#grid'), head = grid.insertRow(); head.append(document.createElement('th'));
+for (const c of COLS) { const th = document.createElement('th'); th.textContent = label(c); head.append(th); }
+const cells = [];
+for (const [id, style] of Object.entries(STYLES)) {
+  const row = grid.insertRow(), th = document.createElement('th'); th.className = 'row'; th.textContent = style.label; row.append(th);
+  for (const col of COLS) {
+    const td = row.insertCell(), box = document.createElement('div'); box.className = 'pair'; td.append(box);
+    for (const [cls, w, h, layout] of [['sq', 1024, 1024, { scale: 1.55, spread: .8 }], ['wide', 1024, 640, {}]]) {
+      const c = document.createElement('canvas'); c.className = cls; c.width = w; c.height = h; box.append(c);
+      cells.push({ ctx: c.getContext('2d'), look: FACES['style:' + id], col, layout, anim: new FaceAnimator() });
+    }
+  }
+}
+let paused = false, t0 = performance.now(), last = 0; addEventListener('click', () => paused = !paused);
+const keys = Object.keys(REACTIONS);
+function frame(now) {
+  requestAnimationFrame(frame); if (paused) return;
+  const t = (now - t0) / 1000, dt = Math.min(.05, t - last); last = t;
+  for (const { ctx, look, col: [mood, reaction, vowel], layout, anim } of cells) {
+    const talk = vowel ? .55 + .45 * Math.sin(t * 9) : 0, cycle = reaction ? (t % 3) / REACTIONS[reaction].duration : 0;
+    const v = { faceMood: FACE_MOODS.indexOf(mood) / (FACE_MOODS.length - 1), faceMoodAge: 3, jaw: talk * .8, [vowel]: talk,
+      faceReaction: reaction && cycle < 1 ? (keys.indexOf(reaction) + 1) / keys.length : 0, faceProgress: Math.min(1, cycle) };
+    const p = anim.update(v, dt, t); ctx.save(); look.paint(ctx, p, v.jaw, { t, v, layout, mood }); ctx.restore();
+  }
+}
+requestAnimationFrame(frame);
+</script>

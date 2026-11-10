@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: eric
 name: Eric
-version: 0.1.0
+version: 0.2.0
 description: Eric's nearly blank black display and colour-changing corner light, with his fixed red childlike
   drawing when he tries to look human.
 default_profile: mochi

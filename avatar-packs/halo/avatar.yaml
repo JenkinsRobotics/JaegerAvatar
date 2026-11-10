@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: halo
 name: Halo
-version: 0.1.0
+version: 0.2.0
 description: A solid core in a ring that answers when you speak — HAL's intensity, Orbs' vocabulary, and
   a voice meter bent into a circle.
 default_profile: mochi

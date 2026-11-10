@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: eren_yeager
 name: Eren Yeager
-version: 0.1.0
+version: 0.2.0
 description: ''
 default_profile: jaeger_ai
 default_representation: jaeger_ai

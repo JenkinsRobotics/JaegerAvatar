@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: eve
 name: Eve
-version: 0.1.0
+version: 0.2.0
 description: Eve's original cyan CRT eyes, rigged for expression, with a speech-only illuminated mouth.
 default_profile: mochi
 default_representation: mochi

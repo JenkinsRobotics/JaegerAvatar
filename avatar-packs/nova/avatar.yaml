@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: nova
 name: Nova (Portrait prototype)
-version: 0.1.0
+version: 0.2.0
 description: Nova placeholder portrait from JaegerAI UI experiments. Draft persona and a built-in rig
   added in Jaeger Avatar. Draft persona and a built-in rig added in Jaeger Avatar.
 default_profile: jaeger_avatar

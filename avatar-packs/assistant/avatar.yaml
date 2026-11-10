@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: assistant
 name: Assistant
-version: 0.2.0
+version: 0.3.0
 description: The plain default — professional, clear, no character overlay.
 default_profile: jaeger_agent
 default_representation: jaeger_ai

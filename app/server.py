@@ -11,6 +11,8 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse, unquote
 from jaeger_avatar.catalog import catalog, persona, ROOT as PACKS
 from jaeger_avatar.packs import local_path, PackError
+from jaeger_avatar.embedded.control import ControlError
+from jaeger_avatar.embedded.link import ControlLink
 from kin_lipsync import analyze as analyze_kin
 
 from agent_bridge import agent_host
@@ -40,6 +42,9 @@ HEAR_LIMIT = 16000 * 2 * 30  # 30 s of 16 kHz 16-bit audio; the page sends at mo
 FRAME_LIMIT = 64 * 1024
 MODEL_LIMIT = 200 * 1024 * 1024
 LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
+# An agent outside the avatar drives the body on stage through this link (dev/docs/runtime/EMBEDDING.md).
+CONTROL_TOKEN = os.environ.get("JAEGER_AVATAR_CONTROL_TOKEN") or __import__("secrets").token_urlsafe(18)
+control_link = ControlLink(CONTROL_TOKEN)
 # The page can only talk to this machine, whatever a future bug or a loaded file tries.
 CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: data:; worker-src 'self' blob:"
 
@@ -273,14 +278,43 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def control(self, route, body=None):
+        """The control link's routes. Loopback only; commands and uploads carry the token in X-Avatar-Token."""
+        host = (self.headers.get("Host") or "").rsplit(":", 1)[0].strip("[]")
+        if self.client_address[0] not in LOCAL_HOSTS or host not in LOCAL_HOSTS:   # also stops DNS rebinding
+            return self.reply(403, b'{"error":"not local"}')
+        token = self.headers.get("X-Avatar-Token", "")
+        try:
+            if route == "/control/state":
+                session = parse_qs(urlparse(self.path).query).get("session", [None])[0]
+                return self.reply(200, json.dumps(control_link.state(session)).encode())
+            if route.startswith("/control/audio/") and body is None:
+                wav = control_link.audio(route[len("/control/audio/"):])
+                return self.reply(200, wav, "audio/wav") if wav else self.reply(404, b'{"error":"Unknown clip"}')
+            if route == "/control/audio":
+                return self.reply(200, json.dumps({"clip": control_link.put_audio(body, token)}).encode())
+            if self.headers.get_content_type() != "application/json":   # needs a CORS preflight, which this server never grants
+                return self.reply(415, b'{"error":"Send JSON"}')
+            data = json.loads(body or b"null")
+            if route == "/control/attach":
+                return self.reply(200, json.dumps(control_link.attach(data)).encode())
+            if route == "/control":
+                return self.reply(200, json.dumps(control_link.command(data, token)).encode())
+        except ControlError as e:
+            return self.reply(403 if str(e) == "Not allowed" else 422, json.dumps({"error": str(e)}).encode())
+        except ValueError:
+            return self.reply(400, b'{"error":"Bad JSON"}')
+        return self.reply(404, b'{"error":"Unknown control route"}')
+
     def say_natural(self, voice, text, emotion, speed, turn):
         if not engine.ready_for(voice):         # the page uses the character's own voice until this one has loaded
             return self.reply(503, b'{"error":"voice not ready"}')
         try:
-            x = engine.speak(voice, text.replace("[[", " "), emotion if isinstance(emotion, str) else None, float(speed), turn)
+            marks = []      # when the lips close on m/b/p or tuck for f/v, from the voice's own phoneme timing
+            x = engine.speak(voice, text.replace("[[", " "), emotion if isinstance(emotion, str) else None, float(speed), turn, marks)
         except (ValueError, RuntimeError) as e:
             return self.reply(422, json.dumps({"error": str(e)}).encode())
-        return self.reply(409, b'{"error":"interrupted"}') if x is None else self.reply(200, to_wav(x, engine.sr), "audio/wav")
+        return self.reply(409, b'{"error":"interrupted"}') if x is None else self.reply(200, to_wav(x, engine.sr), "audio/wav", {"X-Lips": json.dumps(marks)})
 
     def sing(self, body):
         """The words spoken in this voice, moved onto the tune the page chose."""
@@ -322,6 +356,8 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         route=urlparse(self.path).path
+        if route.startswith('/control/'):
+            return self.control(route)
         if route == '/api/avatars':
             return self.reply(200,json.dumps(catalog()).encode())
         if route.startswith('/packs/'):
@@ -372,6 +408,11 @@ class Handler(SimpleHTTPRequestHandler):
         if origin and urlparse(origin).hostname not in LOCAL_HOSTS:  # a website in another tab can't reach the brain, mic or output windows
             self.close_connection = True
             return self.reply(403, b'{"error":"not local"}')
+        if urlparse(self.path).path.startswith('/control'):
+            if size > 10 * 1024 * 1024:
+                self.close_connection = True
+                return self.reply(413, b'{"error":"A clip is at most 10 MB"}')
+            return self.control(urlparse(self.path).path, self.rfile.read(size))
         if urlparse(self.path).path == '/lip-sync':
             try:
                 sr=int(parse_qs(urlparse(self.path).query).get('sample_rate_hz',['24000'])[0])
@@ -507,7 +548,11 @@ class Handler(SimpleHTTPRequestHandler):
             try:
                 try:
                     name, profile = persona(body.get('pack',body.get('character','vita')),body.get('profile'))
-                    system = f"You are {name}, an AI character. {profile}\n{PERFORM}"
+                    # The body is separate from the personality: it says what this one can do with itself right now.
+                    acts = [a for a in body.get('actions', []) if isinstance(a, str) and a.isidentifier()][:16]
+                    shell = str(body.get('body', ''))[:60]
+                    system = f"You are {name}, an AI character. {profile}\n" + (f"Your body right now: {shell}.\n" if shell else '') + \
+                        (f"Body actions, used now and then where they fit: {' '.join(f'[{a}]' for a in acts)}\n" if acts else '') + PERFORM
                 except (OSError,ValueError):
                     system = system_for(body.get("character"))
                 session=str(body.get('session','default'))+':'+str(body.get('pack','vita'))
@@ -530,6 +575,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGTERM,shutdown)
     if os.environ.get('NORI_BRAIN')!='scripted':agent_host.start()
     print(f"Jaeger Avatar: http://localhost:{PORT}  brain={brain()}  voice={VOICE if voices.get(VOICE) else 'built-in synth'}")
+    print(f"Control token: {CONTROL_TOKEN}", flush=True)
     def warm():  # so nobody waits on a cold model: the other voices, then Gemma with the system prompt already cached
         engine.start()
         load_stt()

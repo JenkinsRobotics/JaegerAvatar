@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: bitmap_man
 name: Bitmap Man
-version: 0.1.0
+version: 0.2.0
 description: A monochrome eye character built from paired 32x32 legacy bitmap sprites.
 default_profile: mochi
 default_representation: mochi

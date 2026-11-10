@@ -37,9 +37,9 @@ class RecoveredLibraryTests(unittest.TestCase):
 
     def test_archived_prototypes_are_not_registered_as_working_representations(self):
         packs = validate_catalog(ROOT / "avatar-packs")
-        self.assertEqual(len(packs), 51)
-        self.assertEqual(sum(len(p["profiles"]) for p in packs), 57)
-        self.assertEqual(sum(len(p["representations"]) for p in packs), 99)
+        self.assertEqual(len(packs), 56)
+        self.assertEqual(sum(len(p["profiles"]) for p in packs), 62)
+        self.assertEqual(sum(len(p["representations"]) for p in packs), 106)  # +1: Bender's locked screen look, +1: Truth's card
         archived = 0
         for pack in packs:
             for key, source in pack["sources"].items():

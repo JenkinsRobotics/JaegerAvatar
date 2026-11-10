@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: pip
 name: Pip
-version: 0.1.0
+version: 0.2.0
 description: 3D robot
 default_profile: nori_demo
 default_representation: nori_demo

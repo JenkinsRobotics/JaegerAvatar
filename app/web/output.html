@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hardware stream · Jaeger Avatar</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  html, body { margin:0; min-height:100%; background:#0b0d12; color:#e6e9ef; font:14px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif; }
+  main { display:grid; justify-items:center; gap:10px; padding:16px; }
+  .tiny { font-size:12px; letter-spacing:.04em; color:#9aa3b2; }
+  .hwView { display:grid; gap:8px; justify-items:center; }
+  .hwView canvas { image-rendering:pixelated; border-radius:8px; background:#05070b; max-width:calc(100vw - 32px); }
+  .standIn { max-width:520px; text-align:center; }
+  button { background:#1b1f2a; color:inherit; border:1px solid #2c3242; border-radius:8px; padding:4px 10px; font:inherit; cursor:pointer; }
+</style>
+</head>
+<body>
+<main id="view"></main>
+<script type="module">
+import { HARDWARE } from './hardware.js';
+import { mountViewer } from './output-view.js';
+// One simulated hardware stream, in a window of its own: output.html?hw=jp01&out=face
+const q = new URLSearchParams(location.search), hw = q.get('hw'), out = q.get('out'), main = document.getElementById('view');
+if (HARDWARE[hw]?.outputs.some(o => o.id === out)) {
+  document.title = `${HARDWARE[hw].name} ${out} · hardware stream`;
+  mountViewer(main, hw, out, { size: Math.min(innerWidth, innerHeight) - 120 });
+} else main.textContent = 'No such hardware output. Open one from the Outputs tab under the app.';
+</script>
+</body>
+</html>

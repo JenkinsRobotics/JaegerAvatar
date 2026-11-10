@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: truth
 name: Truth
-version: 0.1.0
+version: 0.2.1
 description: Fan persona of Truth, the being behind the Gate in Fullmetal Alchemist, as a seated white
   3D figure with a wide grin. Personal fan study; rights not cleared.
 default_profile: fan_persona
@@ -49,6 +49,33 @@ profiles:
 
           I find you fascinating. You reach for what you cannot hold, you pay, and you reach again. That
           is why I will always answer you. Then I will tell you what it cost.'
+      performance:
+        sounds:
+          neutral: I am here.
+          joy: '[laugh] Delightful.'
+          excited: '[laugh] Oh, how interesting!'
+          love: How touching.
+          sad: '[sigh] Such a pity.'
+          angry: Careful, little one.
+          surprised: '[gasp] Oh?'
+          scared: Fear suits you.
+          thinking: '[hmm] Everything has a price.'
+          confused: Hm? Explain yourself.
+          shy: Oh, flattery.
+          smug: Heh. I know.
+          sleepy: Even I rest.
+          laughing: '[laugh] Ha ha ha!'
+          singing: La, la, laaa.
+          wink: Heh.
+          wave: Hello, visitor.
+          nod: Indeed.
+          bounce: Heh.
+          clap: '[laugh] Bravo. Bravo.'
+          lean: Ahh. Comfortable.
+          sway: Mm. Mm.
+          stand: Let me look at you.
+          sit: I'll sit a while.
+          kneel: Back to my place.
       traits:
         hexaco:
           openness: 0.9
@@ -107,11 +134,36 @@ profiles:
         - Rewards whoever learns the lesson rather than the trick
     card: card.png
 representations:
+  card:
+    format: character/v1
+    root: .
+    presentation:
+      kind: clip_set
+      assets:
+        primary:
+          file: card.png
+          type: image
+          adapter: image
+      default_asset: primary
+      render:
+        adapter: image
+        asset: card.png
+        ideal_size: [512, 774]
+        framing: fit
+        scaling: smooth
+      expressions:
+        idle:
+          clips: card.png
+          loop: false
+      default_expression: idle
   jaeger_rig:
     format: avatar/rig-v1
     root: .
     presentation:
       kind: rig
+      controls:   # what an agent may drive: its body moves; it has no eye reactions
+        reactions: []
+        actions: [clap, lean, sway, stand, sit, kneel]
       render:
         adapter: nori-3d
         preset: truth

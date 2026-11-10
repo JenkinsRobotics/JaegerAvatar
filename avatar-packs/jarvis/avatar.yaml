@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: jarvis
 name: Jarvis
-version: 0.1.0
+version: 0.2.0
 description: Iron Man's JARVIS — the dry British household AI, transplanted to this machine.
 default_profile: jaeger_ai
 default_representation: jaeger_ai

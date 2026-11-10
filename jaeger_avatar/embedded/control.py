@@ -6,6 +6,19 @@ import uuid
 
 class ControlError(ValueError): pass
 
+def speech(v, numeric):
+    """A speak value: an uploaded clip the host plays, how long it lasts, its lip closures, and its words."""
+    if not isinstance(v,dict) or set(v)!={'clip','duration_ms','marks','text'}:raise ControlError('Speak needs clip, duration_ms, marks and text')
+    clip,ms,marks,text=v['clip'],v['duration_ms'],v['marks'],v['text']
+    if not isinstance(clip,str) or not clip.startswith('/control/audio/') or len(clip)>64:raise ControlError('Speak clip must be an uploaded /control/audio/ clip')
+    if not numeric(ms) or not 1<=ms<=60000:raise ControlError('Speak duration_ms must be 1 to 60000')
+    if not isinstance(text,str) or len(text)>600:raise ControlError('Speak text is at most 600 characters')
+    if not isinstance(marks,list) or len(marks)>400:raise ControlError('Speak has at most 400 marks')
+    for m in marks:
+        if not (isinstance(m,list) and len(m)==3 and numeric(m[0]) and numeric(m[1]) and m[2] in ('p','f') and 0<=m[0]<=m[1]<=ms/1000):
+            raise ControlError('Each mark is [start_s, end_s, "p" or "f"] inside the clip')
+    return {'clip':clip,'duration_ms':ms,'marks':[list(m) for m in marks],'text':text}
+
 class Controller:
     def __init__(self, manifest, clock=None):
         self.manifest=manifest
@@ -13,14 +26,16 @@ class Controller:
         self.session=uuid.uuid4().hex
         self.sequence=0
         self.lock=threading.RLock()
-        self.state={}
+        self.state={'stop_seq':0}
         self._reset()
 
     def _reset(self):
-        self.state={'emotion':'neutral','reaction':'','reaction_seq':0,'gaze':[0,0],
+        self.state={'stop_seq':self.state['stop_seq'],'emotion':'neutral','reaction':'','reaction_seq':0,'gaze':[0,0],
                     'clip':'','clip_seq':0,'clip_started_at_ms':0,'clip_until_ms':0,
                     'speaking':False,'jaw':0,'emotion_until_ms':0,'gaze_until_ms':0,
-                    'jaw_until_ms':0,'speaking_until_ms':0,'reaction_until_ms':0}
+                    'jaw_until_ms':0,'speaking_until_ms':0,'reaction_until_ms':0,
+                    'act':'','act_seq':0,'act_until_ms':0,
+                    'speak':None,'speak_seq':0,'speak_started_at_ms':0,'speak_until_ms':0}
 
     def send(self, op, value=None, ttl_ms=5000):
         with self.lock:
@@ -45,6 +60,13 @@ class Controller:
             elif op=='reaction':
                 if v not in self.manifest['capabilities']['reactions']:raise ControlError('Unknown reaction')
                 self.state.update(reaction=v,reaction_seq=seq,reaction_until_ms=until)
+            elif op=='act':
+                if not isinstance(v,str) or v not in self.manifest['capabilities'].get('actions',[]):raise ControlError('Unknown action')
+                self.state.update(act=v,act_seq=seq,act_until_ms=until)
+            elif op=='speak':
+                v=speech(v,numeric)
+                end=at+v['duration_ms']
+                self.state.update(speak=v,speak_seq=seq,speak_started_at_ms=at,speak_until_ms=end,speaking=True,speaking_until_ms=end)
             elif op=='clip':
                 if not isinstance(v,str) or v not in self.manifest['capabilities'].get('clips',{}):raise ControlError('Unknown clip')
                 self.state.update(clip=v,clip_seq=seq,clip_started_at_ms=at,clip_until_ms=until)
@@ -60,7 +82,7 @@ class Controller:
                 self.state.update(jaw=v,jaw_until_ms=until)
             elif op=='stop':
                 if v is not None:raise ControlError('Stop has no value')
-                self._reset()
+                self._reset();self.state['stop_seq']=seq
             else:raise ControlError('Unknown operation')
             self.sequence=seq
             return self.snapshot()
@@ -68,7 +90,7 @@ class Controller:
     def snapshot(self):
         with self.lock:
             now=self.clock();s=dict(self.state)
-            for key,default in [('emotion','neutral'),('reaction',''),('gaze',[0,0]),('speaking',False),('jaw',0),('clip','')]:
+            for key,default in [('emotion','neutral'),('reaction',''),('gaze',[0,0]),('speaking',False),('jaw',0),('clip',''),('act',''),('speak',None)]:
                 if now>=s[key+'_until_ms']:s[key]=default
             if not s['speaking']:s['jaw']=0
             return {'schema':'avatar-state/v1','avatar':self.manifest['avatar'],'session':self.session,

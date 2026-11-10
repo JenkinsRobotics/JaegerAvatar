@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: emotes
 name: Emotes
-version: 0.1.0
+version: 0.2.0
 description: Nine enlarged square LED-matrix emotions in two mouth states, plus eight authored six-frame
   strips that animate neutral idle into each other emotion.
 default_profile: mochi

@@ -4,7 +4,7 @@
 
 - A runnable local application at `./run.sh` / http://127.0.0.1:8790/, using
   Nori's app, rig, camera and presentation as the foundation.
-- 51 avatar packs, 57 profiles and 99 representations (Truth added Nov 8: fan persona on its own 3D body, `nori-3d` preset `truth` in `app/web/render-truth.js`; personal fan study, rights not cleared). The prior 39-pack library
+- 56 avatar packs, 62 profiles and 104 representations (JP01 added Nov 9, with face packs JP01 Matrix / T-Face / Ring Eyes / Neon (mood-driven emotes) painted by `app/web/kin/jp01.js`, which also holds the firmware wake-up and the 24-LED side rings: Jenkins Robotics' pan-tilt display head, `kin-momo` preset `jp01` in `app/web/kin/renderer.js`, loading the real Onshape assembly (`avatar-packs/jp01/model/jp01.glb`: hardware removed, decimated to 300k triangles, head posed forward; pan at the neck bearing, tilt at the NeoPixel hub; a Face menu switches faces live, including Mochi eyes + mouth lip synced with Vita's vowels) with a procedural fallback, and Momo's eyes laid out for its square screen. Truth added Nov 8: fan persona on its own 3D body, `nori-3d` preset `truth` in `app/web/render-truth.js`; personal fan study, rights not cleared). The prior 39-pack library
   is preserved; the demo import adds 13 live representations across 12 identities,
   including both Vita looks, Momo, all ten Nori characters and archived Aster.
 - Every pack has a live rig. The other 38 packs got a built-in rig restyled with
@@ -41,6 +41,20 @@ late results/bitmaps cannot revive a stopped session and non-finite tracking
 values are rejected. Five synthetic lifecycle/mapping tests pass alongside the
 existing rig and three lip-sync tests. Physical webcam and permission-dialog
 acceptance remains unverified; these tests do not measure tracking accuracy.
+
+## External control and hardware streams — November 10, 2026
+
+- `avatar-control/v1` gains `act` and `speak` (an uploaded clip, its duration,
+  lip closures and text) and reports `stop_seq`.
+- Packs may declare `presentation.controls`; an agent is offered exactly those.
+  JP01 and Truth declare theirs.
+- The demo server exposes a loopback, token-protected control link (`/control`).
+  The page attaches with the body's controls, follows every command and logs it
+  under Inputs. `scripts/avatar_control.py` is an example external agent and TTS.
+- Under the stage, Outputs shows each simulated hardware stream at native size
+  (JP01 face 64 × 64 and both rings, Mochi 256 × 256) at 60 fps, inline or in its
+  own window. Face streams are stand-ins (the twin scaled down) until a pack ships
+  a native-resolution look.
 
 ## Still planned / limited
 
@@ -149,3 +163,16 @@ with named agent/manual actions and a version-pinned consumer lock file. Patch
 the correct scale. Mochi's React desktop consumer uses the shared renderer
 and its own JaegerAgent/Kokoro/Whisper services. This does not add those services
 to JaegerAvatar or qualify physical robot deployment.
+
+## Mochi audiovisual pack 0.3.0 — November 9, 2026
+
+Mochi now contains original procedural Foley/synth WAV tracks for all ten clips
+and selected reactions/emotions, with a portable Web Audio performance player.
+The desktop Mochi consumer aligns audio to clip start time, cancels it on Stop,
+mute, replacement and disposal, and ducks effects during speech. Speech synthesis
+remains the host's Kokoro service. These are cartoon effects, not recorded human
+vocal performances. The canonical pack owns the WAV assets and timing metadata;
+no commercial reference audio is sampled. Other consumers must explicitly mount
+the player; adding files does not automatically enable sound in every older demo.
+The embedded builder supports a checksummed visual baseline so this audio release
+can preserve the deployed renderer while unrelated visual work continues.

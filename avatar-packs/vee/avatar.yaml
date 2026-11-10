@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: vee
 name: Vee
-version: 0.1.0
+version: 0.2.0
 description: LED visor
 default_profile: nori_demo
 default_representation: nori_demo

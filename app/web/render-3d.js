@@ -3,14 +3,14 @@
 // Four bodies share one chassis: a human bust (Maya), a humanoid robot (Rook), an astronaut bot (Pip), a box bot (Bo).
 // ponytail: SDFs need a real GPU. For robot-grade hardware, map the same rig channels to glTF morph targets.
 import { drawFx } from './rig.js';
-import { TRUTH } from './render-truth.js';
+import { TRUTH, TruthBody } from './render-truth.js';
 
 export const NAMES = ['lidL', 'lidR', 'low', 'arc', 'squeeze', 'heart', 'pupil', 'browL', 'browR', 'tilt', 'gazeX', 'gazeY', 'jaw', 'wide', 'round', 'teeth', 'smile', 'mouthX', 'yaw', 'pitch', 'roll', 'lean', 'crouch', 'lift', 'blush', 'glow', 'sparkle', 'tear', 'droop', 'tintR', 'tintG', 'tintB', 'antX', 'antY', 'energy'];
 const DEFINES = NAMES.map((n, i) => `#define ${n} u[${i}]`).join('\n');
 
 export const PRELUDE = `#version 300 es
 precision highp float;
-uniform float uClear; uniform vec2 res; uniform float time; uniform float u[${NAMES.length}]; uniform vec3 arm[6];
+uniform float uClear,uTurn,uZoom; uniform vec2 res; uniform float time; uniform float u[${NAMES.length}]; uniform vec3 arm[6];
 out vec4 frag;
 ${DEFINES}
 #define tint vec3(tintR,tintG,tintB)
@@ -115,12 +115,13 @@ vec3 surface(Mat m,vec3 p,vec3 n,vec3 rd,float ao,float sh){
 }
 void main(){
   vec2 px=(gl_FragCoord.xy-.5*res)/min(res.x,res.y)*2.;
-  vec3 ro=CAM,rd=normalize(vec3(px+CAMSHIFT,-FOCAL));
+  vec3 ro=CAM,rd=normalize(vec3(px*uZoom+CAMSHIFT,-FOCAL));
+  ro.xz*=rot(uTurn); rd.xz*=rot(uTurn);                                    // the view buttons orbit the camera round the character
   vec3 col=background(px);
   float tFloor=rd.y<0.?(FLOOR-ro.y)/rd.y:1e9;
-  float t=max(ro.z-BOUND,.01),id=0.;
+  float t=max(length(ro.xz)-BOUND,.01),id=0.;
   bool hit=false;
-  float tEnd=ro.z+BOUND;
+  float tEnd=length(ro.xz)+BOUND;
   for(int i=0;i<110;i++){
     vec2 h=map(ro+rd*t);
     if(h.x<.001*t){hit=true;id=h.y;break;}
@@ -671,7 +672,7 @@ void material(float id,vec3 p,vec3 n,vec3 rd,inout Mat m){
 // Shoulder, arm lengths and how far each body's arms move; forearm reach is computed here, not in the shader.
 const BODIES = {
   human: { src: HUMAN },
-  truth: { src: TRUTH },
+  truth: { src: TRUTH, skeleton: () => new TruthBody() },   // posed from a joint skeleton (TJ), not just arms
   droid: { src: DROID, shoulder: [1.12, 1.02, 0], l1: 0.9, l2: 0.88, rest: 0.14, baseF: 0.26 },
   astro: { src: ASTRO, shoulder: [0.78, -0.3, 0], l1: 0.5, l2: 0.5, rest: 0.2, baseF: 0.22 },
   cube: { src: CUBE, shoulder: [0.32, -0.86, 0], l1: 0.2, l2: 0.22, rest: 0.6, baseF: 0.2 },
@@ -699,11 +700,15 @@ export class Char3D {
     gl.useProgram(pr); this.pr = pr;
     this.loc = { res: gl.getUniformLocation(pr, 'res'), time: gl.getUniformLocation(pr, 'time'), u: gl.getUniformLocation(pr, 'u'), arm: gl.getUniformLocation(pr, 'arm') };
     this.vals = new Float32Array(NAMES.length); this.joints = new Float32Array(18);
+    this.turnTo = 0; this.turn = 0; this.fullLock = false; this.zoom = 1;   // the view buttons: F ¾ S B and Full
+    this.skel = this.body.skeleton?.(); this.poses = this.skel?.poses; this.loc.TJ = gl.getUniformLocation(pr, 'TJ'); this.t = 0;
     gl.bindVertexArray(gl.createVertexArray());
     this.ant = { x: 0, y: 0, vx: 0, vy: 0, py: 0, pl: 0 };
     this.scale = 1; this.slow = 0;
     this.arms = [[0, 0, 0, 0], [0, 0, 0, 0]];   // upper-arm angle and velocity, forearm angle and velocity, with follow-through
   }
+
+  pose(name) { this.skel?.play(name, this.t); }   // a body move: kneel, sit, stand, lean, sway, clap
 
   // Forward kinematics for both arms: a pose from the rig, settled by a spring so hands lag the body.
   solveArms(o, t, dt) {
@@ -736,7 +741,7 @@ export class Char3D {
     a.vy += (-140 * a.y - 8 * a.vy - (l - a.pl) / step * 12) * dt; a.y += a.vy * dt; a.pl = l;
     const ext = { antX: a.x, antY: a.y };
     NAMES.forEach((n, i) => { this.vals[i] = ext[n] ?? o[n] ?? 0; });
-    this.solveArms(o, rig.t, Math.min(dt, 1 / 30));
+    this.solveArms(o, rig.t, Math.min(dt, 1 / 30)); this.t = rig.t;
 
     // Hold 60fps by trading resolution, the one knob an SDF has.
     if (dt > 1 / 45) this.slow++; else this.slow = Math.max(0, this.slow - 0.25);
@@ -745,9 +750,12 @@ export class Char3D {
     if (this.c.width !== w || this.c.height !== h) { this.c.width = w; this.c.height = h; gl.viewport(0, 0, w, h); }
     gl.uniform2f(this.loc.res, w, h);
     gl.uniform1f(this.loc.time, rig.t);
+    this.turn += (this.turnTo - this.turn) * (1 - Math.exp(-dt * 6)); this.zoom += ((this.fullLock ? 1.35 : 1) - this.zoom) * (1 - Math.exp(-dt * 6));
+    gl.uniform1f(gl.getUniformLocation(this.pr, 'uTurn'), this.turn); gl.uniform1f(gl.getUniformLocation(this.pr, 'uZoom'), this.zoom);
     gl.uniform1f(gl.getUniformLocation(this.pr, 'uClear'), document.body.dataset.bg && document.body.dataset.bg !== 'room' ? 1 : 0);
     gl.uniform1fv(this.loc.u, this.vals);
     gl.uniform3fv(this.loc.arm, this.joints);
+    if (this.skel) gl.uniform3fv(this.loc.TJ, this.skel.step(o, rig.t, dt));
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 
     const oc = this.oc;

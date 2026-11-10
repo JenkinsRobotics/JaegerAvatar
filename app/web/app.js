@@ -6,6 +6,13 @@ import * as voice from './voice.js';
 import { OledFace, VisorFace, DISPLAY } from './render-led.js';
 import { MOVES } from './motion.js';
 import { REACTIONS } from './eyes.js';
+import { FACE_CHOICES, FACES } from './kin/jp01.js';
+import { RENDERER, fromPack, styledFace } from './kin/styles.js';
+import { STYLES, styleOf, styleCard, LIVE, faceSheet, sheetPng, assetCard } from './exhibit.js';
+import { controlsOf } from './controls.js';
+import { startControlLink } from './control-link.js';
+import { HARDWARE, hardwareFor, publish as publishHardware } from './hardware.js';
+import { mountViewer } from './output-view.js';
 import { AnimeChar, TIMING } from './render-anime.js';
 import { Char3D } from './render-3d.js';
 import { VrmChar, STAGE } from './render-vrm.js';
@@ -27,6 +34,25 @@ let startupRequest=0;
 const PACKS = await (await fetch('/api/avatars')).json();
 $('#libraryOpen').textContent='Avatar library · '+PACKS.length;
 const CHARACTERS = charactersFromPacks(PACKS);
+// Any personality can drive any body: a profile is the mind (name, voice, prompt), a representation is the body.
+function setPersona(c, value) {
+  const [packId, profileId] = value.split('/'), pack = PACKS.find(p => p.id === packId), p = pack?.profiles.find(x => x.id === profileId);
+  if (!p) return false;
+  c.ownName ??= c.name; c.ownKokoro ??= c.kokoro; c.personaPack = packId; c.profileId = profileId;
+  const own = packId === c.packId;   // its own pack's profile keeps the body's tuned name and voice unless the profile says otherwise
+  c.name = own ? c.ownName : p.character?.name || pack.name;
+  c.kokoro = p.character?.identity?.voice_id || c.ownKokoro;
+  c.look = own ? undefined : wear(c, pack) ?? (FACES['style:' + packId] ? 'style:' + packId : undefined);   // a display body wears the character's look
+  return true;
+}
+// The character's own locked screen look, if its pack has one for this display and this host draws its renderer version.
+function wear(c, pack) {
+  const look = pack.representations.find(r => r.format === 'avatar/screen-look-v1')?.screen, display = c.rep.preset === 'jp01' ? 'square' : 'wide';
+  if (look?.renderer !== RENDERER || !look.displays.includes(display)) return;
+  FACES['look:' + pack.id] ??= styledFace(fromPack(look.style, pack.name));
+  return 'look:' + pack.id;
+}
+for (const [id, v] of Object.entries(saved.personas ?? {})) { const c = CHARACTERS.find(c => c.id === id); if (c) setPersona(c, v); }
 // The model you loaded last time comes back.
 const MODEL_STORE = 'jaeger-avatar-models', DEFAULT_MODEL = params.get('model') ?? CHARACTERS.find(c=>c.id==='vita').rep.asset;
 const storedModel = async () => { try { const r = await (await caches.open(MODEL_STORE)).match('/my-model'); return r ? r.blob() : null; } catch { return null; } };
@@ -43,29 +69,154 @@ for (const ch of CHARACTERS) {
   $('#stage').prepend(p);
   panes[ch.id] = p;
 }
-const faceFor = id => (faces[id] ??= CHARACTERS.find(c => c.id === id).make(panes[id].querySelector('canvas'), panes[id].querySelector('.ov')));
+const faceFor = id => (faces[id] ??= dress(CHARACTERS.find(c => c.id === id), CHARACTERS.find(c => c.id === id).make(panes[id].querySelector('canvas'), panes[id].querySelector('.ov'))));
+function dress(c, f) { if (f.stage) f.stage.faceStyle = c.look ?? c.rep.defaults?.face; return f; }
 let view = (params.get('face') ?? saved.view) === 'all' ? 'all' : current.id;
 
-for (const [id, label] of [...CHARACTERS.filter(c=>c.featured).map(c => [c.id, c.label]), ['all', 'All']]) {
-  const b = document.createElement('button');
-  b.textContent = label; b.setAttribute('role', 'tab'); b.dataset.id = id;
-  b.onclick = () => setView(id);
-  $('#tabs').append(b);
+// One tab per character; the stage's render switch picks how that character is shown (3D, 2D, Card, LED...).
+const RENDER_KIND = c => c.rep.adapter === 'media' ? (c.rep.mediaType === 'video' ? 'Clips' : 'Card') : ({ 'nori-led': 'LED', 'jaeger-study': 'Vector', 'nori-anime': '2D' }[c.rep.adapter] ?? '3D');
+function rendersOf(c) {
+  const list = CHARACTERS.filter(x => x.packId === c.packId), seen = {};
+  return list.map(x => {
+    const kind = RENDER_KIND(x), own = (x.rep.name || x.label || '').replace(x.pack.name, '').replace(/^[\s·-]+/, '');
+    let label = list.filter(y => RENDER_KIND(y) === kind).length > 1 && own ? own : kind;
+    seen[label] = (seen[label] ?? 0) + 1; if (seen[label] > 1) label += ' ' + seen[label];
+    return [x, label];
+  });
 }
+// The top row: this character's bodies and modes (3D, 2D, Card, LED...). Characters are chosen in the library.
+function fillRenders() {
+  const who = document.createElement('span'); who.className = 'who'; who.textContent = current.pack.name;
+  $('#tabs').replaceChildren(who, ...rendersOf(current).map(([c, label]) => {
+    const b = document.createElement('button'); b.textContent = label; b.title = c.label + ' · ' + c.tag; b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', view !== 'all' && c === current); b.onclick = () => setView(c.id);
+    return b;
+  }));
+}
+// Everything the worn pack brings, laid out at the bottom of the page; each one plays or shows on the avatar when picked.
+function fillAssets() {
+  const c = current, f = faces[c.id], persona = PACKS.find(p => p.id === (c.personaPack || c.packId)) ?? c.pack;
+  $('#assetsTitle').textContent = 'Pack assets · ' + persona.name + (persona.id !== c.packId ? ' on ' + c.pack.name : '');
+  const chip = (label, title, on, run) => { const b = document.createElement('button'); b.textContent = label; b.title = title; if (on != null) b.setAttribute('aria-pressed', on); b.onclick = run; return b; };
+  const group = (name, items) => { if (!items.length) return null; const g = document.createElement('div'), h = document.createElement('div'), row = document.createElement('div'); g.className = 'group'; h.className = 'tiny'; h.textContent = name + ' · ' + items.length; row.className = 'chips'; row.append(...items); g.append(h, row); return g; };
+  const sounds = ownSounds(c), worn = f?.stage?.faceStyle ?? '';
+  const faces_ = f?.stage ? [...(c.look?.startsWith('look:') ? [[c.look, c.name + "'s own look"]] : []), ...FACE_CHOICES]
+    .map(([v, label]) => chip(label, 'Show this face on the screen', worn === v, () => { f.stage.faceStyle = v || undefined; fillAssets(); fillMoves(); })) : [];
+  const moves = c.led ? Object.keys(REACTIONS) : c.moves ? Object.keys(MOVES) : f?.poses ?? ['wave', 'nod', 'bounce'];
+  const media = rendersOf(c).filter(([x]) => x.rep.adapter === 'media').map(([x, label]) => {
+    const b = chip(x.rep.mediaType === 'image' ? '' : '▶ ' + label, x.label, x === c, () => setView(x.id));
+    if (x.rep.mediaType === 'image') { const i = new Image(); i.src = x.rep.asset; i.alt = label; b.append(i); }
+    return b;
+  });
+  $('#assetGroups').replaceChildren(...[
+    group('Feelings', Object.keys(EMOTIONS).map(n => chip(`${FEELING[n]?.[0] ?? '○'} ${FEELING[n]?.[1] ?? n}`, sounds[n] ? 'Says: ' + sounds[n] : 'Expression', null, () => express(n)))),
+    group('Moves', moves.map(n => chip(`${ACT_LOOK[n]?.[0] ?? ''} ${ACT_LOOK[n]?.[1] ?? n}`.trim(), sounds[n] ? 'Says: ' + sounds[n] : 'Move', null, () => express(n)))),
+    group('Faces', faces_),
+    group('Voice lines', Object.entries(sounds).map(([n, line]) => chip(line.replace(/\[[^\]]+\]\s*/g, '') || n, n + ': ' + line, null, () => express(n)))),
+    group('Images & clips', media),
+  ].filter(Boolean));
+  fillExhibit(persona);
+  fillAgent(persona);
+  fillOutputs();
+}
+// --- Under the stage: tabs for outputs, inputs, agent controls and how this is animated -----------------------------
+function showPane(id) {
+  for (const b of document.querySelectorAll('#bottomTabs button')) b.setAttribute('aria-selected', b.dataset.pane === id);
+  for (const p of document.querySelectorAll('.tabPane')) p.classList.toggle('on', p.id === id);
+  remember({ bottomTab: id });
+  if (id === 'paneOutputs') fillOutputs(); else { $('#hwList').replaceChildren(); outputsFor = ''; }
+  if (id === 'paneAgent') fillAgent(PACKS.find(p => p.id === (current.personaPack || current.packId)) ?? current.pack);   // a stream is only made while someone watches it
+}
+for (const b of document.querySelectorAll('#bottomTabs button')) b.onclick = () => showPane(b.dataset.pane);
+$('#toExhibit').onclick = e => { e.preventDefault(); showPane('paneHow'); $('#exhibit').scrollIntoView({ behavior: 'smooth' }); };
+// Outputs: the body's hardware streams, inline and in windows of their own.
+let outputsFor = '';
+function fillOutputs() {
+  if (!$('#paneOutputs').classList.contains('on')) return;
+  const hw = hardwareFor(current), key = current.id + '|' + hw;
+  if (key === outputsFor && $('#hwList').children.length) return;
+  outputsFor = key;
+  if (!hw) { $('#hwList').replaceChildren(tag('p', 'lead', `${current.label} is shown on this screen only: it isn't the digital twin of a hardware device yet. JP01 and Mochi bodies have hardware streams.`)); return; }
+  $('#hwList').replaceChildren(...HARDWARE[hw].outputs.map(out => {
+    const card = tag('div', 'hwCard'), open = tag('button', null, 'Open stream in a window ↗');
+    mountViewer(card, hw, out.id, { size: out.kind === 'ring' ? 180 : out.w <= 64 ? 256 : 256 });
+    open.onclick = () => window.open(`output.html?hw=${hw}&out=${out.id}`, `${hw}-${out.id}`, 'width=560,height=680');
+    card.append(tag('div', 'tiny', out.note), open);
+    return card;
+  }));
+}
+// Inputs: every command the avatar is given, newest first.
+function logInput(kind, text) {
+  const row = tag('div', 'row'), d = new Date();
+  row.append(tag('span', 't', d.toLocaleTimeString([], { hour12: false }) + '.' + String(d.getMilliseconds()).padStart(3, '0').slice(0, 1)), tag('span', 'k', kind), tag('span', null, text));
+  $('#inLog').prepend(row);
+  while ($('#inLog').children.length > 120) $('#inLog').lastChild.remove();
+}
+// Agent controls: what the agent is offered, the same lists /chat sends, and who is driving.
+// The pack's declared controls; what it leaves out is what this body can do today.
+const controls = () => controlsOf(current.rep, { led: current.led, moves: current.moves ? Object.keys(MOVES) : [], poses: faces[current.id]?.poses ?? [] });
+const agentActions = () => { const c = controls(); return [...c.reactions, ...c.actions]; };
+function fillAgent(persona) {
+  const card = (title, ...body) => { const c = tag('div', 'panel'); c.append(tag('h4', null, title), ...body); return c; };
+  const list = items => { const p = tag('p'); p.append(...items.flatMap((x, i) => [...(i ? [', '] : []), tag('code', null, `[${x}]`)])); return p; };
+  const sounds = ownSounds(current);
+  $('#agentInfo').replaceChildren(
+    card('Who is driving', tag('p', null, `Mind: ${persona.name} (${current.profileId ?? persona.defaultProfile}). Body: ${current.rep.name || current.name}. Brain: ${serverBrain ?? 'checking'}. Voice: ${chosenVoice() ?? 'built-in ' + current.voice}. Hearing: ${serverEars ? 'local speech-to-text' : 'off'}.`),
+      tag('p', 'lead', 'The agent writes tags into its reply; the avatar turns each into a command. Nothing in the reply can reach hardware.')),
+    card('Feelings it can show', list(controls().emotions)),
+    card('Reactions offered to it', controls().reactions.length ? list(controls().reactions) : tag('p', null, 'None.')),
+    card('Body actions offered to it', controls().actions.length ? list(controls().actions) : tag('p', null, 'None: this body only shows feelings, reactions and speech.')),
+    card('Voice sounds', list(voice.VOCAL_NAMES)),
+    card('Its own lines', Object.keys(sounds).length ? tag('p', null, Object.entries(sounds).slice(0, 8).map(([k, v]) => `${k}: ${v}`).join(' · ')) : tag('p', null, 'None: the host\'s stand-in lines are used.')),
+  );
+}
+// Below the app: how this render is animated, the pack's other styles, a face sheet and the pack's files.
+const tag = (t, cls, text) => { const e = document.createElement(t); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+let sheetKey = '', sheetWanted = false, sheet = [];
+function fillExhibit(persona) {
+  const c = current, f = faces[c.id], card = styleCard(c.rep), row = tag('div'); row.id = 'exStyles';
+  $('#exTitle').textContent = `How ${c.label} is animated`;
+  for (const rep of persona.representations) {
+    const x = CHARACTERS.find(y => y.packId === persona.id && y.representationId === rep.id), b = tag('button', null, `${x?.label ?? rep.name ?? persona.name} · ${STYLES[styleOf(rep)].name}`);
+    b.setAttribute('aria-pressed', x === c); b.title = x ? 'Show this render' : 'Not playable here: its files are below';
+    b.onclick = () => x ? setView(x.id) : document.getElementById('ex-' + rep.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    row.append(b);
+  }
+  card.append(tag('div', 'tiny', `Styles in ${persona.name}'s pack`), row);
+  $('#exStyle').replaceChildren(card);
+  $('#exFiles').replaceChildren(...persona.representations.flatMap(rep => {
+    const cards = (rep.exhibit?.files ?? []).map(assetCard).filter(Boolean);
+    if (!cards.length) return [];
+    const box = tag('div', 'asset'); box.id = 'ex-' + rep.id;
+    box.append(tag('h4', null, `${rep.name || persona.name} · ${STYLES[styleOf(rep)].name}` + (rep.supported ? '' : ' · source only')), ...cards);
+    return [box];
+  }));
+  if (!$('#exFiles').children.length) $('#exFiles').append(tag('p', 'lead', 'Nothing but code: this pack ships no pictures or clips for this character.'));
+  const key = c.id + '|' + (f?.stage?.faceStyle ?? '');
+  if (key !== sheetKey) { sheetKey = key; sheetWanted = true; sheetSeen.unobserve($('#exSheet')); sheetSeen.observe($('#exSheet')); }
+}
+const sheetSeen = new IntersectionObserver(e => { if (sheetWanted && e.some(x => x.isIntersecting)) { sheetWanted = false; drawSheet(); } });
+function drawSheet() {
+  const host = tag('div'); host.style.display = 'contents'; $('#exSheet').replaceChildren(host); sheet = [];
+  if (!LIVE.has(styleOf(current.rep))) { host.append(tag('p', 'lead', 'This render is made of fixed pictures, not code, so its faces are the files below.')); return; }
+  faceSheet(current, faces[current.id], host).then(cells => { sheet = cells; }).catch(e => host.append(tag('p', 'lead', 'Could not draw the sheet: ' + e.message)));
+}
+$('#exPng').onclick = () => { if (!sheet.length) return; const a = tag('a'); a.href = sheetPng(sheet, `${current.label} · face sheet`); a.download = `${current.id}-face-sheet.png`; a.click(); };
 function setView(id) {
   for(const f of Object.values(faces))f.suspend?.();
   view = id;
   const next = CHARACTERS.find(c => c.id === id);
   if (next && next !== current) { stopAll(); current = next; rig.mode = 'idle'; rig.setEmotion('neutral'); hudStatic(); rig.gesture('wave'); }
   remember({ view: id });
-  for (const b of $('#tabs').children) b.setAttribute('aria-selected', b.dataset.id === id);
   $('#stage').className = id === 'all' ? 'all' : 'single';
   for (const [k, p] of Object.entries(panes)) p.classList.toggle('on', (id === 'all' && CHARACTERS.find(c=>c.id===k).featured) || id === k);
   if (id === 'vita' && !faces.vita) { const f = faceFor('vita'); watchLoad(f); showMeta(f.loaded); }
   showHistory();
   showVoices();
   fillViews();
+  fillRenders();
   fillProfiles();
+  queueMicrotask(fillAssets);   // after the face is built
   if (voiceList.length) setTimeout(preloadReel, 800);
   micState($('#mic').dataset.state ?? 'off');
   fillMoves();
@@ -178,8 +329,9 @@ async function fetchClip(text, voiceId, emotion, origin, turn) {
   if (!r.ok) {startupTrace("request-failed",{request,status:r.status});return null;}
   const raw=await r.arrayBuffer();startupTrace("response",{request});
   const {samples,sr}=readWav(raw);
-  const track=await work("analyze",samples,sr);startupTrace("clip-ready",{request,duration:samples.length/sr});
-  return {samples,sr,natural:true,track};
+  const marks=JSON.parse(r.headers.get('X-Lips')||'[]'),track=voice.markLips(await work("analyze",samples,sr),marks);
+startupTrace("clip-ready",{request,duration:samples.length/sr});
+  return {samples,sr,natural:true,track,marks,voiceId};
 }
 
 async function prepare(op, emotionAtQueue) {
@@ -251,7 +403,9 @@ async function playClip(c) {
     if (ctx.state === 'running') {
       const buf = ctx.createBuffer(1, c.samples.length, c.sr ?? SR), p = c.natural ? current.kp ?? 1 : current.pitch * (DELIVERY[rig.emotion] ?? 1);   // her own voice is never pitch-shifted
       // ponytail: a ring modulator is the whole robot voice effect; a real vocoder if it needs more character
-      const out = current.robot ? c.samples.map((s, i) => s * (0.78 + 0.22 * Math.sin(i * 0.0171))) : c.samples;
+      // Clips arrive at about half scale; each is brought up near full scale (at most doubled) so she is never too quiet.
+      const peak = c.samples.reduce((m, x) => Math.max(m, Math.abs(x)), 0), lift = Math.min(2, 0.95 / (peak || 1));
+      const out = c.samples.map((s, i) => s * lift * (current.robot ? 0.78 + 0.22 * Math.sin(i * 0.0171) : 1));
       buf.copyToChannel(out, 0);
       const src = ctx.createBufferSource(); src.buffer = buf; src.playbackRate.value = p; src.connect(speaker());
       const startAt = ctx.currentTime + 0.02;
@@ -284,6 +438,7 @@ const queue = [];
 let reel = null, reelPaused = false, chatAbort = null;
 let spoken = '', runId = 0, running = false, owner = -1, pushEmotion = 'neutral', firstSoundAt = 0, lastLatency = null, sentAt = 0;
 function stopAll() {
+  if (queue.length || clip) logInput('stop', 'speech and motion cleared together');
   runId++; queue.length = 0;
   if(song){song.off=true;if(song.id)fetch('/singer/stop',{method:'POST',body:JSON.stringify({id:song.id})}).catch(()=>{});song=null;}
   if(chatAbort)fetch('/agent/interrupt',{method:'POST',body:JSON.stringify({session:sessionId(),pack:current.packId})}).catch(()=>{});
@@ -317,6 +472,7 @@ async function run() {
   running = true;
   while (queue.length && id === runId) {
     const op = queue.shift();
+    if (op.type !== 'chapter') logInput(op.type === 'say' ? 'speak' : op.type === 'emotion' ? 'feel' : op.type === 'gesture' ? 'act' : op.type, op.text ?? op.name ?? '');
     if (op.type === 'chapter') {
       if (op.at === 0) {                       // her first lines are short, so start only once the next ones are ready to follow straight on
         $('#chapterText').textContent = 'Getting ready…';
@@ -338,6 +494,7 @@ async function run() {
     }
     const c = await op.ready;
     if (id !== runId) break;
+    if (c?.track) logInput('speech audio', `${c.track.dur.toFixed(2)} s${c.voiceId ? ' from ' + c.voiceId : ''}` + (c.marks ? `, ${c.marks.filter(m => m[2] === 'p').length} lip closures (m/b/p), ${c.marks.filter(m => m[2] === 'f').length} lip tucks (f/v)` : ', mouth from the sound alone'));
     if (!firstSoundAt && sentAt) { firstSoundAt = performance.now(); lastLatency = firstSoundAt - sentAt; }
     rig.mode = 'speaking';
     const prev = rig.emotion;
@@ -371,7 +528,22 @@ const wait = s => new Promise(r => setTimeout(r, s * 1000));
 // One set of tags, and each body does what it can with them: Vita moves her whole body, the display robots act with their eyes, the rest make a smaller gesture.
 const ON_DISPLAY = { spin: 'roll', dance: 'groove', hop: 'wake', celebrate: 'sparkle', clap: 'blink', bow: 'doze', point: 'sideeye' };
 const SMALLER = { spin: 'tilt', dance: 'bounce', hop: 'bounce', celebrate: 'bounce', clap: 'nod', bow: 'nod', heart: 'tilt', point: 'nod', sideeye: 'tilt', sparkle: 'bounce', roll: 'tilt', peek: 'tilt', doze: 'nod', groove: 'bounce', wake: 'bounce', blink: 'nod' };
+// Every button speaks as well as moves, in the character's own voice, so sound and expression arrive together.
+// The lines belong to the character: its pack profile's performance.sounds. These are the host's stand-ins
+// for a character whose pack has none for that button, like a body's default face.
+const SOUND = {
+  neutral: 'Hey there!', joy: '[yay]', excited: '[wow] This is so exciting!', love: 'Aww, I love you! Mwah!', sad: '[sigh] Oh no.',
+  angry: 'Hmph!', surprised: '[gasp]', scared: 'Eek!', thinking: '[hmm]', confused: 'Huh?', shy: '[giggle] Oh, stop it.',
+  smug: 'Heh. Told you.', sleepy: 'Mmm, so sleepy.',
+  blink: 'Hm?', wink: '[giggle]', sideeye: 'Really?', sparkle: '[ooh] Shiny!', heart: 'Mwah!', roll: 'Ugh, whatever.', peek: 'Peekaboo!',
+  doze: '[sigh] Just five more minutes.', groove: 'La la la!', wake: 'Oh! I am up!',
+  spin: 'Wheee!', dance: "Let's dance!", hop: 'Hup!', celebrate: '[yay] We did it!', clap: 'Bravo!', bow: 'Thank you, thank you.', point: 'Over there!',
+  wave: 'Hi there!', nod: 'Mm-hm.', bounce: '[yay]', lean: '[sigh] Ahh.', sway: 'Mm-hmm.', stand: 'Up we go.', sit: 'Let me sit.', kneel: 'There.',
+};
+const ownSounds = c => { const pack = PACKS.find(p => p.id === (c.personaPack || c.packId)); return pack?.profiles.find(p => p.id === c.profileId)?.character?.performance?.sounds ?? {}; };
+const express = name => perform(`[${name}] ${ownSounds(current)[name] ?? SOUND[name] ?? ''}`);
 function act(name) {
+  const body = faces[current.id]; if (body?.poses?.includes(name)) return body.pose(name);   // a posable body (Truth): kneel, lean, clap...
   if (current.led && (REACTIONS[name] || ON_DISPLAY[name])) rig.react(REACTIONS[name] ? name : ON_DISPLAY[name]);
   else if (current.moves && MOVES[name]) rig.move(name);
   else rig.gesture(SMALLER[name] ?? name);
@@ -428,7 +600,7 @@ async function ask(text, { idle = false } = {}) {
   try {
     if (serverBrain === 'scripted') throw new Error('scripted');
     chatAbort = new AbortController();
-    const r = await fetch('/chat', { method: 'POST', body: JSON.stringify({ messages: history, character: current.id, pack:current.packId, profile:current.profileId, session:sessionId() }), signal: chatAbort.signal });
+    const r = await fetch('/chat', { method: 'POST', body: JSON.stringify({ messages: history, character: current.id, pack: current.personaPack || current.packId, profile: current.profileId, body: current.rep.name || current.ownName || current.name, actions: agentActions(), session: sessionId() }), signal: chatAbort.signal });
     if (!r.ok) throw new Error('chat ' + r.status);
     const reader = r.body.pipeThrough(new TextDecoderStream()).getReader();
     let buf = '';
@@ -658,7 +830,7 @@ addEventListener('keydown', e => {
   else if (k === 'r') { e.preventDefault(); toggleRecording(); }
   else if (k === 'v') { e.preventDefault(); $('#abVoice').click(); }
   else if (e.code === 'Space' && reel && e.target.tagName !== 'BUTTON') { e.preventDefault(); pauseReel(); }
-  else if (KEYS[k]) { e.preventDefault(); act(KEYS[k]); }
+  else if (KEYS[k]) { e.preventDefault(); express(KEYS[k]); }
 });
 // Tap the character for a hello. Not while she's busy.
 $('#stage').addEventListener('click', e => { if (!e.target.closest('button') && !running && rig.mode === 'idle') act(current.led ? 'wake' : 'wave'); });
@@ -703,7 +875,7 @@ for (const name of Object.keys(EMOTIONS)) {
   if (['laughing', 'singing', 'listening'].includes(name)) continue;
   const b = document.createElement('button'), i = document.createElement('span');
   i.textContent = FEELING[name]?.[0] ?? '○'; i.setAttribute('aria-hidden', 'true'); b.append(i, FEELING[name]?.[1] ?? name); b.dataset.emotion = name;
-  b.onclick = () => { stopAll(); rig.mode = 'idle'; rig.setEmotion(name); rig.relaxIn(6); };
+  b.onclick = () => express(name);
   $('#emo').append(b);
 }
 // The feeling and state she's in, in words, under the stage and on the grid.
@@ -717,22 +889,32 @@ function moodUI() {
   $('#moodLabel').textContent = hearing ? 'Listening to you' : rig.mode === 'thinking' ? 'Thinking it over' : rig.emotion === 'neutral' ? (rig.mode === 'speaking' ? 'Talking' : 'Here with you') : label;
   for (const b of $('#emo').children) { const on = b.dataset.emotion === rig.emotion; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }
 }
+// JP01 can wear several faces; this switches the one on its screen live.
+function facePicker() {
+  const stage = () => faceFor(current.id).stage, pick = document.createElement('select');// looked up when used: the stage is built lazily
+  pick.setAttribute('aria-label', 'Face'); pick.title = 'Face on JP01\'s screen';
+  const worn = current.look?.startsWith('look:') ? [[current.look, current.name + "'s own look"]] : [];
+  for (const [value, label] of [...worn, ...FACE_CHOICES]) pick.add(new Option(label, value, false, (stage().faceStyle || '') === value));
+  pick.onchange = () => { stage().faceStyle = pick.value || undefined; fillAssets(); };
+  return pick;
+}
 // Moves or eye reactions, whichever this character has.
 function fillMoves() {
-  const names = current.led ? Object.keys(REACTIONS) : current.moves ? Object.keys(MOVES) : [];
+  const poses = faceFor(current.id).poses, names = current.led ? Object.keys(REACTIONS) : current.moves ? Object.keys(MOVES) : poses ?? [];
   $('#movesBox').hidden = !names.length; $('#displayRow').hidden = !current.led;
   $('#movesTitle').textContent = current.led ? 'Eye reactions' : 'Full-body moves';
   const button = (name, withKey) => {
     const b = document.createElement('button'), [icon, label] = ACT_LOOK[name] ?? ['', name];
-    b.append(`${icon} ${label}`); b.onclick = () => act(name);
+    b.append(`${icon} ${label}`); b.onclick = () => express(name);
     const k = withKey && Object.keys(KEYS).find(c => KEYS[c] === name);
     if (k) { const K = document.createElement('kbd'); K.textContent = k.toUpperCase(); b.append(K); }
     return b;
   };
   $('#moves').replaceChildren(...names.map(n => button(n, true)));
-  $('#quick').replaceChildren(...(current.rep.adapter==='jaeger-study' ? (['hal_9000','glados','tars','jarvis','helldiver','daft_punk_1','daft_punk_2'].includes(current.rep.preset)?[]:['wink']) : current.led ? ['wink', 'heart', 'peek'] : current.moves ? ['spin', 'dance', 'celebrate'] : ['wave', 'nod', 'bounce']).map(n => button(n, false)));
+  $('#quick').replaceChildren(...(current.rep.adapter==='jaeger-study' ? (['hal_9000','glados','tars','jarvis','helldiver','daft_punk_1','daft_punk_2'].includes(current.rep.preset)?[]:['wink']) : current.led ? ['wink', 'heart', 'peek'] : current.moves ? ['spin', 'dance', 'celebrate'] : poses ? ['clap', 'lean', 'sway'] : ['wave', 'nod', 'bounce']).map(n => button(n, false)));
+  if (current.rep.adapter === 'kin-momo') $('#quick').append(facePicker());
 }
-const ACT_LOOK = { spin: ['⟳', 'Spin'], dance: ['♫', 'Dance'], hop: ['↟', 'Hop'], celebrate: ['✷', 'Celebrate'], clap: ['✦', 'Clap'], bow: ['⌄', 'Bow'], heart: ['♡', 'Heart'], point: ['↗', 'Point'], blink: ['◡', 'Blink'], wink: ['◕', 'Wink'], sideeye: ['⌁', 'Side-eye'], sparkle: ['✧', 'Sparkle'], roll: ['↻', 'Eye roll'], peek: ['◒', 'Peekaboo'], doze: ['☾', 'Doze'], groove: ['♫', 'Groove'], wake: ['!', 'Wake up'], wave: ['✋', 'Wave'], nod: ['↓', 'Nod'], bounce: ['↟', 'Bounce'] };
+const ACT_LOOK = { spin: ['⟳', 'Spin'], dance: ['♫', 'Dance'], hop: ['↟', 'Hop'], celebrate: ['✷', 'Celebrate'], clap: ['✦', 'Clap'], bow: ['⌄', 'Bow'], heart: ['♡', 'Heart'], point: ['↗', 'Point'], blink: ['◡', 'Blink'], wink: ['◕', 'Wink'], sideeye: ['⌁', 'Side-eye'], sparkle: ['✧', 'Sparkle'], roll: ['↻', 'Eye roll'], peek: ['◒', 'Peekaboo'], doze: ['☾', 'Doze'], groove: ['♫', 'Groove'], wake: ['!', 'Wake up'], wave: ['✋', 'Wave'], nod: ['↓', 'Nod'], bounce: ['↟', 'Bounce'], lean: ['↶', 'Lean back'], sway: ['↔', 'Sway'], stand: ['↑', 'Stand'], sit: ['↓', 'Sit'], kneel: ['◟', 'Kneel'] };
 const DISPLAYS = ['mouth', 'eyes', 'pixels'], DISPLAY_NAME = { mouth: 'Eyes and mouth', eyes: 'Eyes only', pixels: 'Pixels' };
 function setDisplay(mode) { DISPLAY.mode = mode; $('#display').textContent = DISPLAY_NAME[mode]; remember({ display: mode }); }
 $('#display').onclick = () => setDisplay(DISPLAYS[(DISPLAYS.indexOf(DISPLAY.mode) + 1) % 3]);
@@ -802,7 +984,7 @@ function follow(f) {
   rig.t = f.t; rig.energy = f.energy; rig.emotion = f.emotion; rig.emotionAt = f.emotionAt; rig.mode = f.mode; rig.attentive = f.attentive; rig.reaction = f.reaction; rig.act = f.act; rig.fx = f.fx;
   TIMING.onTwos = f.onTwos; DISPLAY.mode = f.display; STAGE.calm = f.calm; STAGE.backdrop = f.backdrop;
   if (f.view !== view) setView(f.view);
-  const shown=faceFor(current.id);shown.turnTo=f.turnTo;shown.fullLock=f.fullLock;
+  const shown=faceFor(current.id);if("turnTo" in shown){shown.turnTo=f.turnTo;shown.fullLock=f.fullLock;}
   if (f.model !== shownModel) { shownModel = f.model; faceFor('vita').load(f.model ? `/relay/model?${f.model}` : DEFAULT_MODEL).catch(console.warn); }
   sub(f.sub); $('#plate').textContent = f.plate;
   if (f.chat.length !== $('#chat').children.length || f.chat.at(-1)?.[1] !== $('#chat').lastChild?.lastChild.textContent) { $('#chat').replaceChildren(); for (const [who, text] of f.chat) { const d = document.createElement('div'), b = document.createElement('b'); b.textContent = who; d.append(b, text); $('#chat').append(d); } }
@@ -834,10 +1016,15 @@ $('#lipBtn').onclick = async () => {
 };
 // Turning the character, and how much of her is in shot.
 const vitaFace = () => (view === 'vita' ? faces.vita : null);
+// Every render shows the view buttons; a 2D render (anime, LED, card, clips) only faces front, so it greys out the rest.
 function fillViews() {
-  const box = $('#views'); box.hidden = !current.rep.adapter.endsWith('vrm');
-  for (const b of box.querySelectorAll('[data-turn]')) b.setAttribute('aria-pressed', Math.abs((faces[current.id]?.turnTo ?? 0) - +b.dataset.turn) < 0.01);
-  $('#viewFull').setAttribute('aria-pressed', !!faces[current.id]?.fullLock);
+  const box = $('#views'), f = faceFor(current.id), turns = typeof f.turnTo === 'number', full = 'fullLock' in f;
+  box.hidden = view === 'all';
+  for (const b of box.querySelectorAll('[data-turn]')) {
+    b.disabled = !turns && +b.dataset.turn !== 0; b.title = b.disabled ? 'This render is 2D, so it only faces front' : b.getAttribute('aria-label');
+    b.setAttribute('aria-pressed', Math.abs((f.turnTo ?? 0) - +b.dataset.turn) < 0.01);
+  }
+  $('#viewFull').disabled = !full; $('#viewFull').setAttribute('aria-pressed', !!f.fullLock);
 }
 $('#views').addEventListener('click', e => {
   const b = e.target.closest('button'), f = faceFor(current.id);
@@ -1075,6 +1262,7 @@ function frame(now) {
     if (!f.gl) { const c = f.c; if (c.width !== W || c.height !== H) { c.width = W; c.height = H; } }
     f.draw(rig, W, H, dt);
   }
+  if (view !== 'all') publishHardware(current, faces[current.id]);   // hardware streams, only while a viewer is open
   const t2 = performance.now();
   stats.fps += (1000 / Math.max(1, now - (frame.prev ?? now - 16)) - stats.fps) * 0.05; frame.prev = now;
   stats.frame += (t2 - t0 - stats.frame) * 0.1;
@@ -1107,11 +1295,14 @@ if(params.has("perf")){const {setup}=await import("/performance-review/nori.js")
 
 function fillProfiles(){
   const select=$('#packProfile');select.replaceChildren();
-  for(const p of current.pack.profiles){const option=document.createElement('option');option.value=p.id;option.textContent=p.id.replaceAll('_',' ');select.append(option);}
-  select.value=current.profileId||'';select.disabled=!select.options.length;
+  for(const pack of PACKS){if(!pack.profiles.length)continue;const group=document.createElement('optgroup');group.label=pack.name;
+    for(const p of pack.profiles)group.append(new Option(p.character?.name||p.id.replaceAll('_',' '),`${pack.id}/${p.id}`));select.append(group);}
+  select.value=`${current.personaPack||current.packId}/${current.profileId}`;select.disabled=!select.options.length;
   $('#representationInfo').textContent=current.rep.status+' · '+(current.rep.name||current.representationId.replaceAll('_',' '));
 }
-$('#packProfile').onchange=()=>{stopEverything();for(const c of CHARACTERS.filter(c=>c.packId===current.packId))c.profileId=$('#packProfile').value;};
+$('#packProfile').onchange=()=>{stopEverything();const v=$('#packProfile').value;if(!setPersona(current,v))return;
+  remember({personas:{...saved.personas,[current.id]:v}});delete histories[current.packId];delete conversationIds[current.packId];// a new mind starts a new conversation
+  if(faces[current.id])dress(current,faces[current.id]);showHistory();showVoices();fillMoves();fillAssets();$('#plate').textContent=current.name;toast(`${current.ownName} now thinks and speaks as ${current.name}.`);};
 mountLibrary(PACKS,CHARACTERS,setView);
 const sampleCache=new Map();
 async function preparedSample(name){
@@ -1123,3 +1314,30 @@ $('#lipSync').onchange=()=>{stopEverything();remember({lipSync:$('#lipSync').val
 $('#compareLips').onclick=async()=>{stopEverything();const mine=runId;const c=await preparedSample('heart');if(mine!==runId)return;streamDone=true;enqueue([{type:'emotion',name:'neutral'},{type:'say',text:'This is my new English voice. I hope it feels a little more like me.',clip:c}]);};
 $('#singerSample').onclick=async()=>{stopEverything();const mine=runId;const c=await preparedSample('singer-a');if(mine!==runId)return;act(current.led?'groove':'dance');performSong('You light up my day. Stay here close to me.',c);};
 window.jaegerAvatar={...window.nori,get clip(){return clip;},packs:PACKS,characters:CHARACTERS,get current(){return current;},preparedSample};
+// An agent outside the avatar drives the body on stage through the server's control link (dev/docs/runtime/EMBEDDING.md).
+// Its speech arrives as an uploaded clip with lip timing; a newer line preempts the one playing, as a speaker does.
+let speakId = 0;
+async function externalSpeak(v) {
+  const mine = ++speakId;
+  try {
+    const r = await fetch(v.clip); if (!r.ok) throw new Error(`clip ${r.status}`);
+    const { samples, sr } = readWav(await r.arrayBuffer());
+    const c = { samples, sr, natural: true, track: voice.markLips(await work('analyze', samples, sr), v.marks), marks: v.marks, voiceId: 'the external agent' };
+    if (mine !== speakId) return;   // a newer line arrived while this one loaded
+    stopAll(); streamDone = true; enqueue([{ type: 'say', text: v.text, clip: c }]);
+  } catch (e) { if (mine === speakId) logInput('external speak failed', e.message); }   // nothing plays, so the mouth rests
+}
+startControlLink({
+  avatar: () => current.id.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/^[^a-z]/, 'a$&').slice(0, 64),
+  capabilities: () => controls(),
+  note: text => logInput('control link', text),
+  apply: ({ kind, value }) => {
+    logInput('external ' + kind, kind === 'speak' ? `"${value.text}" · ${(value.duration_ms / 1000).toFixed(2)} s · ${value.marks.length} lip marks` : kind === 'look' ? value.map(n => n.toFixed(2)).join(', ') : value ?? '');
+    if (kind === 'feel') rig.setEmotion(value);
+    else if (kind === 'react' || kind === 'act') act(value);
+    else if (kind === 'look') rig.look(...value);
+    else if (kind === 'stop') { speakId++; stopAll(); rig.setEmotion('neutral'); rig.look(0, 0); }   // the state is back at rest, so the stage is too
+    else if (kind === 'speak') externalSpeak(value);
+  },
+});
+showPane(saved.bottomTab ?? 'paneOutputs');   // under the stage: outputs first, unless another tab was left open

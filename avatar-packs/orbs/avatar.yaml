@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: orbs
 name: Orbs
-version: 0.1.0
+version: 0.2.0
 description: A dotted thought-orb. Its nine faces are what the mind is doing, not what a face looks like.
 default_profile: mochi
 default_representation: mochi

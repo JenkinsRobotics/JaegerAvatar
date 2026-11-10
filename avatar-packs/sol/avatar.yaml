@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: sol
 name: Sol
-version: 0.1.0
+version: 0.2.0
 description: anime, 3D flattened
 default_profile: nori_demo
 default_representation: nori_demo

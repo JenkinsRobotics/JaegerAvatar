@@ -5,7 +5,7 @@ import { VOCAL_NAMES } from './voice.js';
 import { MOVES } from './motion.js';
 import { REACTIONS } from './eyes.js';
 
-const GESTURE_TAGS = new Set(['nod', 'shake', 'tilt', 'wink', 'shrug', 'bounce', 'wave', ...Object.keys(MOVES), ...Object.keys(REACTIONS)]);
+const GESTURE_TAGS = new Set(['nod', 'shake', 'tilt', 'wink', 'shrug', 'bounce', 'wave', 'lean', 'sway', 'stand', 'sit', 'kneel', ...Object.keys(MOVES), ...Object.keys(REACTIONS)]);   // lean...kneel: posable bodies (Truth)
 
 function tagOp(tag) {
   if (EMOTIONS[tag]) return { type: 'emotion', name: tag };

@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: jaeger_sculpted
 name: Jaeger (Sculpted)
-version: 0.1.0
+version: 0.2.0
 description: 'The white grinning Jaeger companion: original artwork, six activity
   clips, and archived rig experiments. Draft persona and a built-in rig added in Jaeger
   Avatar. Draft persona and a built-in rig added in Jaeger Avatar.'

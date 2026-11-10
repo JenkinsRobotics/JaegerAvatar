@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: cat
 name: Cat
-version: 0.1.0
+version: 0.2.0
 description: A black cat developer mascot with nine expressions and paired speaking and resting mouth
   states.
 default_profile: mochi

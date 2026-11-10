@@ -128,11 +128,26 @@ export function analyze(x, sr = SR) {
   return tr;
 }
 
+// Lip closures the voice engine timed from its phonemes ([start, end, 'p' | 'f'] in seconds): m/b/p press the lips
+// shut, f/v tuck the lower lip under the teeth. Audio alone can't tell these from n/t/s, so they come from the engine.
+export function markLips(tr, marks) {
+  tr.shut = new Float32Array(tr.open.length); tr.tuck = new Float32Array(tr.open.length);
+  for (const [a, b, kind] of marks || []) {
+    const s = a - 0.015, e = Math.max(b, a + 0.05), ramp = 0.03, ch = kind === 'p' ? tr.shut : tr.tuck;   // lips move a little ahead of the sound
+    for (let f = Math.max(0, Math.floor((s - ramp) / tr.hop)); f <= Math.min(ch.length - 1, (e + ramp) / tr.hop); f++) {
+      const t = f * tr.hop, u = t < s ? (t - s + ramp) / ramp : t > e ? (e + ramp - t) / ramp : 1;
+      ch[f] = Math.max(ch[f], 0.5 - 0.5 * Math.cos(Math.PI * sat(u)));
+    }
+  }
+  return tr;
+}
+
 export function sampleTrack(tr, t) {
   const n = tr.open.length;
   const fp = Math.max(0, Math.min(n - 1.001, t / tr.hop)), i = Math.floor(fp), u = fp - i;
   const at = a => a[i] + (a[i + 1] - a[i]) * (u || 0);
-  return n < 2 ? null : { open: at(tr.open), wide: at(tr.wide), round: at(tr.round), teeth: at(tr.teeth), energy: at(tr.energy), pitch: at(tr.pitch) };
+  return n < 2 ? null : { open: at(tr.open), wide: at(tr.wide), round: at(tr.round), teeth: at(tr.teeth), energy: at(tr.energy), pitch: at(tr.pitch),
+    shut: tr.shut ? at(tr.shut) : 0, tuck: tr.tuck ? at(tr.tuck) : 0 };
 }
 
 // --- Source-filter synth: glottal saw + noise through a 3-formant cascade ---

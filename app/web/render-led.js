@@ -33,7 +33,7 @@ class EyeLayer {
       g.fillStyle = g.strokeStyle = color ?? `rgb(${clamp(p.red, 0, 255) | 0},${clamp(p.green, 0, 255) | 0},${clamp(p.blue, 0, 255) | 0})`;
       g.shadowColor = g.fillStyle; g.shadowBlur = 8 * k;
       mouthPath(g, 512 + p.x * 0.7, 440 + p.y * 0.4, 34, o, 1.3);
-      if (o.jaw + o.round < 0.05) { g.lineWidth = 7; g.lineCap = 'round'; g.stroke(); } else g.fill();
+      g.lineWidth = 7; g.lineCap = g.lineJoin = 'round'; g.fill(); g.stroke();   // one shape: closed is just a thin open mouth, so it never pops
       g.shadowBlur = 0;
     }
     return c;

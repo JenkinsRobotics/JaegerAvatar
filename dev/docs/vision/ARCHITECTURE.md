@@ -70,10 +70,25 @@ selected independently. Imported presentation data retains `character/v1` field
 semantics inside a representation; the portable outer contract is `avatar/v1`.
 Loading or validating a pack does not execute its procedural code or start an agent.
 
-JaegerAnimation remains useful for raster/display playback. Browser or 3D
-renderers can live in Avatar without forcing robot displays to adopt them.
-Physical mechanisms use Aether Animation/JP01 mappings and limits; a digital pose
-stream does not directly become an unrestricted actuator command.
+Jaeger Avatar is the one animation engine: commands come in, animation comes out
+as a video stream per display (a screen at its native size, an LED ring as one
+row of pixels), and the device decodes it and lights its own pixels. The avatar
+never plays audio or writes a device's pixels; JaegerOS owns the speakers and
+screens. JaegerAnimation stays as a bridge for existing raster/display playback
+until the end-of-project evaluation decides what, if anything, it still owns
+([one engine design](20261109_one_engine_design.md)). Physical mechanisms use
+Aether Animation/JP01 mappings and limits; a digital pose stream does not directly
+become an unrestricted actuator command.
+
+### Where the framework ends, in code
+
+- The framework is `jaeger_avatar/` (packs, catalog, the `avatar-control/v1`
+  Controller and the control link) plus the renderers in `app/web/`.
+- The demo harness is `app/server.py`, `app/voice_engine.py` and
+  `app/agent_bridge.py`: an agent, TTS and STT connected only to demonstrate
+  control. They stand in for what a host supplies.
+- Nothing in `jaeger_avatar/` imports the harness. Check:
+  `grep -rn "voice_engine\|agent_bridge\|kokoro" jaeger_avatar/` finds nothing.
 
 ## Reuse and dependency rules
 

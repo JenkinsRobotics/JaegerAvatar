@@ -1,0 +1,60 @@
+{
+  "renderer": "screen-face/1",
+  "approved": "2026-11-09 on Momo",
+  "displays": [
+    "wide",
+    "square"
+  ],
+  "style": {
+    "eye": "visor",
+    "mouth": "grille",
+    "tint": [
+      255,
+      244,
+      196
+    ],
+    "tint_mix": 0.75
+  },
+  "frames": {
+    "wide/neutral": "a3ba906fd0006fd12958",
+    "wide/joy": "e43796a5b937d48d6fc9",
+    "wide/excited": "1a671ebc7221c1448254",
+    "wide/love": "81e70d11e0583c251a09",
+    "wide/sad": "125cd3e58f888e230c11",
+    "wide/angry": "3d055f679fd0400b1fc6",
+    "wide/surprised": "580f908c0efe49c58a5a",
+    "wide/scared": "63116e9e2ec3665c5437",
+    "wide/thinking": "c069acdd80ee729be215",
+    "wide/confused": "f87cc161148fee44018c",
+    "wide/shy": "0e3ddd574e653638e575",
+    "wide/smug": "6aa95c16560e26b64f9e",
+    "wide/sleepy": "74da9edba235f41d84dd",
+    "wide/laughing": "4abcb13f1e4916dec3cf",
+    "wide/singing": "2557be31dffdebea6327",
+    "wide/listening": "04bd537f43b0e93d2b52",
+    "wide/wink": "86003622efac1268bda1",
+    "wide/talk aa": "493b743ca0b6685921d7",
+    "wide/talk ee": "8d0db9cdb969a64fb5f3",
+    "wide/talk ou": "a6044221e73e07adb3ea",
+    "square/neutral": "76893b03bc4250da184f",
+    "square/joy": "8364fde291a6f2eea15d",
+    "square/excited": "bb3063b360df9535eb29",
+    "square/love": "5ef5c122556bbed079eb",
+    "square/sad": "6f38ecd8db309247d26f",
+    "square/angry": "082fbc53adc9bc5ecef1",
+    "square/surprised": "4fef3e947006f3473bc4",
+    "square/scared": "5748eff7f3287fce7731",
+    "square/thinking": "1e0c9fabbc9bb01bcc91",
+    "square/confused": "d99f91b076e69ac7544a",
+    "square/shy": "5883f0753a953d0239f3",
+    "square/smug": "3ab218077d9e0920655a",
+    "square/sleepy": "a1735b3d02079133fc33",
+    "square/laughing": "dceb2cc5a8efa9640471",
+    "square/singing": "7f0b68ce87649b94f895",
+    "square/listening": "d1b1b7cc772a6b5912d4",
+    "square/wink": "eee14a77398ba61ba423",
+    "square/talk aa": "c4645778be7d3ad4dd1d",
+    "square/talk ee": "8161478ca22f5456cf4e",
+    "square/talk ou": "0ce863464fde667423e5"
+  }
+}

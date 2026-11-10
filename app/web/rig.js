@@ -236,6 +236,12 @@ export class Rig {
     o.lidR = Math.max(0, (x.lidR + couple) * (1 - b));
     o.jaw = clamp(x.jaw, 0, 1); o.wide = clamp(x.wide, 0, 1); o.round = clamp(x.round, 0, 1);
     o.teeth = clamp(x.teeth, 0, 1); o.blink = b;
+    const shut = v?.shut || 0, tuck = v?.tuck || 0;   // lip closures land on time, past the springs, like a blink
+    if (shut || tuck) {
+      const k = 1 - shut;
+      o.jaw = o.jaw * k * (1 - tuck) + tuck * 0.06; o.wide *= k; o.round *= k * (1 - tuck); o.teeth = Math.max(o.teeth * k, tuck);
+      for (const key of ['lipAA', 'lipEE', 'lipIH', 'lipOH', 'lipOU']) o[key] *= k * (1 - tuck);
+    }
     o.blinkL = b; o.blinkR = blinkCurve(t - this.blinkAt - 0.02);   // no two eyes close on quite the same frame
     o.blush = clamp(x.blush, 0, 1); o.arc = clamp(x.arc, 0, 1); o.squeeze = clamp(x.squeeze, 0, 1);
     o.heart = clamp(x.heart, 0, 1); o.low = clamp(x.low, 0, 1); o.sparkle = clamp(x.sparkle, 0, 1);
