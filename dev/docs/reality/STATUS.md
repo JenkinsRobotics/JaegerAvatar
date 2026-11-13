@@ -469,10 +469,12 @@ folder, with pip's cache off (machine busy, load 13 to 30):
 
 What this run did not show:
 
-- The three module commits (agent `816a619`, Kokoro `ba4085e`, Whisper
-  `a46e903`) are on `dev` on this machine only. For the test git read those
-  three repos from disk; JaegerOS and every other package came from the
-  network. Until the three `dev` branches are pushed, nobody else can install.
+- For that test the three module commits (agent `816a619`, Kokoro `ba4085e`,
+  Whisper `a46e903`) were read from disk, as they were not pushed yet. They
+  are pushed now (`dev` in all four repos, the same day). Checked after the
+  push: the app cloned from GitHub with no login, and its four pinned Jaeger
+  packages fetched from GitHub at their commits. The full six-minute install
+  was not run a second time from GitHub.
 - The model file was the one already on this Mac. The download address in the
   README answers (5.3 GB) but the file was not downloaded again.
 - Whisper's model files were already on this Mac (pywhispercpp keeps them
