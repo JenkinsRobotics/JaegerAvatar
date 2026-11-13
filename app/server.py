@@ -285,6 +285,15 @@ def brain():
     return 'JaegerAgent · '+(agent_host.model or config["agent"]["model"]) if agent_host.ready and config["agent"]["model"] in MODELS else 'scripted'
 
 
+def why_scripted():
+    """Why the page's scripted replies answer and not the agent; '' while the agent runs or is still loading."""
+    if os.environ.get('NORI_BRAIN') == 'scripted': return 'started with --scripted'
+    if not agent_host.process: return 'the agent is not installed'   # run.sh said why, in the terminal
+    if not MODELS: return 'no model file in ~/models'   # dev/docs/runtime/SETUP.md has the download command
+    if agent_host.process.poll() is not None: return 'the agent stopped, see app/.cache/agent.log'
+    return ''
+
+
 def claude_stream(messages, system):
     import anthropic
     client = anthropic.Anthropic()
@@ -472,7 +481,7 @@ class Handler(SimpleHTTPRequestHandler):
             if LOOP:   # the loop's ears: the hearing module, and what it computes on
                 h = (agent_host.report or {}).get("hearing") or {}
                 ears, where = agent_host.ready, " · ".join(str(h[k]) for k in ("module", "version", "compute", "model") if h.get(k))
-            return self.reply(200, json.dumps({"brain": brain(), "loop": LOOP, "voice": VOICE if voices.get(VOICE) else None, "ears": ears, "hearing": where, "natural": engine.status}).encode())
+            return self.reply(200, json.dumps({"brain": brain(), "why": why_scripted(), "loop": LOOP, "voice": VOICE if voices.get(VOICE) else None, "ears": ears, "hearing": where, "natural": engine.status}).encode())
         if LOOP and self.path == "/agent/events":   # everything the voice loop does, as it happens: words, voice sound, timings
             q = agent_host.listen()
             self.send_response(200)
@@ -763,6 +772,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGTERM,shutdown)
     if os.environ.get('NORI_BRAIN')!='scripted':agent_host.start(loop_start() if LOOP else None)
     print(f"Jaeger Avatar: http://localhost:{PORT}  brain={brain()}  voice={VOICE if voices.get(VOICE) else 'built-in synth'}")
+    if why_scripted(): print(f"Scripted replies only: {why_scripted()}")
     print(f"Control token: {CONTROL_TOKEN}", flush=True)
     def warm():  # so nobody waits on a cold model: the agent loads its model and reads the instructions, then the voices and ears
         if LOOP: return engine.start()   # the loop loads its own model, ears and voice; this voice is for intros, reels and songs

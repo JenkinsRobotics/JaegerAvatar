@@ -265,7 +265,7 @@ for (const type of ['pointerdown', 'pointerup', 'mousedown', 'click', 'touchend'
 // Starting the audio system takes up to half a second, so it happens while nothing is on screen yet rather than in her first line.
 if (!params.has('obs')) (window.requestIdleCallback ?? setTimeout)(() => audio());
 
-let serverVoice = null, serverBrain = 'scripted', serverEars = false, serverHearing = '', viewers = 0;
+let serverVoice = null, serverBrain = 'scripted', serverWhy = '', serverEars = false, serverHearing = '', viewers = 0;
 // Jaeger Agent's voice loop (the server says so in /health): it hears, thinks and voices; this page plays the sound, moves the mouth and shows the words.
 let serverLoop = false, loopEvents = null, loopBusy = false, loopSkip = 0, loopBubble = null, loopChain = Promise.resolve();
 const loopOn = () => serverLoop && serverBrain !== 'scripted';
@@ -281,7 +281,7 @@ const loopVoice = () => { const v = chosenVoice(); return v?.startsWith('kokoro:
 const loopWho = () => ({ ...who(), controls: controls(), session: sessionId(), voice: loopVoice() });   // the loop is also told what the body can do: it moves it with its avatar tool
 let warmed = '';
 const warmAgent = () => { if (!serverBrain || serverBrain === 'scripted') return; const w = JSON.stringify(serverLoop ? loopWho() : who()); if (w === warmed) return; warmed = w; fetch('/warm', { method: 'POST', body: w }).catch(() => { warmed = ''; }); };
-const checkHealth=()=>fetch('/health').then(r=>r.json()).then(h=>{serverVoice=h.voice;serverBrain=h.brain;serverEars=h.ears;serverHearing=h.hearing||'';serverLoop=!!h.loop;
+const checkHealth=()=>fetch('/health').then(r=>r.json()).then(h=>{serverVoice=h.voice;serverBrain=h.brain;serverWhy=h.why||'';serverEars=h.ears;serverHearing=h.hearing||'';serverLoop=!!h.loop;
   if(serverBrain==='scripted'&&(loopBusy||loopSkip)){loopBusy=false;loopSkip=0;streamDone=true;}   // the loop went away mid-turn: nothing more will come
   if(serverLoop&&!loopEvents&&!params.has('obs')){loopEvents=new EventSource('/agent/events');loopEvents.onmessage=m=>{try{onLoop(JSON.parse(m.data));}catch(e){console.warn('voice loop event',e);}};}
   hudStatic();resendFlow();warmAgent();}).catch(hudStatic);checkHealth();setInterval(checkHealth,5000);
@@ -1125,7 +1125,7 @@ for (const k of SHOWN) {
   $('#bars').append(l, b); bars[k] = i;
 }
 function hudStatic() {
-  const brainName = serverBrain === 'scripted' ? 'Scripted, no model' : serverBrain;
+  const brainName = serverBrain === 'scripted' ? 'Scripted: ' + (serverWhy || 'the agent is loading') : serverBrain;
   $('#status').textContent = brainName + (viewers ? ` · ${viewers} output window${viewers > 1 ? 's' : ''}` : '');
   const v = chosenVoice();
   $('#status').title = `Brain: ${serverBrain}. Voice: ${v ?? (serverVoice ? (current.voice||KRISTIN).split('-')[1] : 'built-in synth')}.`;

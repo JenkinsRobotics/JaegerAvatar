@@ -32,7 +32,7 @@ class Host:
 
     def __init__(self):
         self.ready, self.sent, self.started, self.q = True, [], [], queue.Queue()
-        self.report, self.schema, self.model, self.process = REPORT, {'version': '1.2.0'}, 'gemma-test', object()
+        self.report, self.schema, self.model, self.process = REPORT, {'version': '1.2.0'}, 'gemma-test', type('Running', (), {'poll': lambda self: None})()
 
     def send(self, data):
         if not self.ready: raise RuntimeError('JaegerAgent is not ready')
