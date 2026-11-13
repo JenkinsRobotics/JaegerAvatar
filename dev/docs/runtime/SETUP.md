@@ -21,22 +21,44 @@ python3.11 -m venv .agent-venv
 contained pre-existing local changes when its verification wheel was built; see
 `dev/evidence/migration/runtime-sources.json`. Clean pinned installation remains
 a separate qualification step. The local verification
-used wheels built from those checkouts, plus the dependencies needed for the
-OpenAI-compatible adapter. In-process llama.cpp, hardware and multimodal extras
+used wheels built from those checkouts. Hardware and multimodal extras
 were not exercised. The normal installer resolves the packages' declared
 dependencies; installation on a clean machine has not been benchmarked.
 
-Override `JAEGER_AGENT_PYTHON` for another supported environment. The default
-provider is LM Studio (`LMSTUDIO_URL=http://127.0.0.1:1234`,
-`GEMMA_MODEL=google/gemma-4-e4b`). Run its model server before chatting. The app
-header reports **JaegerAgent · Gemma** only while the worker and model endpoint
-are available; otherwise it reports scripted mode.
+Override `JAEGER_AGENT_PYTHON` for another supported environment. The model
+runs inside the agent worker: JaegerAgent's llama.cpp adapter loads a GGUF file
+itself, with every layer on the GPU. There is no model server and no other
+option. Model files are found in `~/.lmstudio/models` and `~/models`
+(`JAEGER_MODEL_DIRS` overrides the list); the default is
+`gemma-4-E4B-it-Q4_K_M` (`GEMMA_MODEL`), and Settings lists every chat model
+found. The worker loads the model at startup and runs the character's
+instructions through it once (about 12 s the first time), so the first reply is
+as fast as the rest. The app header reports **JaegerAgent · model file** while
+the worker is up and the file is on disk; otherwise it reports scripted mode.
 
-The worker uses `JaegerAgent`, `OpenAIAdapter`, `AgentCallbacks.stream_delta`,
-`interrupt()` and host workspace binding. Tools/skills are disabled in this
-initial character host. Agent history is in memory, keyed by browser session and
-pack, separate from appearance selection. Private instance storage is under
-`.jaeger_os/avatar`; it is never included in a pack. Connected JaegerAI is planned.
+By default the worker is Jaeger Agent's voice loop (`app/agent_loop.py`): hearing
+(Jaeger Whisper), the model with its tools, and the voice (Jaeger Kokoro) run in
+one process, and the app copies none of it. The page sends typed text and
+microphone sound in, plays the voice sound it gets back and moves the mouth
+itself. The agent's tools are on (the short tool list; `JAEGER_FULL_TOOLS=1`
+shows every tool) and the context is 32768 tokens. The agent moves the body
+with its own `avatar` tool (`jaeger_avatar/embedded/agent_tools.py`), which
+goes over the same control link a robot body uses; the app has no list of
+moves of its own. The character's prompt ends with the body it is in, the
+feelings and moves that body offers, and one rule: begin every reply with one
+avatar tool call, then the words. The worker adds one example call, which the
+agent's model adapter writes in the loaded model's own call form
+(`tool_call_example`), so the app holds no model syntax. Install the two voice modules beside the agent (see
+`requirements-agent.txt`); without them the app reports scripted mode.
+
+`JAEGER_AVATAR_LOOP=0 ./run.sh` starts the earlier path instead: the app's own
+`/say` and `/hear`, a plain model with tools and skills off, and inline tags
+for acting. It still carries what the loop does not yet do: cloned voices, a
+voice per character, Piper, and singing.
+
+Agent history is in memory, keyed by browser session and pack, separate from
+appearance selection. Private instance storage is under `.jaeger_os/avatar`;
+it is never included in a pack. Connected JaegerAI is planned.
 
 ## Voice and singing
 

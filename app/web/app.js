@@ -16,7 +16,7 @@ import { mountViewer } from './output-view.js';
 import { AnimeChar, TIMING } from './render-anime.js';
 import { Char3D } from './render-3d.js';
 import { VrmChar, STAGE } from './render-vrm.js';
-import { openMic, isEcho, toPcm } from './ears.js';
+import { openMic, isEcho, toPcm, fromPcm, Gate } from './ears.js';
 import { startSettings } from './settings.js';
 import { trace, channels as traceChannels, describe as describeFlow, resend as resendFlow } from './flow.js';
 document.querySelector('#flowOpen').onclick = () => window.open('/flow.html', 'jaeger-flow', 'popup,width=1280,height=920');
@@ -178,7 +178,7 @@ function fillAgent(persona) {
   const list = items => { const p = tag('p'); p.append(...items.flatMap((x, i) => [...(i ? [', '] : []), tag('code', null, `[${x}]`)])); return p; };
   const sounds = ownSounds(current);
   $('#agentInfo').replaceChildren(
-    card('Who is driving', tag('p', null, `Mind: ${persona.name} (${current.profileId ?? persona.defaultProfile}). Body: ${current.rep.name || current.name}. Brain: ${serverBrain ?? 'checking'}. Voice: ${chosenVoice() ?? 'built-in ' + current.voice}. Hearing: ${serverEars ? 'local speech-to-text' : 'off'}.`),
+    card('Who is driving', tag('p', null, `Mind: ${persona.name} (${current.profileId ?? persona.defaultProfile}). Body: ${current.rep.name || current.name}. Brain: ${serverBrain ?? 'checking'}. Voice: ${chosenVoice() ?? 'built-in ' + current.voice}. Hearing: ${serverEars ? serverHearing || 'loading' : 'off'}.`),
       tag('p', 'lead', 'The agent writes tags into its reply; the avatar turns each into a command. Nothing in the reply can reach hardware.')),
     card('Feelings it can show', list(controls().emotions)),
     card('Reactions offered to it', controls().reactions.length ? list(controls().reactions) : tag('p', null, 'None.')),
@@ -223,7 +223,7 @@ function setView(id) {
   for(const f of Object.values(faces))f.suspend?.();
   view = id;
   const next = CHARACTERS.find(c => c.id === id);
-  if (next && next !== current) { stopAll(); current = next; rig.mode = 'idle'; rig.setEmotion('neutral'); hudStatic(); rig.gesture('wave'); resendFlow(); }
+  if (next && next !== current) { stopAll(); current = next; rig.mode = 'idle'; rig.setEmotion('neutral'); hudStatic(); rig.gesture('wave'); resendFlow(); warmAgent(); }
   remember({ view: id });
   $('#stage').className = id === 'all' ? 'all' : 'single';
   for (const [k, p] of Object.entries(panes)) p.classList.toggle('on', (id === 'all' && CHARACTERS.find(c=>c.id===k).featured) || id === k);
@@ -265,10 +265,26 @@ for (const type of ['pointerdown', 'pointerup', 'mousedown', 'click', 'touchend'
 // Starting the audio system takes up to half a second, so it happens while nothing is on screen yet rather than in her first line.
 if (!params.has('obs')) (window.requestIdleCallback ?? setTimeout)(() => audio());
 
-let serverVoice = null, serverBrain = 'scripted', serverEars = false, viewers = 0;
+let serverVoice = null, serverBrain = 'scripted', serverEars = false, serverHearing = '', viewers = 0;
+// Jaeger Agent's voice loop (the server says so in /health): it hears, thinks and voices; this page plays the sound, moves the mouth and shows the words.
+let serverLoop = false, loopEvents = null, loopBusy = false, loopSkip = 0, loopBubble = null, loopChain = Promise.resolve();
+const loopOn = () => serverLoop && serverBrain !== 'scripted';
+const peek = f => { try { return f(); } catch { return null; } };   // the snapshot can be asked for before the variables further down exist
 describeFlow(() => ({ character: current.name, body: current.rep?.name || current.name, pack: current.packId, brain: serverBrain, voice: chosenVoice() ?? 'Piper ' + current.voice,
-  ears: serverEars, controls: controls(), lipSync: saved.lipSync === 'kin' ? 'KIN vowels' : 'Nori' }));
-const checkHealth=()=>fetch('/health').then(r=>r.json()).then(h=>{serverVoice=h.voice;serverBrain=h.brain;serverEars=h.ears;hudStatic();resendFlow();}).catch(hudStatic);checkHealth();setInterval(checkHealth,5000);
+  ears: serverEars, hearing: serverHearing, controls: controls(), lipSync: saved.lipSync === 'kin' ? 'KIN vowels' : 'Nori', renderer: current.rep?.adapter, hardware: hardwareFor(current), viewers,
+  kokoro: peek(() => kokoroOn), mic: !!peek(() => closeMic), recording: !!peek(() => rec) }));
+// Who is talking, as the agent is told: /chat sends it with each message, and /warm sends it ahead whenever it changes,
+// so the model has already read this character's instructions when the first message arrives (about 1 s saved).
+const who = () => ({ character: current.id, pack: current.personaPack || current.packId, profile: current.profileId, body: current.rep.name || current.ownName || current.name, actions: agentActions() });
+// The loop speaks in the Kokoro voice chosen for this character; a voice its module does not have (a clone) falls back to the character's own.
+const loopVoice = () => { const v = chosenVoice(); return v?.startsWith('kokoro:') ? v : 'kokoro:' + current.kokoro; };
+const loopWho = () => ({ ...who(), controls: controls(), session: sessionId(), voice: loopVoice() });   // the loop is also told what the body can do: it moves it with its avatar tool
+let warmed = '';
+const warmAgent = () => { if (!serverBrain || serverBrain === 'scripted') return; const w = JSON.stringify(serverLoop ? loopWho() : who()); if (w === warmed) return; warmed = w; fetch('/warm', { method: 'POST', body: w }).catch(() => { warmed = ''; }); };
+const checkHealth=()=>fetch('/health').then(r=>r.json()).then(h=>{serverVoice=h.voice;serverBrain=h.brain;serverEars=h.ears;serverHearing=h.hearing||'';serverLoop=!!h.loop;
+  if(serverBrain==='scripted'&&(loopBusy||loopSkip)){loopBusy=false;loopSkip=0;streamDone=true;}   // the loop went away mid-turn: nothing more will come
+  if(serverLoop&&!loopEvents&&!params.has('obs')){loopEvents=new EventSource('/agent/events');loopEvents.onmessage=m=>{try{onLoop(JSON.parse(m.data));}catch(e){console.warn('voice loop event',e);}};}
+  hudStatic();resendFlow();warmAgent();}).catch(hudStatic);checkHealth();setInterval(checkHealth,5000);
 
 // Kokoro's pacing per feeling, local-avatar-demo's gentle range: wider swings rushed or dragged her voice. RATE is the original pipeline's.
 const KSPEED = { excited: 1.08, surprised: 1.05, scared: 1.05, angry: 1.03, joy: 1.02, smug: 0.97, love: 0.97, thinking: 0.95, shy: 0.94, sad: 0.92, sleepy: 0.9 };
@@ -276,14 +292,7 @@ const KSPEED = { excited: 1.08, surprised: 1.05, scared: 1.05, angry: 1.03, joy:
 const SAID = { laugh: 'Ha ha ha!', giggle: 'Hehe!', sigh: 'Ahh.', gasp: 'Oh!', hmm: 'Hmm...', wow: 'Wow!', aww: 'Aww!', yay: 'Yay!', ooh: 'Ooh!' };
 const RATE = { excited: 215, joy: 200, angry: 205, surprised: 210, scared: 215, sad: 155, sleepy: 135, thinking: 170, shy: 170, smug: 175, love: 170 };
 
-function readWav(buf) {
-  const dv = new DataView(buf);
-  let at = 12, sr = SR, ch = 1;
-  while (at < dv.byteLength - 8 && dv.getUint32(at) !== 0x64617461) { if (dv.getUint32(at) === 0x666d7420) { ch = dv.getUint16(at + 10, true); sr = dv.getUint32(at + 12, true); } at += 8 + dv.getUint32(at + 4, true); }
-  const len = Math.min(dv.getUint32(at + 4, true), dv.byteLength - at - 8) >> 1, n = Math.floor(len / ch), x = new Float32Array(n), y = ch > 1 ? new Float32Array(n) : null;
-  for (let i = 0; i < n; i++) { x[i] = dv.getInt16(at + 8 + i * 2 * ch, true) / 32768; if (y) y[i] = dv.getInt16(at + 10 + i * 4, true) / 32768; }
-  return y ? { samples: x, sr, voice: y } : { samples: x, sr };   // two channels: the song as heard, then her voice alone
-}
+const { readWav } = voice;
 // Which voice this character speaks with: the one chosen for them, or their own Kokoro voice. null means the fast voices.
 let voiceList = [], naturalStatus = 'off', kokoroOn = null, cloneStatus = 'idle', serverTurn = Date.now();   // always ahead of an earlier page's turns
 const chosenVoice = () => {
@@ -406,6 +415,10 @@ async function prepare(op, emotionAtQueue) {
 // Each clip plays once; while it plays, every frame samples the analysed track slightly ahead of
 // the audio clock, because mouths move before the sound they make.
 const LOOKAHEAD = 0.05;
+// Seconds before its moment that a scene's cue is sent: the move's trip through the agent's avatar tool and the control link.
+// Measured 2026-11-12 with no lead: 6 to 60 ms late, 33 ms in the middle (20 moves; the link is read every 50 ms).
+// With this lead, and the clips held until all are voiced: 18 ms early to 33 ms late (32 moves). Retune from cueTrips.
+const CUE_LEAD = 0.03;
 let clip = null;
 const DELIVERY = { excited: 1.05, joy: 1.02, scared: 1.05, surprised: 1.04, shy: 1.02, sad: 0.96, sleepy: 0.95 };   // the voice lifts and sinks with the feeling; lip sync reads the clip's clock, so it stays locked
 async function startSound() {
@@ -437,11 +450,11 @@ async function playClip(c) {
       const startAt = ctx.currentTime + 0.02;
       src.start(startAt);
       if(params.has("startup")){const first=c.samples.findIndex(x=>Math.abs(x)>.005);startupTrace("source-scheduled",{duration:buf.duration,delayMs:(startAt-ctx.currentTime+(ctx.outputLatency||0))*1000,signalLeadMs:Math.max(0,first)/(c.sr??SR)/p*1000,natural:!!c.natural});}
-      clip = { ...c, now: () => (ctx.currentTime - startAt - (ctx.outputLatency || 0)) * p, iE: 0, iP: 0, iB: 0, src };
+      clip = { ...c, now: () => (ctx.currentTime - startAt - (ctx.outputLatency || 0)) * p, iE: 0, iP: 0, iB: 0, iC: 0, src };
       const owned=clip;src.onended = () => { if(clip===owned)clip = null; resolve(); };
     } else {                                   // audio blocked until a user gesture: animate silently on a clock
       const t0 = performance.now(), p = current.pitch;
-      clip = { ...c, now: () => (performance.now() - t0) / 1000 * p, iE: 0, iP: 0, iB: 0 };
+      clip = { ...c, now: () => (performance.now() - t0) / 1000 * p, iE: 0, iP: 0, iB: 0, iC: 0 };
       soundCheck();
       const owned=clip;setTimeout(() => { if(clip===owned)clip = null; resolve(); }, c.track.dur / p * 1000);
     }
@@ -457,6 +470,19 @@ function driveClip() {
   while (clip.iE < tr.emph.length && tr.emph[clip.iE].t <= at + 0.03) rig.emphasis(tr.emph[clip.iE++].s);
   while (clip.iP < tr.pauses.length && tr.pauses[clip.iP] <= t) { rig.blink(); clip.iP++; }
   if (clip.beats) while (clip.iB < clip.beats.length && clip.beats[clip.iB] <= at) rig.beat(clip.iB++);
+  while (clip.iC < (clip.cues?.length ?? 0) && clip.cues[clip.iC].at <= t + CUE_LEAD) cue(clip.cues[clip.iC++], t);
+}
+// A scene's move, when the sound it rides on reaches its moment. The agent's avatar tool makes it,
+// so it arrives over the control link like any move the agent asks for.
+const cueTrips = [];                           // ms from each cue's moment to its move landing here; kept for the Data flow window and for tuning CUE_LEAD
+let lastCue = null;
+function cue(c, t) {
+  if (stageLink.standing) return;              // a newer page has the body, and makes the scene's moves: two pages must not both ask
+  const what = Object.entries(c.call).map(([k, v]) => `${k} ${v}`).join(', ');
+  lastCue = { due: performance.now() + (c.at - t) * 1000, call: c.call };
+  trace('perform', 'cue', { text: what, call: c.call, at: c.at, clipTime: +t.toFixed(3), how: 'sent to the agent; its avatar tool makes the move' });
+  logInput('cue', `${what} · ${c.at.toFixed(2)} s into the line`);
+  fetch('/agent/cue', { method: 'POST', body: JSON.stringify({ call: c.call }) }).catch(() => {});
 }
 
 // --- Performer: a queue of ops, audio rendered as soon as it is queued --------------
@@ -465,10 +491,11 @@ let reel = null, reelPaused = false, chatAbort = null;
 let spoken = '', runId = 0, running = false, owner = -1, pushEmotion = 'neutral', firstSoundAt = 0, lastLatency = null, sentAt = 0;
 function stopAll() {
   if (queue.length || clip) logInput('stop', 'speech and motion cleared together');
-  runId++; queue.length = 0;
+  runId++; queue.length = 0; sceneHold = null;
   if(song){song.off=true;if(song.id)fetch('/singer/stop',{method:'POST',body:JSON.stringify({id:song.id})}).catch(()=>{});song=null;}
   if(chatAbort)fetch('/agent/interrupt',{method:'POST',body:JSON.stringify({session:sessionId(),pack:current.packId})}).catch(()=>{});
   chatAbort?.abort(); chatAbort = null;        // stops Gemma working on a reply nobody will hear
+  if (loopBusy) { loopSkip++; loopBusy = false; fetch('/agent/interrupt', { method: 'POST', body: JSON.stringify({ session: sessionId(), pack: current.packId }) }).catch(() => {}); }
   serverTurn++;
   sayAbort.abort(); sayAbort = new AbortController();
   if (voiceList.length) fetch('/say/cancel', { method: 'POST', body: JSON.stringify({ turn: serverTurn }) }).catch(() => {});
@@ -499,7 +526,7 @@ async function run() {
   running = true;
   while (queue.length && id === runId) {
     const op = queue.shift();
-    if (op.type !== 'chapter') logInput(op.type === 'say' ? 'speak' : op.type === 'emotion' ? 'feel' : op.type === 'gesture' ? 'act' : op.type, op.text ?? op.name ?? '');
+    if (op.type !== 'chapter') logInput(op.type === 'say' ? (op.text ? 'speak' : 'pause') : op.type === 'emotion' ? 'feel' : op.type === 'gesture' ? 'act' : op.type, op.text ?? op.name ?? '');
     if (op.type === 'chapter') {
       if (op.at === 0) {                       // her first lines are short, so start only once the next ones are ready to follow straight on
         $('#chapterText').textContent = 'Getting ready…';
@@ -610,14 +637,115 @@ function introduce(text) {                     // from the character sheet, and 
   pushEmotion = rig.emotion;
   enqueue(parse(current.intro));
 }
-async function ask(text, { idle = false } = {}) {
-  if (!idle && isIntro(text)) return introduce(text);
+const OOPS = "[confused] Oops, my brain link just dropped. [sigh] Can you try that again?";
+// The voice loop's side of a turn. Typed words are sent to it; heard words it already has (it did the hearing) and is answering.
+async function askLoop(text, heard) {
+  const id = runId;
+  loopBusy = true; loopBubble = null;
+  trace('agent', 'request', { text, brain: serverBrain, character: current.name, offered: controls(), how: heard ? 'heard by the loop' : 'typed' });
+  if (heard) return;
+  const ok = await fetch('/agent/text', { method: 'POST', body: JSON.stringify({ text, ...loopWho() }) }).then(r => r.ok, () => false);
+  if (ok) return;
+  if (id !== runId) return void (loopSkip && loopSkip--);   // stopped while it was being sent: no 'done' will come for it
+  loopBusy = false; streamDone = true;
+  trace('agent', 'error', { error: 'the voice loop did not take the line' });
+  enqueue(parse(OOPS));
+}
+// A scene: the agent reads the script, voices each line and times the moves to it. This page plays the sound
+// and tells the agent when each cue's moment comes (cue, above). The clips are held until every line is voiced,
+// so nothing is being made while the scene plays: no gap waits on a line, and the agent is free to make each move.
+let sceneHold = null;
+function releaseScene() {                       // every line is voiced: the scene starts, after whatever she is still saying
+  const id = runId;
+  loopChain = loopChain.then(() => {
+    if (id !== runId || !sceneHold) return;
+    const ops = sceneHold; sceneHold = null;
+    if (ops.length) { $('#sceneNote').textContent = 'Performing. Stop ends it.'; enqueue(ops); }
+  });
+}
+async function performScene(script) {
+  const note = text => { $('#sceneNote').textContent = text; };
+  if (!loopOn()) return note('Scenes are performed by the agent, and its voice loop is off or still loading.');
+  stopAll(); remember({ scene: script });
+  const id = runId;
+  sentAt = performance.now(); firstSoundAt = 0; streamDone = false; loopBusy = true; loopBubble = null; sceneHold = [];
+  note('Getting the lines ready…');
+  trace('scene', 'request', { text: script.split('\n')[0], script, character: current.name, offered: controls(), how: 'performed by the agent: its voice, its avatar tool, no model' });
+  const ok = await fetch('/agent/scene', { method: 'POST', body: JSON.stringify({ script, ...loopWho() }) }).then(r => r.ok, () => false);
+  if (ok) return;
+  if (id !== runId) return void (loopSkip && loopSkip--);
+  loopBusy = false; streamDone = true; sceneHold = null;
+  note('The agent did not take the scene.');
+}
+// ponytail: the loop's events carry no turn id, so the page counts the turns it abandoned (loopSkip) and drops what arrives until each one's 'done'.
+// A typed line that queued behind a heard one can be miscounted; give the worker turn ids when that matters.
+const HEARS = new Set(['hearing you', 'transcribing', 'Speech detected', 'End-of-turn']), SPEAKS = new Set(['First audio', 'Spoken']);   // the agent's notes about its hearing and its voice
+function onLoop(e) {
+  const kind = e.event, text = e.text ?? '';
+  if (!kind) return;
+  if (kind === 'done') {
+    if (loopSkip) return void loopSkip--;
+    loopBusy = false;
+    const id = runId;
+    releaseScene();
+    loopChain = loopChain.then(() => { if (id !== runId) return; streamDone = true; if (!running && !clip) { rig.mode = 'idle'; rig.relaxIn(4); } });
+    return;
+  }
+  if (!['user', 'assistant', 'audio'].includes(kind)) {       // what the loop is doing, not part of a reply: shown in the Data flow window
+    trace(kind === 'live' || HEARS.has(text) ? 'stt' : kind === 'tool' ? 'tools' : kind === 'scene' ? 'scene' : SPEAKS.has(text) ? 'voice' : 'agent', kind, { text, data: e.data });   // which section of the agent it came from
+    if (kind === 'state' && !['transcribing', 'hearing you'].includes(text)) micIdle();
+    if (kind === 'status' && text.startsWith('error')) { console.warn('voice loop', text); if (loopBusy && !loopSkip) enqueue(parse(OOPS)); }
+    if (kind === 'scene' && text === 'refused') $('#sceneNote').textContent = e.data;   // a script the agent could not read, in its words
+    if (kind === 'scene' && text === 'begin' && !loopSkip) { const id = runId; loopChain = loopChain.then(() => { if (id === runId) sceneHold ??= []; }); }   // a scene's sound follows (yours, or one the model wrote): hold it, after the words already on their way
+    if (kind === 'scene' && text === 'end' && !loopSkip) releaseScene();
+    if (kind === 'tool' && text === 'avatar cue') {             // a scene's move this body would not make: the director is told what it does offer
+      const r = e.data?.result ?? {}, why = `Refused: ${(r.errors ?? []).join('; ')}. This body offers ${Object.entries(r.offers ?? {}).filter(([, v]) => v.length).map(([k, v]) => `${k}: ${v.join(', ')}`).join(' · ') || 'nothing by that name'}.`;
+      $('#sceneNote').textContent = why; logInput('cue refused', why);
+    }
+    return;
+  }
+  if (loopSkip) return;
+  if (kind === 'user') {                                      // it heard someone
+    trace('stt', 'transcript', { text, by: serverHearing });
+    micIdle();
+    if (overHer && isEcho(text, spoken)) {                    // her own voice came back through the mic: drop that turn, she keeps talking
+      loopSkip++; fetch('/agent/interrupt', { method: 'POST', body: JSON.stringify({ session: sessionId(), pack: current.packId }) }).catch(() => {});
+      return;
+    }
+    return ask(text, { heard: true });
+  }
+  if (kind === 'assistant') {                                 // the whole reply, once the model has finished it
+    if (text || loopBubble) {                                 // a scene the model wrote may come with no words of its own
+      (loopBubble ?? bubble('assistant', '')).textContent = text;
+      (histories[current.packId] ??= []).push({ role: 'assistant', content: text });
+      chat(current.name, text);
+      $('#log').textContent = $('#log').textContent.split('   →   ')[0] + `   →   ${current.name}: ${text}`;
+    }
+    loopBubble = null;
+    trace('agent', 'done', { ms: Math.round(performance.now() - sentAt), chars: text.length, reply: text });
+    return;
+  }
+  // 'audio': one spoken sentence, voiced by the agent's voice module. This page plays it and reads the mouth shapes from the sound.
+  const id = runId, samples = fromPcm(e.pcm);
+  if (rig.emotion === 'thinking') rig.setEmotion('neutral');
+  (loopBubble ??= bubble('assistant', '')).textContent += (loopBubble.textContent ? ' ' : '') + text;
+  trace('voice', 'clip ready', { text, ms: Math.round(performance.now() - sentAt), seconds: +(samples.length / e.rate).toFixed(2), sampleRate: e.rate, lipMarks: (e.marks || []).length, cues: (e.cues || []).map(c => ({ at: c.at, ...c.call })), by: 'Jaeger Agent (voice module)' });
+  loopChain = loopChain.then(async () => {
+    const marks = e.marks || [], track = voice.markLips(await work('analyze', samples, e.rate), marks);   // lip closures timed by the voice module
+    const op = { type: 'say', text, clip: { samples, sr: e.rate, natural: true, track, marks, cues: e.cues || [], voiceId: 'Jaeger Agent voice' } };
+    if (id === runId) sceneHold ? sceneHold.push(op) : enqueue([op]);
+  }).catch(err => console.warn('voice loop sound', err));
+}
+async function ask(text, { idle = false, heard = false } = {}) {
+  if (!idle && !heard && isIntro(text)) return introduce(text);
+  if (heard) loopBusy = false;                 // the loop is already answering this one: nothing to interrupt
   stopAll();
   const history = histories[current.packId] ??= [];
   history.push({ role: 'user', content: text });
   if (!idle) { $('#log').textContent = 'You: ' + text; chat('You', text); selectPanel('talk'); bubble('user', text); }
   sentAt = performance.now(); firstSoundAt = 0;
   rig.mode = 'thinking'; rig.setEmotion('thinking'); streamDone = false;
+  if (loopOn()) return askLoop(text, heard);
   const asked = performance.now(); let chunks = 0, worded = false;
   trace('agent', 'request', { text, turns: history.length, brain: serverBrain, character: current.name, offered: agentActions() });
   const id = runId, parser = new Parser({ clause: !chosenVoice() });   // a natural voice takes a moment per line, so it gets whole sentences rather than a short clause followed by a gap
@@ -634,7 +762,7 @@ async function ask(text, { idle = false } = {}) {
   try {
     if (serverBrain === 'scripted') throw new Error('scripted');
     chatAbort = new AbortController();
-    const r = await fetch('/chat', { method: 'POST', body: JSON.stringify({ messages: history, character: current.id, pack: current.personaPack || current.packId, profile: current.profileId, body: current.rep.name || current.ownName || current.name, actions: agentActions(), session: sessionId() }), signal: chatAbort.signal });
+    const r = await fetch('/chat', { method: 'POST', body: JSON.stringify({ messages: history, ...who(), session: sessionId() }), signal: chatAbort.signal });
     if (!r.ok) throw new Error('chat ' + r.status);
     const reader = r.body.pipeThrough(new TextDecoderStream()).getReader();
     let buf = '';
@@ -655,7 +783,7 @@ async function ask(text, { idle = false } = {}) {
     if (e.message !== 'scripted') console.warn('brain error, using scripted reply', e);
     trace('agent', e.message === 'scripted' ? 'scripted reply (no model)' : 'error', { error: e.message });
     if (!reply) {
-      feed(e.message === 'scripted' ? named(idle ? IDLE_LINE() : scriptedReply(text)) : "[confused] Oops, my brain link just dropped. [sigh] Can you try that again?");
+      feed(e.message === 'scripted' ? named(idle ? IDLE_LINE() : scriptedReply(text)) : OOPS);
     }
   }
   if (id !== runId) return;
@@ -790,8 +918,21 @@ async function heard(samples) {
   duck(false);
   if (text && !(wasOver && isEcho(text, spoken))) ask(text);
 }
+// With the voice loop the agent does the hearing: every frame goes up to it. While she talks the frames are held back until a clearly
+// louder voice starts (the gate), so she does not hear herself; the words come back as a 'user' event.
+const gate = new Gate();
+let micBuf = [], micSending = false, micWait = 0;
+const micIdle = () => { clearTimeout(micWait); if (closeMic && !hearing) { micState('on'); duck(false); } };
+async function flushMic() {                      // one request at a time; frames that arrive meanwhile go in the next
+  if (micSending || !micBuf.length) return;
+  micSending = true;
+  const frames = micBuf.splice(0), all = new Float32Array(frames.reduce((n, f) => n + f.length, 0));
+  frames.reduce((at, f) => (all.set(f, at), at + f.length), 0);
+  await fetch('/agent/audio', { method: 'POST', body: toPcm(all).buffer }).catch(() => {});
+  micSending = false; flushMic();
+}
 async function setMic(on) {
-  if (!on) { closeMic?.(); closeMic = null; hearing = false; early = null; turn++; duck(false); showPrivacy(); return micState('off'); }
+  if (!on) { closeMic?.(); closeMic = null; hearing = false; early = null; turn++; micBuf.length = 0; clearTimeout(micWait); duck(false); showPrivacy(); return micState('off'); }
   if (!serverEars) return micState('off', 'The speech model did not load. See the server output, or type here.');
   if (micOpening) return;                        // a permission prompt can stay up for a while, and a second click must not open a second mic
   micOpening = true;
@@ -799,10 +940,14 @@ async function setMic(on) {
     if (!window.AudioWorkletNode || !navigator.mediaDevices) throw new Error('unsupported');
     closeMic = await openMic(audio(), {
       start() { trace('mic', 'speech start', { strict: talking() }); hearing = true; overHer = talking(); turn++; lastTalk = performance.now(); duck(true); micState('hearing'); },
-      pause(samples) { trace('mic', 'pause', { seconds: +(samples.length / 16000).toFixed(2), then: 'transcribes early in case this is the end' }); rig.gesture('nod'); early = transcribe(samples); early.catch(() => {}); },
+      frame(f, event) { if (!loopOn()) return; micBuf.push(...gate.push(f, talking(), event)); if (micBuf.length > 1000) micBuf.splice(0, micBuf.length - 1000); flushMic(); },   // 1000 frames = 30 s: under the server's limit
+      pause(samples) { rig.gesture('nod'); if (loopOn()) return trace('mic', 'pause', { seconds: +(samples.length / 16000).toFixed(2), then: 'the voice loop is already listening' });
+        trace('mic', 'pause', { seconds: +(samples.length / 16000).toFixed(2), then: 'transcribes early in case this is the end' }); early = transcribe(samples); early.catch(() => {}); },
       resume() { trace('mic', 'resumed', {}); early = null; },
       cancel() { trace('mic', 'cancelled', { why: 'too short to be speech' }); hearing = false; early = null; duck(false); micState('on'); },
-      end(samples) { trace('mic', 'speech end', { seconds: +(samples.length / 16000).toFixed(2) }); hearing = false; heard(samples); },
+      end(samples) { trace('mic', 'speech end', { seconds: +(samples.length / 16000).toFixed(2) }); hearing = false;
+        if (!loopOn()) return heard(samples);
+        micState('working'); clearTimeout(micWait); micWait = setTimeout(micIdle, 4000); },   // the loop answers with a 'user' event; this is for when it heard nothing
     }, talking);
     micState('on'); showPrivacy();
   } catch (e) {
@@ -980,7 +1125,7 @@ for (const k of SHOWN) {
   $('#bars').append(l, b); bars[k] = i;
 }
 function hudStatic() {
-  const brainName = serverBrain === 'scripted' ? 'Scripted, no model' : /gemma/i.test(serverBrain) ? (serverBrain.startsWith('JaegerAgent')?'JaegerAgent · Gemma':'Gemma · local') : 'Claude · cloud';
+  const brainName = serverBrain === 'scripted' ? 'Scripted, no model' : serverBrain;
   $('#status').textContent = brainName + (viewers ? ` · ${viewers} output window${viewers > 1 ? 's' : ''}` : '');
   const v = chosenVoice();
   $('#status').title = `Brain: ${serverBrain}. Voice: ${v ?? (serverVoice ? (current.voice||KRISTIN).split('-')[1] : 'built-in synth')}.`;
@@ -1353,7 +1498,9 @@ $('#lipSync').value=saved.lipSync||'nori';
 $('#lipSync').onchange=()=>{stopEverything();remember({lipSync:$('#lipSync').value});};
 $('#compareLips').onclick=async()=>{stopEverything();const mine=runId;const c=await preparedSample('heart');if(mine!==runId)return;streamDone=true;enqueue([{type:'emotion',name:'neutral'},{type:'say',text:'This is my new English voice. I hope it feels a little more like me.',clip:c}]);};
 $('#singerSample').onclick=async()=>{stopEverything();const mine=runId;const c=await preparedSample('singer-a');if(mine!==runId)return;act(current.led?'groove':'dance');performSong('You light up my day. Stay here close to me.',c);};
-window.jaegerAvatar={...window.nori,get clip(){return clip;},packs:PACKS,characters:CHARACTERS,get current(){return current;},preparedSample};
+window.jaegerAvatar={...window.nori,get clip(){return clip;},packs:PACKS,characters:CHARACTERS,get current(){return current;},preparedSample,performScene,cueTrips};
+$('#scene').value = saved.scene ?? `look left | hold 3\nlook center | emotion joy | say So, what did you do today?\nsay I spent mine learning to juggle. | action ${agentActions()[0] ?? 'nod'} | on juggle`;   // the example uses a move this body offers
+$('#scenePlay').onclick = () => performScene($('#scene').value);
 // An agent outside the avatar drives the body on stage through the server's control link (dev/docs/runtime/EMBEDDING.md).
 // Its speech arrives as an uploaded clip with lip timing; a newer line preempts the one playing, as a speaker does.
 let speakId = 0;
@@ -1367,12 +1514,14 @@ async function externalSpeak(v) {
     stopAll(); streamDone = true; enqueue([{ type: 'say', text: v.text, clip: c }]);
   } catch (e) { if (mine === speakId) logInput('external speak failed', e.message); }   // nothing plays, so the mouth rests
 }
-startControlLink({
+const stageLink = startControlLink({
   avatar: () => current.id.toLowerCase().replace(/[^a-z0-9_]/g, '_').replace(/^[^a-z]/, 'a$&').slice(0, 64),
   capabilities: () => controls(),
   note: text => logInput('control link', text),
   apply: ({ kind, value }) => {
-    trace('control', kind, { value });
+    const trip = lastCue ? performance.now() - lastCue.due : Infinity, afterCueMs = kind !== 'speak' && trip < 1000 ? Math.round(trip) : undefined;   // how long after its moment a scene's move landed
+    if (afterCueMs !== undefined) { cueTrips.push(afterCueMs); lastCue = null; }
+    trace('control', kind, { value, afterCueMs });
     logInput('external ' + kind, kind === 'speak' ? `"${value.text}" · ${(value.duration_ms / 1000).toFixed(2)} s · ${value.marks.length} lip marks` : kind === 'look' ? value.map(n => n.toFixed(2)).join(', ') : value ?? '');
     if (kind === 'feel') rig.setEmotion(value);
     else if (kind === 'react' || kind === 'act') act(value);

@@ -101,7 +101,7 @@ const RULES = [
   [/\b(can you do|show me|demo|what do you)\b/, () => "[excited] Oh, I can do lots! [wink] [smug] I can be smug. [sad] I can be sad. [angry] I can get grumpy. [laugh] [singing] [sing] And I can even sing! [/sing] [joy] Ta da!"],
   [/\b(hi|hey|hello|yo|sup)\b/, () => pick(["[excited] [wave] Hi there! I'm so glad you're here. [tilt] What's on your mind?", "[joy] [wave] Oh, hello! It's really good to see you."])],
   [/\b(thank|thanks)\b/, () => "[shy] Aww, you're welcome. [giggle]"],
-  [/\b(think|why|how|what)\b|\?/, () => "[thinking] [hmm] That's a really good question. [confused] Honestly, I'm running on my scripted brain right now. [smug] Start LM Studio and I'll get much smarter. [wink]"],
+  [/\b(think|why|how|what)\b|\?/, () => "[thinking] [hmm] That's a really good question. [confused] Honestly, I'm running on my scripted brain right now. [smug] Give me a model file and I'll get much smarter. [wink]"],
 ];
 
 export function scriptedReply(text) {

@@ -44,7 +44,7 @@ export const EMOTIONS = {
 
 // Additive clips: fn(u 0..1, t seconds, tgt). env() gives soft in/out.
 const env = (u, a = 0.15, b = 0.25) => Math.min(1, u / a) * Math.min(1, (1 - u) / b);
-const GESTURES = {
+export const GESTURES = {
   nod: [0.7, (u, t, o) => { o.pitch += -0.32 * Math.sin(t * 15) * env(u); }],
   shake: [0.8, (u, t, o) => { o.yaw += 0.42 * Math.sin(t * 13) * env(u); o.smile -= 0.1; }],
   tilt: [1.3, (u, t, o) => { o.roll += 0.3 * env(u); o.browL += 0.25 * env(u); }],
@@ -76,7 +76,7 @@ export class Rig {
     this.blinkAt = -1; this.nextBlink = 2; this.attn = { x: 0, y: 0, at: -99 };
     this.mode = 'idle'; this.relaxAt = Infinity; this.typingUntil = 0; this.hearingUntil = 0;
     this.sway = null; this.fxTimer = 0; this.sinceEmph = 9;
-    this.energy = 1; this.emotionAt = -9; this.reaction = null; this.act = null; this.attentive = false; this.puppet = null;
+    this.energy = 1; this.emotionAt = -9; this.reaction = null; this.act = null; this.next = null; this.attentive = false; this.puppet = null;
     this.bones = { chestYaw: [0, 0], chestPitch: [0, 0], chestRoll: [0, 0], shL: [0, 0], shR: [0, 0], hipX: [0, 0] };
   }
 
@@ -103,10 +103,19 @@ export class Rig {
     if (this.mode === 'idle') this.kick('pitch', -0.25);
     if (this.t - this.blinkAt > 1.5 && Math.random() < 0.15) this.blink();
   }
-  // A full-body move plays through to its end, so its feet land where they should. An eye reaction can be cut off by the next one: the eyes' springs carry it over.
-  move(name) { if (MOVES[name] && !this.act) this.act = { name, age: 0 }; }
+  // A full-body move is not snapped off: a new one eases the running one out over a quarter of a second (as Stop does,
+  // so its feet land where they should), then starts. Asked again for the move she is already making, she carries on.
+  // An eye reaction can be cut off by the next one: the eyes' springs carry it over.
+  // ponytail: one move waits, the latest asked for; a longer line if a scene needs three in a row.
+  move(name) {
+    if (!MOVES[name]) return;
+    if (!this.act) return void (this.act = { name, age: 0 });
+    if (this.act.name === name && this.act.stop === undefined) return;
+    this.next = name;
+    if (this.act.stop === undefined) this.act.stop = 0;
+  }
   react(name) { if (REACTIONS[name]) this.reaction = { name, age: 0 }; }
-  stopMove() { if (this.act && this.act.stop === undefined) this.act.stop = 0; }
+  stopMove() { this.next = null; if (this.act && this.act.stop === undefined) this.act.stop = 0; }
   listen() { this.hearingUntil = this.t + 0.4; }   // someone is talking to her: eye contact and the attentive face, no hands on a keyboard
   // Called by the performer on each voiced onset: small velocity impulses, so overshoot comes from the springs.
   emphasis(s) {
@@ -200,7 +209,7 @@ export class Rig {
     if (this.act) {
       if (this.act.stop === undefined) this.act.age += dt; else this.act.stop += dt / 0.25;
       const m = this.act.stop >= 1 ? null : moveNow(this.act);
-      if (!m) this.act = null;
+      if (!m) { this.act = this.next ? { name: this.next, age: 0 } : null; this.next = null; }
       else { tg.smile += (m.pose.smile - 0.1) * m.weight * 0.6; tg.blush += (m.pose.heart ?? 0) * 0.6; }
     }
     // A plugin, such as webcam tracking, can drive the face. Her voice keeps the mouth while she talks.

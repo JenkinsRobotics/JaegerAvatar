@@ -67,23 +67,38 @@ float ledMouth(vec2 q,float w){
 
 // Shared lighting and scene. Each body supplies map(), material(), and the constants below.
 const LIGHTING = `
+#ifndef SCENE_SCALE
+#define SCENE_SCALE 1.   // a body built smaller (Truth, in metres) scales the shading probes with it
+#endif
+#ifndef SHADOW_STEPS
+#define SHADOW_STEPS 22
+#endif
+#ifndef SHADOW_STRIDE
+#define SHADOW_STRIDE (.35*SCENE_SCALE)   // longest shadow step: shorter keeps a far occluder's penumbra from banding
+#endif
+#ifndef SHADOW_FAR
+#define SHADOW_FAR 5.   // a shadow ray this far out has cleared the body
+#endif
+#ifndef SHADOW_K
+#define SHADOW_K 7.   // shadow hardness: lower is a softer penumbra
+#endif
 vec3 normal(vec3 p){
-  const vec2 e=vec2(1.,-1.)*.0016;
+  const vec2 e=vec2(1.,-1.)*.0016*SCENE_SCALE;
   return normalize(e.xyy*map(p+e.xyy).x+e.yyx*map(p+e.yyx).x+e.yxy*map(p+e.yxy).x+e.xxx*map(p+e.xxx).x);
 }
 float softShadow(vec3 ro,vec3 rd){
-  float res_=1.,t=.03;
-  for(int i=0;i<22;i++){
+  float res_=1.,t=.03*SCENE_SCALE;
+  for(int i=0;i<SHADOW_STEPS;i++){
     float h=map(ro+rd*t).x;
-    res_=min(res_,7.*h/t);
-    t+=clamp(h,.025,.35);
-    if(res_<.01||t>5.)break;
+    res_=min(res_,SHADOW_K*h/t);
+    t+=clamp(h,.025*SCENE_SCALE,SHADOW_STRIDE);
+    if(res_<.01||t>SHADOW_FAR)break;
   }
   return SAT(res_);
 }
 float occl(vec3 p,vec3 n){
   float a=0.,s=1.;
-  for(int i=1;i<=4;i++){float h=.05*float(i)*float(i)*.5+.02;a+=(h-map(p+n*h).x)*s;s*=.6;}
+  for(int i=1;i<=4;i++){float h=(.05*float(i)*float(i)*.5+.02)*SCENE_SCALE;a+=(h-map(p+n*h).x)/SCENE_SCALE*s;s*=.6;}
   return SAT(1.-a*2.2);
 }
 vec3 envMap(vec3 r){
@@ -122,9 +137,12 @@ void main(){
   float t=max(length(ro.xz)-BOUND,.01),id=0.;
   bool hit=false;
   float tEnd=length(ro.xz)+BOUND;
-  for(int i=0;i<110;i++){
+#ifndef MARCH_STEPS
+#define MARCH_STEPS 110
+#endif
+  for(int i=0;i<MARCH_STEPS;i++){   // a body with long grazing surfaces (limbs on the floor) asks for more
     vec2 h=map(ro+rd*t);
-    if(h.x<.001*t){hit=true;id=h.y;break;}
+    if(h.x<.001*SCENE_SCALE*t){hit=true;id=h.y;break;}
     t+=h.x*.86;
     if(t>tEnd)break;
   }
@@ -133,12 +151,12 @@ void main(){
     Mat m=Mat(vec3(.8),0.,.5,vec3(0),0.);
     material(id,p,n,rd,m);
     float ao=occl(p,n);
-    float sh=softShadow(p+n*.02,normalize(vec3(-.45,.75,.65)));
+    float sh=softShadow(p+n*.02*SCENE_SCALE,normalize(vec3(-.45,.75,.65)));
     col=surface(m,p,n,rd,ao,sh);
   }else if(tFloor<40.){
     vec3 p=ro+rd*tFloor;
-    float sh=softShadow(p+vec3(0,.02,0),normalize(vec3(-.45,.75,.65)));
-    float cont=SAT(map(p+vec3(0,.12,0)).x/.5);
+    float sh=softShadow(p+vec3(0,.02*SCENE_SCALE,0),normalize(vec3(-.45,.75,.65)));
+    float cont=SAT(map(p+vec3(0,.12*SCENE_SCALE,0)).x/(.5*SCENE_SCALE));
     col*=mix(.62,1.,sh)*mix(.55,1.,sqrt(cont));
   }
   col*=1.-.2*dot(px*.6,px*.6);

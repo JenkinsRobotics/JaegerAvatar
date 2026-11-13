@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
-"""Local-only demo server: static files, Piper neural voices, Whisper ears, and a Gemma (LM Studio) or Claude brain."""
+"""Local-only demo server: static files, Piper neural voices, Whisper ears, and the JaegerAgent brain, whose model runs in-process (llama.cpp)."""
+import base64
+import hashlib
 import io
 import json
 import os
+import platform
+import queue
+import sys
 import threading
-import urllib.request
+import time
 import wave
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -13,12 +18,13 @@ from jaeger_avatar.catalog import catalog, persona, ROOT as PACKS
 from jaeger_avatar.packs import local_path, PackError
 from jaeger_avatar.embedded.control import ControlError
 from jaeger_avatar.embedded.link import ControlLink
+from jaeger_avatar.embedded.agent_tools import link_transport
 from kin_lipsync import analyze as analyze_kin
 
 from agent_bridge import agent_host
 import lyra_singer
 import singing
-from voice_engine import SAMPLE_LIMIT, engine, to_wav
+from voice_engine import KOKORO_VOICES, SAMPLE_LIMIT, engine, to_wav
 
 ROOT = Path(__file__).parent
 CACHE = ROOT / ".cache"
@@ -34,22 +40,35 @@ VOICE = os.environ.get("NORI_VOICE", "en_US-kristin-medium")  # any Piper voice 
 VOICES = {VOICE, "en_US-kristin-medium", "en_US-joe-medium", "en_US-bryce-medium", "en_US-norman-medium"}
 MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-opus-5-5")
 HAS_CLAUDE = bool(os.environ.get("ANTHROPIC_API_KEY"))
-LMSTUDIO = os.environ.get("LMSTUDIO_URL", "http://localhost:1234")
-GEMMA = os.environ.get("GEMMA_MODEL", "google/gemma-4-e4b")
-USE_GEMMA = os.environ.get("NORI_BRAIN", "gemma") == "gemma"
-STT = os.environ.get("NORI_STT", "base.en")  # any faster-whisper model name
+import models as model_files
+MODELS = model_files.found()   # the model files on this machine; the agent loads one in its own process
+# Jaeger Agent's voice loop does the hearing, the thinking with its tools, and the voice (app/agent_loop.py).
+# JAEGER_AVATAR_LOOP=0 keeps the older path: this app's own /hear and /say around a text-only agent.
+LOOP = os.environ.get('JAEGER_AVATAR_LOOP', '1') != '0' and os.environ.get('NORI_BRAIN') != 'scripted'
+STT = os.environ.get("NORI_STT", "large-v3-turbo" if LOOP else "base.en")  # a Whisper model name: see settings.WHISPER
 import settings as app_settings
 SETTINGS_FILE = CACHE / "settings.json"
-config = app_settings.load(SETTINGS_FILE, app_settings.defaults(GEMMA, STT))   # what Settings saved wins over the environment
-GEMMA, STT = config["agent"]["model"], config["hearing"]["model"]
+config = app_settings.load(SETTINGS_FILE, app_settings.defaults(model_files.DEFAULT, STT))   # what Settings saved wins over the environment
+config["agent"]["model"] = model_files.pick(config["agent"]["model"], MODELS) or config["agent"]["model"]   # a saved name with no file falls back
+STT = config["hearing"]["model"]
 settings_lock = threading.Lock()   # two saves at once must not undo each other
 HEAR_LIMIT = 16000 * 2 * 30  # 30 s of 16 kHz 16-bit audio; the page sends at most 20 s
 FRAME_LIMIT = 64 * 1024
+MIC_LIMIT = 1024 * 1024   # one post of microphone sound for the voice loop; the page sends a fraction of a second at a time
+EVENT_WAIT = 15   # seconds of quiet on the loop's event stream before a keep-alive line
 MODEL_LIMIT = 200 * 1024 * 1024
 LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
 # Optional: another local process may drive the body on stage through this link (dev/docs/runtime/EMBEDDING.md).
 CONTROL_TOKEN = os.environ.get("JAEGER_AVATAR_CONTROL_TOKEN") or __import__("secrets").token_urlsafe(18)
 control_link = ControlLink(CONTROL_TOKEN)
+
+
+def move_avatar(op, value, ttl_ms):
+    """The agent's avatar tool lands here: the same link, and the same checks, as any other controller."""
+    return link_transport(control_link, CONTROL_TOKEN)(op, value, ttl_ms)
+
+
+agent_host.on_control = move_avatar
 # The page can only talk to this machine, whatever a future bug or a loaded file tries.
 CSP = "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' blob: data:; worker-src 'self' blob:"
 
@@ -83,6 +102,72 @@ EXTRA_TAGS = {
     "mochi": "You act with your eyes. Eye reactions: [wink] [blink] [sideeye] [sparkle] [heart] [roll] [peek] [doze] [groove] [wake]\n",
     "visor": "You act with your eyes. Eye reactions: [wink] [blink] [sideeye] [sparkle] [heart] [roll] [peek] [doze] [groove] [wake]\n",
 }
+
+
+def chat_system(body):
+    """The instructions the agent gets for this character and body. /warm and /chat must build the same text:
+    the model keeps what it has already read, so a matching warm-up makes the first reply start at once."""
+    try:
+        name, profile = persona(body.get('pack',body.get('character','vita')),body.get('profile'))
+        # The body is separate from the personality: it says what this one can do with itself right now.
+        acts = [a for a in body.get('actions', []) if isinstance(a, str) and a.isidentifier()][:16]
+        shell = str(body.get('body', ''))[:60]
+        return f"You are {name}, an AI character. {profile}\n" + (f"Your body right now: {shell}.\n" if shell else '') + \
+            (f"Body actions, used now and then where they fit: {' '.join(f'[{a}]' for a in acts)}\n" if acts else '') + PERFORM
+    except (OSError,ValueError):
+        return system_for(body.get("character"))
+
+
+LOOP_RULES = ("You know a lot: answer general questions from your own knowledge, right away. Do not search the web unless the user asks you "
+    "to search or look something up. Use get_time for the time or date.\n"
+    "If asked who you are, answer as this AI character by name, and never call yourself Gemma or mention Google. "
+    "Match the length to the question: a sentence or two for small talk, more when asked to explain or tell a story.")
+# Measured 2026-11-11 on gemma-4-E4B: told to call first, and shown one call (the loop worker adds it), the model moved the body on
+# 42 of 42 turns; told to call "together with your words" it did on 1 to 3 of 7; told to say the words first and call last, on 4 to 6
+# of 7 (first sound about 0.4 s sooner, one turn ran a web search). Last in the prompt, where the small model heeds it.
+BODY_RULE = ("Show how you feel with this body: begin every reply with one avatar tool call (an emotion; add an action only when the user "
+    "asks you to move or a big moment calls for one), then say your words. Never write the moves as words. "
+    "When asked to act something out, put on a show, or do things in a set order or for a set time, call the scene tool instead: the scene is your whole reply.")
+loop_key, loop_lock = None, threading.Lock()   # the character the loop was last told to be
+
+
+def loop_persona(body):
+    """Who the voice loop is: the character, the body on stage and what it can do. The agent moves it with its avatar tool, not inline tags."""
+    try:
+        name, profile = persona(body.get('pack', body.get('character', 'vita')), body.get('profile'))
+        who = f"You are {name}, an AI character. {profile}"
+    except (OSError, ValueError):
+        who = PERSONAS.get(body.get('character'), PERSONAS['nori'])
+    controls = body.get('controls') if isinstance(body.get('controls'), dict) else {}
+    def names(*keys):
+        return ' '.join([n for k in keys for n in (controls.get(k) if isinstance(controls.get(k), list) else []) if isinstance(n, str) and n.isidentifier()][:16])
+    feelings, moves, shell = names('emotions'), names('reactions', 'actions'), str(body.get('body', ''))[:60]
+    return (f"{who}\n{LOOP_RULES}\n" + (f"Your body right now: {shell}. " if shell else "You have a body. ")
+            + (f"It can show these feelings: {feelings}. " if feelings else '') + (f"It can make these moves: {moves}. " if moves else '') + BODY_RULE)
+
+
+def loop_voice(body):
+    """The Kokoro voice the page chose, if the loop's voice module has it; None leaves the loop's voice as it is."""
+    voice = str(body.get('voice', '')).removeprefix('kokoro:')
+    return voice if voice in KOKORO_VOICES else None
+
+
+def loop_as(body):
+    """Tell the loop which character, body and voice it is, once per change. Each character and body has its own conversation."""
+    global loop_key
+    text, voice = loop_persona(body), loop_voice(body)
+    key = f"{str(body.get('session', ''))[:40]}:{hashlib.sha1(text.encode()).hexdigest()[:10]}"
+    with loop_lock:
+        if (key, voice) != loop_key:
+            agent_host.send({'op': 'persona', 'session': key, 'persona': text, **({'voice': voice} if voice else {})})
+            loop_key = (key, voice)
+
+
+def loop_start():
+    """The first line the loop worker reads: which model, which ears, who it is."""
+    a = config['agent']
+    return {'op': 'start', 'model': a['model'], **{k: a[k] for k in ('temperature', 'max_tokens', 'timeout_s') if k in a},
+            'hearing': config['hearing']['model'], 'persona': loop_persona({'pack': 'vita'}), 'session': 'avatar'}
 
 
 def system_for(character):
@@ -139,22 +224,36 @@ def speak(text, rate, name=VOICE):
 
 
 stt = None
+stt_where = ""   # engine, model and device, as the page shows it: "whisper.cpp · base.en · Metal"
 stt_lock = threading.Lock()
+decode_lock = threading.Lock()   # one whisper.cpp model decodes one clip at a time
+APPLE = sys.platform == "darwin" and platform.machine() == "arm64"
 
 
 def load_stt():
-    """Whisper on the CPU: about 200 ms for a short sentence on an M1 Max. Returns None if it can't load."""
-    global stt
+    """Whisper on the GPU where there is one. Apple Silicon: whisper.cpp on Metal, about 80 ms for a short sentence on an
+    M1 Max (250 ms on its CPU). Elsewhere: faster-whisper on CUDA, or on the CPU if there is none. Returns None if it can't load."""
+    global stt, stt_where
     with stt_lock:
         if stt is None:
             try:
-                from faster_whisper import WhisperModel
                 print(f"Loading speech model {STT} (the first run downloads {app_settings.WHISPER.get(STT, 'it')})...")
-                stt = WhisperModel(STT, device="cpu", compute_type="int8", cpu_threads=6, download_root=str(CACHE / "stt"))
-                hear(b"\0\0" * 16000)  # the first inference is the slow one, so spend it before anyone is waiting
+                if APPLE:
+                    import numpy as np
+                    from pywhispercpp.model import Model
+                    stt = Model(STT, print_realtime=False, print_progress=False, single_segment=True, no_context=True, redirect_whispercpp_logs_to=None)
+                    stt_where = f"whisper.cpp · {STT} · {'Metal' if 'MTL' in stt.system_info() else 'CPU'}"
+                    stt.transcribe(np.zeros(16000, np.float32))  # the first inference is the slow one, so spend it before anyone is waiting
+                else:   # the CUDA branch has not been run: there is no such machine here
+                    import ctranslate2
+                    from faster_whisper import WhisperModel
+                    cuda = ctranslate2.get_cuda_device_count() > 0
+                    stt = WhisperModel(STT, device="cuda" if cuda else "cpu", compute_type="float16" if cuda else "int8", cpu_threads=6, download_root=str(CACHE / "stt"))
+                    stt_where = f"faster-whisper · {STT} · {'CUDA' if cuda else 'int8 · CPU'}"
+                hear(b"\0\0" * 16000)  # loads the voice filter too
             except Exception as e:  # no network or a bad model name: the mic button says so, typing still works
                 print(f"Speech model {STT} unavailable:", e)
-                stt = False
+                stt, stt_where = False, ""
         return stt
 
 
@@ -162,53 +261,28 @@ def hear(pcm, name=""):
     """16 kHz mono 16-bit PCM in, text out. Empty text means no speech was found."""
     import numpy as np
     audio = np.frombuffer(pcm[:len(pcm) & ~1], dtype=np.int16).astype(np.float32) / 32768
-    # The VAD filter stops Whisper inventing "Thank you." from noise. The prompt is how it learns her name is Vita, not Vida.
+    # The voice filter stops Whisper inventing "Thank you." from noise. The prompt is how it learns her name is Vita, not Vida.
+    if APPLE:
+        # ponytail: the filter is the one bundled with faster-whisper; whisper.cpp has its own, once it can fetch that model itself.
+        from faster_whisper.vad import collect_chunks, get_speech_timestamps
+        spans = get_speech_timestamps(audio)
+        if not spans:
+            return ""
+        with decode_lock:   # language and prompt go in every time: whisper.cpp keeps the last ones otherwise
+            segments = stt.transcribe(np.concatenate(collect_chunks(audio, spans)[0]), language=config["hearing"]["language"],
+                                      initial_prompt=f"A chat with {name}." if name else "")
+        return " ".join(s.text.strip() for s in segments).strip()
     lang = None if config["hearing"]["language"] == "auto" else config["hearing"]["language"]
     segments, _ = stt.transcribe(audio, language=lang, beam_size=1, vad_filter=True, condition_on_previous_text=False, without_timestamps=True,
                                  initial_prompt=f"A chat with {name}." if name else None)
     return " ".join(s.text.strip() for s in segments if s.no_speech_prob < 0.6).strip()
 
 
-def lm_models():
-    """The chat models LM Studio offers right now."""
-    try:
-        with urllib.request.urlopen(f"{LMSTUDIO}/v1/models", timeout=0.6) as r:
-            return [m["id"] for m in json.load(r)["data"] if "embed" not in m["id"]]
-    except (OSError, ValueError, KeyError):
-        return []
-
-
-def gemma_ready():
-    if not USE_GEMMA:
-        return False
-    try:
-        with urllib.request.urlopen(f"{LMSTUDIO}/v1/models", timeout=0.4) as r:
-            return any(m["id"] == GEMMA for m in json.load(r)["data"])
-    except (OSError, ValueError, KeyError):
-        return False
-
-
 def brain():
+    """What answers: JaegerAgent with its in-process model, or the page's scripted replies when there is no agent or no model file."""
     if os.environ.get('NORI_BRAIN')=='scripted':return 'scripted'
-    return 'JaegerAgent · '+GEMMA if agent_host.ready and gemma_ready() else 'scripted'
-
-
-def gemma_stream(messages, system, max_tokens=220):
-    # ponytail: raw Gemma prompt, because LM Studio's chat endpoint has no working way to turn thinking off here
-    # (it costs about 2.5 s per reply, or leaks the plan into the answer). Starting the reply on "[" skips the planning.
-    clean = lambda t: t.replace("<|", "").replace("|>", "")  # user text can't forge a turn boundary
-    turns = "".join(f"<|turn>{'user' if m['role'] == 'user' else 'model'}\n{clean(m['content'])}<turn|>\n" for m in messages)
-    prompt = f"<bos><|turn>system\n{system}<turn|>\n{turns}<|turn>model\n["
-    body = {"model": GEMMA, "prompt": prompt, "stream": True, "max_tokens": max_tokens, "temperature": 0.8, "ttl": 3600, "stop": ["<turn|>", "<|turn>"]}
-    req = urllib.request.Request(f"{LMSTUDIO}/v1/completions", json.dumps(body).encode(), {"Content-Type": "application/json"})
-    yield "["
-    with urllib.request.urlopen(req, timeout=120) as r:
-        for line in r:
-            line = line.decode().strip()
-            if line.startswith("data: ") and line != "data: [DONE]":
-                text = json.loads(line[6:])["choices"][0].get("text")
-                if text:
-                    yield text
+    if LOOP:return 'JaegerAgent voice loop · '+str(agent_host.model) if agent_host.ready else 'scripted'
+    return 'JaegerAgent · '+(agent_host.model or config["agent"]["model"]) if agent_host.ready and config["agent"]["model"] in MODELS else 'scripted'
 
 
 def claude_stream(messages, system):
@@ -326,10 +400,12 @@ class Handler(SimpleHTTPRequestHandler):
             return self.reply(503, b'{"error":"voice not ready"}')
         try:
             marks = []      # when the lips close on m/b/p or tuck for f/v, from the voice's own phoneme timing
+            began = time.time()
             x = engine.speak(voice, text.replace("[[", " "), emotion if isinstance(emotion, str) else None, float(speed), turn, marks)
         except (ValueError, RuntimeError) as e:
             return self.reply(422, json.dumps({"error": str(e)}).encode())
-        return self.reply(409, b'{"error":"interrupted"}') if x is None else self.reply(200, to_wav(x, engine.sr), "audio/wav", {"X-Lips": json.dumps(marks)})
+        return self.reply(409, b'{"error":"interrupted"}') if x is None else self.reply(200, to_wav(x, engine.sr), "audio/wav",
+            {"X-Lips": json.dumps(marks), "X-Render-Ms": str(round((time.time() - began) * 1000))})
 
     def sing(self, body):
         """The words spoken in this voice, moved onto the tune the page chose."""
@@ -384,12 +460,35 @@ class Handler(SimpleHTTPRequestHandler):
                 return self.reply(404,b'{"error":"Unknown pack asset"}')
 
         if self.path == "/settings":
-            return self.reply(200, json.dumps({**config, "brain": brain(), "lmstudio": LMSTUDIO, "hearing_ready": bool(stt),
-                "jaeger_agent": {**(agent_host.schema or {}), "in_app": {"provider": "lmstudio", "base_url": LMSTUDIO.rstrip("/") + "/v1", "model_path": "", "api_key_env": "",
-                    "system_prompt": "built for each character", "max_iterations": 1, "tools_enabled": False, "ctx": "set in LM Studio", "gpu_layers": "set in LM Studio"}},
-                "options": {"models": lm_models(), "whisper": app_settings.WHISPER, "languages": app_settings.LANGUAGES}}).encode())
+            MODELS.clear(); MODELS.update(model_files.found())   # a model file added since the app started shows up here
+            report = (agent_host.report or {}) if LOOP else {}   # what the voice loop says it runs on, per part
+            return self.reply(200, json.dumps({**config, "parts": report, "brain": brain(), "model_dirs": [str(p) for p in model_files.ROOTS], "hearing_ready": bool(stt), "hearing_where": stt_where,
+                "jaeger_agent": {**(agent_host.schema or {}), "in_app": {"provider": "llama_cpp", "base_url": "", "model_path": str(MODELS.get(config["agent"]["model"], "")), "api_key_env": "",
+                    "system_prompt": "built for each character", "max_iterations": 1, "tools_enabled": False, "ctx": 8192, "gpu_layers": -1,
+                    **{k: report[k] for k in ("max_iterations", "tools_enabled", "ctx") if k in report}}},
+                "options": {"models": list(MODELS), "whisper": app_settings.WHISPER, "languages": app_settings.LANGUAGES}}).encode())
         if self.path == "/health":
-            return self.reply(200, json.dumps({"brain": brain(), "voice": VOICE if voices.get(VOICE) else None, "ears": bool(stt) or stt is None, "natural": engine.status}).encode())
+            ears, where = bool(stt) or stt is None, stt_where
+            if LOOP:   # the loop's ears: the hearing module, and what it computes on
+                h = (agent_host.report or {}).get("hearing") or {}
+                ears, where = agent_host.ready, " · ".join(str(h[k]) for k in ("module", "version", "compute", "model") if h.get(k))
+            return self.reply(200, json.dumps({"brain": brain(), "loop": LOOP, "voice": VOICE if voices.get(VOICE) else None, "ears": ears, "hearing": where, "natural": engine.status}).encode())
+        if LOOP and self.path == "/agent/events":   # everything the voice loop does, as it happens: words, voice sound, timings
+            q = agent_host.listen()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream")
+            self.end_headers()
+            try:
+                while True:
+                    try: line = b"data: " + json.dumps(q.get(timeout=EVENT_WAIT), default=str).encode() + b"\n\n"
+                    except queue.Empty: line = b": keep\n\n"
+                    self.wfile.write(line)
+                    self.wfile.flush()
+            except OSError:  # the page closed
+                pass
+            finally:
+                agent_host.unlisten(q)
+            return
         if self.path.startswith("/singer/"):     # the experimental singer: progress, then the finished song
             key = parse_qs(urlparse(self.path).query).get("id", [""])[0]
             try:
@@ -476,6 +575,14 @@ class Handler(SimpleHTTPRequestHandler):
             relay.model = data
             relay.model_rev += 1
             return self.reply(200, json.dumps({"rev": relay.model_rev}).encode())
+        if LOOP and self.path == "/agent/audio":   # microphone sound for the voice loop: 16 kHz 16-bit mono, as it is heard
+            if size > MIC_LIMIT:
+                self.close_connection = True
+                return self.reply(413, b'{"error":"too long"}')
+            pcm = self.rfile.read(size)
+            try: agent_host.send({"op": "audio", "pcm": base64.b64encode(pcm).decode()})
+            except RuntimeError: return self.reply(503, b'{"error":"The agent is still loading"}')
+            return self.reply(200, b"{}")
         if self.path.startswith("/hear"):
             if size > HEAR_LIMIT:
                 self.close_connection = True  # the body was never read, so this connection can't be reused
@@ -539,20 +646,42 @@ class Handler(SimpleHTTPRequestHandler):
                 w.setnchannels(2); w.setsampwidth(2); w.setframerate(engine.sr); w.writeframes(pcm)
             return self.reply(200, out.getvalue(), "audio/wav", {"X-Song": json.dumps({"bpm": 92, "beats": beats})})
         if self.path == "/settings":
-            global config, GEMMA, STT, stt
-            models = lm_models()
+            global config, STT, stt, loop_key
             with settings_lock:
                 try:
-                    new = app_settings.apply(config, body, models)
+                    new = app_settings.apply(config, body, list(MODELS))
                 except ValueError as e:
                     return self.reply(422, json.dumps({"error": str(e)}).encode())
                 app_settings.save(SETTINGS_FILE, new)
-                config, GEMMA = new, new["agent"]["model"]
+                old, changed, config = config, new["agent"] != config["agent"], new
+            if LOOP:   # the loop holds the model and the ears together: a change to either starts it again
+                if new != old:
+                    loop_key = None
+                    threading.Thread(target=agent_host.restart, args=(loop_start(),), daemon=True).start()
+                return self.reply(200, json.dumps(new).encode())
+            if changed:   # load a newly chosen model now, so the next reply isn't the one that waits
+                agent_host.warm(system_for("nori"), new["agent"])
             if new["hearing"]["model"] != STT:   # load the new ears now, so the next thing said isn't the one that waits
                 with stt_lock:
                     STT, stt = new["hearing"]["model"], None
                 threading.Thread(target=load_stt, daemon=True).start()
             return self.reply(200, json.dumps(new).encode())
+        if self.path == "/voice/module":   # one line through the voice loop's own voice (the Jaeger voice module), no model: to compare voices
+            if not LOOP:
+                return self.reply(404, b'{"error":"The voice loop is off"}')
+            text = str(body.get("text", ""))[:1000].strip()
+            if not text:
+                return self.reply(400, b'{"error":"empty"}')
+            if body.get("voice") and not loop_voice(body):
+                return self.reply(400, b'{"error":"The voice module has no such voice"}')
+            try:
+                clip = agent_host.say(text, loop_voice(body))
+            except RuntimeError as e:
+                return self.reply(503, json.dumps({"error": str(e)}).encode())
+            out = io.BytesIO()
+            with wave.open(out, "wb") as w:
+                w.setnchannels(1); w.setsampwidth(2); w.setframerate(clip["rate"]); w.writeframes(base64.b64decode(clip["pcm"]))
+            return self.reply(200, out.getvalue(), "audio/wav", {"X-Lips": json.dumps(clip.get("marks", [])), "X-Render-Ms": str(round(clip.get("ms", 0)))})
         if self.path == "/say":
             text = str(body.get("text", ""))[:1000].strip()
             if not text:
@@ -565,9 +694,39 @@ class Handler(SimpleHTTPRequestHandler):
             rate = max(120, min(280, int(body.get("rate", 190))))
             wav = speak(text, rate, name)
             return self.reply(200, wav, "audio/wav") if wav else self.reply(422, b'{"error":"nothing to say"}')
-        if self.path == '/agent/interrupt':
-            agent_host.interrupt(str(body.get('session',''))+':'+str(body.get('pack','vita')))
+        if self.path == '/warm':   # the page names its character before the first message, so that reply is not the slow one
+            try:
+                if LOOP:loop_as(body)
+                else:agent_host.warm(chat_system(body), config['agent'])
+            except RuntimeError:pass   # still loading: the first message names the character again
             return self.reply(200,b'{}')
+        if self.path == '/agent/interrupt':
+            try:
+                if LOOP:agent_host.send({'op':'interrupt'})
+                else:agent_host.interrupt(str(body.get('session',''))+':'+str(body.get('pack','vita')))
+            except RuntimeError:pass
+            return self.reply(200,b'{}')
+        if LOOP and self.path == '/agent/text':   # typed words for the voice loop; the answer comes back on /agent/events
+            try:
+                loop_as(body)
+                agent_host.send({'op':'text','text':str(body.get('text',''))[:4000]})
+            except RuntimeError:
+                return self.reply(503,b'{"error":"The agent is still loading"}')
+            return self.reply(200,b'{}')
+        if LOOP and self.path == '/agent/scene':   # a scene for the agent to perform: it reads the script, voices the lines and times the moves
+            script = body.get('script')
+            if not isinstance(script, (str, list)): return self.reply(400, b'{"error":"A scene is a script or a list of beats"}')
+            try:
+                loop_as(body)
+                agent_host.send({'op': 'scene', 'script': script[:20000] if isinstance(script, str) else script[:200]})
+            except RuntimeError:
+                return self.reply(503, b'{"error":"The agent is still loading"}')
+            return self.reply(200, b'{}')
+        if LOOP and self.path == '/agent/cue':     # the page's clip clock has reached a scene's cue: the agent's avatar tool makes the move
+            if not isinstance(body.get('call'), dict): return self.reply(400, b'{"error":"A cue is a call"}')
+            try: agent_host.send({'op': 'cue', 'call': body['call']})
+            except RuntimeError: pass
+            return self.reply(200, b'{}')
         if self.path == "/chat":
             current = brain()
             if current == "scripted":
@@ -581,15 +740,7 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_header("Content-Type", "text/event-stream")
             self.end_headers()
             try:
-                try:
-                    name, profile = persona(body.get('pack',body.get('character','vita')),body.get('profile'))
-                    # The body is separate from the personality: it says what this one can do with itself right now.
-                    acts = [a for a in body.get('actions', []) if isinstance(a, str) and a.isidentifier()][:16]
-                    shell = str(body.get('body', ''))[:60]
-                    system = f"You are {name}, an AI character. {profile}\n" + (f"Your body right now: {shell}.\n" if shell else '') + \
-                        (f"Body actions, used now and then where they fit: {' '.join(f'[{a}]' for a in acts)}\n" if acts else '') + PERFORM
-                except (OSError,ValueError):
-                    system = system_for(body.get("character"))
+                system = chat_system(body)
                 session=str(body.get('session','default'))+':'+str(body.get('pack','vita'))
                 # For the Data flow window: exactly what the agent is given this turn.
                 self.wfile.write(f"data: {json.dumps({'system': system, 'settings': config['agent'], 'sent': messages[-1]['content']})}\n\n".encode())
@@ -610,17 +761,17 @@ if __name__ == "__main__":
     import signal
     def shutdown(*_):raise KeyboardInterrupt
     signal.signal(signal.SIGTERM,shutdown)
-    if os.environ.get('NORI_BRAIN')!='scripted':agent_host.start()
+    if os.environ.get('NORI_BRAIN')!='scripted':agent_host.start(loop_start() if LOOP else None)
     print(f"Jaeger Avatar: http://localhost:{PORT}  brain={brain()}  voice={VOICE if voices.get(VOICE) else 'built-in synth'}")
     print(f"Control token: {CONTROL_TOKEN}", flush=True)
-    def warm():  # so nobody waits on a cold model: the other voices, then Gemma with the system prompt already cached
+    def warm():  # so nobody waits on a cold model: the agent loads its model and reads the instructions, then the voices and ears
+        if LOOP: return engine.start()   # the loop loads its own model, ears and voice; this voice is for intros, reels and songs
+        for _ in range(150):   # the worker reports ready within a few seconds
+            if agent_host.ready or not agent_host.process: break
+            time.sleep(0.2)
+        agent_host.warm(system_for("nori"), config["agent"])
         engine.start()
         load_stt()
-        if gemma_ready():
-            try:
-                list(gemma_stream([{"role": "user", "content": "Hi"}], system_for("nori"), 1))
-            except OSError as e:
-                print("Gemma warm-up failed:", e)
     threading.Thread(target=warm, daemon=True).start()
     server=ThreadingHTTPServer(("127.0.0.1",PORT),Handler)
     try:server.serve_forever()

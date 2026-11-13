@@ -1,12 +1,14 @@
 // node test.mjs — fails loudly if the audio->mouth mapping, the parser or the rig break.
 import assert from 'node:assert';
-import { analyze, synthVowel, synthVocal, synthSing, synthSpeech, sampleTrack, syllabify, melody, singOver } from './web/voice.js';
+import { analyze, synthVowel, synthVocal, synthSing, synthSpeech, sampleTrack, syllabify, melody, singOver, readWav, clipFacts } from './web/voice.js';
 import { parse, Parser, scriptedReply, isIntro, reelFor } from './web/brain.js';
 import { Rig, EMOTIONS } from './web/rig.js';
 import { faceShapes, humanBone, MORPHS, ACTING } from './web/model-map.js';
-import { Vad, isEcho, toPcm, FRAME, RATE } from './web/ears.js';
+import { Vad, Gate, isEcho, toPcm, fromPcm, FRAME, RATE } from './web/ears.js';
 import { MOODS, REACTIONS, FaceAnimator, faceTarget, eyeContour } from './web/eyes.js';
 import { MOVES, sampleMove, moveNow, flightHeight } from './web/motion.js';
+import { HUMANOID, REST, HEAD_HEIGHT, chainsOf } from './web/humanoid.js';
+import { TruthBody, JOINTS as TRUTH_JOINTS } from './web/truth-pose.js';
 import { faceToPuppet } from './web/plugins/webcam/index.js';
 import { mouthFrom } from './web/plugins/lipsync.js';
 
@@ -81,6 +83,25 @@ const us = (performance.now() - t0) / 6000 * 1000;
 console.log(`rig tick ${us.toFixed(1)}us`);
 assert(us < 1000);
 
+// The standard humanoid: about 7.5 heads tall, and every pose keeps its bones their length and its body above the floor.
+{
+  const top = REST.head[1] + HEAD_HEIGHT * 0.86, heads = top / HEAD_HEIGHT;
+  assert(heads > 7 && heads < 8, `standard proportions, ${heads.toFixed(2)} heads`);
+  for (const b of ['hips', 'spine', 'chest', 'neck', 'head', 'leftUpperArm', 'leftLowerArm', 'leftHand', 'rightUpperLeg', 'rightLowerLeg', 'rightFoot', 'rightToes']) assert(HUMANOID.includes(b), b);
+  assert(REST.leftUpperArm[0] > 0 && REST.rightUpperArm[0] < 0, 'the figure faces +z, so its left is +x');
+  const len = (p, a, b) => { const i = TRUTH_JOINTS.indexOf(a) * 3, k = TRUTH_JOINTS.indexOf(b) * 3; return Math.hypot(p[k] - p[i], p[k + 1] - p[i + 1], p[k + 2] - p[i + 2]); };
+  const rest = Float32Array.from(TRUTH_JOINTS.flatMap(j => REST[j] ?? [0, 0, 0]));
+  const t = new TruthBody(), o = { wave: 0, hand: 0.5, lean: 0.3 };
+  for (const move of ['kneel', 'clap', 'lean', 'sway', 'stand', 'sit']) {
+    t.play(move, 0);
+    for (let f = 0; f < 240; f++) {
+      const p = t.step(o, f / 60, 1 / 60);
+      for (const [a, b] of chainsOf(TRUTH_JOINTS)) assert(Math.abs(len(p, a, b) - len(rest, a, b)) < 1e-4, `${move}: ${a}-${b} keeps its length`);
+      for (const j of HUMANOID) assert(p[TRUTH_JOINTS.indexOf(j) * 3 + 1] > -0.01, `${move}: ${j} stays above the floor`);
+    }
+  }
+}
+
 // Real voice, when the server is running: "oo" words round the mouth, "ee" words widen it. Neural TTS breaks naive formant estimates.
 const said = await fetch('http://localhost:8790/health').then(r => r.json()).catch(() => null);
 if (said?.voice) {
@@ -126,6 +147,17 @@ console.log('ok');
   assert(!isEcho('wait stop that is not what I meant', 'Tiny little lights are glowing, that is what I meant.'), 'a real interruption');
   assert(isEcho('', 'anything'), 'nothing heard');
   assert.equal(toPcm([2])[0], 32767, 'clipped, not wrapped');
+  assert.deepEqual([...fromPcm(Buffer.from(new Int16Array([0, 16384, -32768]).buffer).toString('base64'))], [0, 0.5, -1], "the voice loop's sound, back as samples");
+  // What goes to the voice loop: the room while she is quiet, none of her own voice, and a person talking over her from just before they began.
+  const g = new Gate(), f = n => Float32Array.of(n), sent = (...a) => g.push(...a).map(x => x[0]);
+  assert.deepEqual(sent(f(1), false), [1], 'a quiet room goes straight in');
+  for (let i = 2; i < 40; i++) assert.deepEqual(sent(f(i), true), [], 'her own voice is kept back');
+  const over = sent(f(40), true, 'start');
+  assert.deepEqual([over.length, over[0], over.at(-1)], [21, 20, 40], 'someone talks over her: the last 0.6 s, then live');
+  assert.deepEqual(sent(f(41), true), [41]);
+  assert.deepEqual(sent(f(42), true, 'end'), [42]);
+  assert.deepEqual(sent(f(43), true), [], 'kept back again once they stop');
+  assert.deepEqual(sent(f(44), false), [44], 'her last words are dropped, not sent late');
 }
 
 // The display robots' eyes: every emotion settles, and any change can interrupt any other without a jump or a bad number.
@@ -184,8 +216,20 @@ console.log('ok');
   assert(Math.abs(sampleMove('spin', 3.5).pose.spin - Math.PI * 2) < 1e-6, 'a spin ends one full turn round');
   assert.equal(flightHeight(0.58), 0); assert(flightHeight(0.81) > 0.2);
   const rig = new Rig();
-  rig.move('clap'); rig.move('spin'); assert.equal(rig.act.name, 'clap', 'a move plays out before another');
-  for (let i = 0; i < 240; i++) rig.tick(1 / 60);
+  const played = (seconds = 12) => { const seen = []; for (let i = 0; i < seconds * 60; i++) { rig.tick(1 / 60); if (rig.act && seen.at(-1) !== rig.act.name) seen.push(rig.act.name); } return seen; };
+  rig.move('clap'); for (let i = 0; i < 60; i++) rig.tick(1 / 60);
+  rig.move('spin'); assert.equal(rig.act.name, 'clap', 'a new move does not snap in: the running one is eased out first');
+  let frames = 0; while (rig.act?.name !== 'spin' && frames < 600) { rig.tick(1 / 60); frames++; }
+  assert(frames <= 16, `and the new move starts within a quarter of a second, so it lands on its line (took ${frames} frames)`);
+  assert.deepEqual(played(), ['spin'], 'then plays through');
+  assert.equal(rig.act, null);
+  rig.move('clap'); rig.move('spin'); rig.move('bow');
+  assert.deepEqual(played(), ['clap', 'bow'], 'one move waits: the latest asked for');
+  rig.move('clap'); for (let i = 0; i < 60; i++) rig.tick(1 / 60);
+  rig.move('clap'); assert(rig.act.age > 0.9 && rig.act.stop === undefined && !rig.next, 'the move she is already making is not started again');
+  played();
+  rig.move('clap'); rig.move('spin'); rig.stopMove();
+  assert.deepEqual(played(), ['clap'], 'a stop ends the move and what was waiting behind it');
   assert.equal(rig.act, null);
   const ops = parse('[spin] Hi. [sideeye]').filter(o => o.type === 'gesture').map(o => o.name);
   assert.deepEqual(ops, ['spin', 'sideeye'], 'new tags parse as gestures');
@@ -266,3 +310,153 @@ for (const led of [true, false]) {
   assert(rig.out.jaw > 0.1, 'it drives the jaw');
 }
 
+
+// The node map behind the Data flow window: every wire joins a real output port to a real input port, and events light the right wires.
+{
+  const { STAGES, NODES, WIRES, wiresFor } = await import('./web/flow-graph.js');
+  for (const w of WIRES) {
+    const [a, out] = w.from.split('.'), [b, inp] = w.to.split('.');
+    assert(NODES[a]?.out.some(p => p.id === out), `wire starts at a real output: ${w.from}`);
+    assert(NODES[b]?.in.some(p => p.id === inp), `wire ends at a real input: ${w.to}`);
+  }
+  assert(STAGES.every(s => NODES[s]), 'every traced stage is a node');
+  const owned = o => Object.keys(NODES).filter(k => NODES[k].owner === o).join();
+  assert.equal(owned('framework'), 'agent', 'the agent is the only imported framework node today');
+  assert.equal(owned('external'), '', 'no other program is in the picture: the model runs inside the agent');
+  assert(!NODES.lm && !/LM Studio|HTTP/.test(JSON.stringify(NODES.agent)), 'the agent loads its model file itself: no model server');
+  assert(!NODES.agent.in.some(q => q.id === 'tokens') && !NODES.agent.out.some(q => q.id === 'prompt'), 'prompt and tokens never leave the agent');
+  const lit = (s, e) => wiresFor(s, e).map(w => `${w.from}>${w.to}`).join();
+  assert.equal(lit('stt', 'request'), 'mic.phrase>stt.audio');
+  assert.equal(lit('tts', 'request'), 'perform.say>tts.text', 'only a traced /say request lights the voice wire: songs, built-in sounds and ready-made clips are not traced');
+  assert.equal(lit('perform', 'gesture'), 'perform.act>anim.commands');
+  assert.equal(lit('control', 'look'), 'control.face>anim.commands', 'feel and look go straight to the rig');
+  assert.equal(lit('control', 'act'), 'perform.act>anim.commands,control.act>perform.orders', 'a remote act goes through the performance\'s body mapping');
+  assert.equal(lit('control', 'speak'), 'perform.ready>speaker.clip,perform.ready>lipsync.audio,control.clip>perform.clip', 'a ready-made clip is queued by the performance and skips the app\'s voice');
+  assert.equal(lit('channels', 'voice'), 'speaker.clock>lipsync.clock,lipsync.mouth>anim.mouth,lipsync.accents>anim.accents', 'the speaker\'s clip clock times the mouth');
+  assert.equal(lit('agent', 'text'), '', 'a scripted reply is made by the page, not the agent: text alone lights no agent wire');
+  assert.equal(wiresFor('agent', 'text', true).map(w => w.from).join(), 'agent.reply', 'in a model turn the reply lights');
+  assert.equal(lit('tts', 'clip ready'), 'tts.clip>speaker.clip,tts.clip>lipsync.audio,tts.lips>lipsync.track', 'the voice output fans out to the speaker and the lip sync');
+  assert.equal(lit('mic', 'speech start'), 'mic.state>anim.listen,mic.duck>speaker.duck', 'hearing you turns her voice down and makes her listen');
+  assert.equal(lit('speaker', 'play'), 'speaker.playing>mic.talking', 'while she talks the microphone is strict');
+  const untraced = WIRES.filter(w => !w.on.length).map(w => `${w.from}>${w.to}`).join();
+  assert.equal(untraced, 'perform.stop>agent.interrupt,perform.stop>tts.cancel,anim.state>outputs.rig,speaker.tap>outputs.sound', 'real connections the app does not trace: drawn, never lit');
+  // Every card is the whole part: all its inputs and outputs, and what is inside it (on: in use with today's settings).
+  const ids = k => NODES[k].inside.map(r => r.id).join();
+  for (const [k, n] of Object.entries(NODES)) {
+    assert(n.inside?.length && n.inside.every(r => r.id && r.name && r.does && typeof r.on === 'boolean' && typeof r.note === 'string'), `${k} lists what is inside it`);
+    for (const side of ['in', 'out']) assert.equal(new Set(n[side].map(q => q.id)).size, n[side].length, `${k} port ids are unique`);
+    for (const q of [...n.in, ...n.out]) assert(q.label.length <= 18, `port label fits the card: ${k}.${q.id}`);
+    assert(n.at[1] < 2, `${k} sits in one of the two rows`);
+  }
+  assert.equal(new Set(Object.values(NODES).map(n => n.at.join())).size, Object.keys(NODES).length, 'no two cards share a place');
+  assert.equal(ids('mic'), 'capture,vad,early,strict');
+  assert.equal(ids('stt'), 'whisper,speech,echo');
+  assert.equal(ids('perform'), 'parser,clause,queue,body,scripted,reel,stop');
+  assert.equal(ids('tts'), 'kokoro,clone,piper,synth,singing,cache');
+  assert.equal(ids('speaker'), 'gains,lift,effects,clock,meter,fallback');
+  assert.equal(ids('lipsync'), 'nori,marks,kin,ahead');
+  assert.equal(ids('anim'), 'feelings,idle,gestures,reactions,moves,poses,springs');
+  assert.equal(ids('render'), 'led,anime,sdf,vrm,kin,study,media');
+  assert.equal(ids('outputs'), 'stage,hardware,relay,record');
+  assert.equal(ids('control'), 'guard,attach,poll,clips');
+  assert(NODES.render.inside.every(r => r.adapters?.length), 'each renderer names the pack adapters it draws');
+  assert(!/With no model it gives/.test(NODES.agent.does) && /scripted/i.test(NODES.perform.inside.find(r => r.id === 'scripted').does), 'the scripted reply belongs to the page, not the agent');
+  assert(!/30 ms/.test(NODES.speaker.does + NODES.lipsync.does), 'the mouth runs 50 ms ahead, not 30');
+  assert(NODES.agent.in.some(q => q.id === 'interrupt' && !q.off), 'the agent\'s interrupt input is in use');
+  // The agent card is the whole agent module: every input and output it supports (off: not used by this app), and what is inside it.
+  const wired = new Set(WIRES.flatMap(w => [w.from, w.to]));
+  for (const [k, n] of Object.entries(NODES)) for (const q of [...n.in, ...n.out]) assert(!(q.off && wired.has(`${k}.${q.id}`)), `a port marked off has no wire: ${k}.${q.id}`);
+  assert.deepEqual(Object.fromEntries(NODES.agent.inside.map(r => [r.id, r.on])), { model: true, tools: false, skills: false, hearing: false, voice: false, audio: false, vision: false },
+    'inside the agent, only the model is in use today');
+  assert(NODES.agent.in.some(q => q.id === 'results' && q.off) && NODES.agent.out.some(q => q.id === 'calls' && q.off), 'tool use is a pair of ports, off today');
+  // The drawing: wires run only in the gutters and the band between the rows, and never lie on top of one another.
+  const { layout } = await import('./web/flow-graph.js');
+  const L = layout(), segs = L.routes.map(r => r.slice(1).map((q, i) => [r[i], q]));
+  assert(L.routes.length === WIRES.length && L.routes.every(r => r.length >= 2), 'every wire is routed');
+  WIRES.forEach((w, i) => { const [a, out] = w.from.split('.'), [b] = w.to.split('.'), r = L.routes[i];
+    assert(r[0].x === L.cards[a].x + L.cards[a].w && r.at(-1).x === L.cards[b].x, `the route runs from the output side to the input side: ${w.from} > ${w.to}`); });
+  assert(segs.flat().every(([a, b]) => a.x === b.x || a.y === b.y), 'wires run straight: across or up and down');
+  const inside = ([a, b], c) => Math.max(a.x, b.x) > c.x && Math.min(a.x, b.x) < c.x + c.w && Math.max(a.y, b.y) > c.y && Math.min(a.y, b.y) < c.y + c.h;
+  segs.forEach((ss, i) => ss.forEach(s => assert(!Object.values(L.cards).some(c => inside(s, c)), `no wire runs through a card: ${WIRES[i].from} > ${WIRES[i].to}`)));
+  const over = ([a, b], [c, d]) => a.x === b.x && c.x === d.x && a.x === c.x ? Math.min(Math.max(a.y, b.y), Math.max(c.y, d.y)) - Math.max(Math.min(a.y, b.y), Math.min(c.y, d.y)) > 0
+    : a.y === b.y && c.y === d.y && a.y === c.y && Math.min(Math.max(a.x, b.x), Math.max(c.x, d.x)) - Math.max(Math.min(a.x, b.x), Math.min(c.x, d.x)) > 0;
+  WIRES.forEach((w, i) => WIRES.forEach((v, j) => { if (j > i && w.from !== v.from && w.to !== v.to)
+    assert(!segs[i].some(s => segs[j].some(t => over(s, t))), `two unrelated wires never share a stretch: ${w.from} > ${w.to} and ${v.from} > ${v.to}`); }));
+  assert(Object.values(L.cards).every(c => c.x >= 0 && c.x + c.w <= L.GW && c.y + c.h <= L.GH) && segs.flat().flat().every(q => q.x > 0 && q.x < L.GW), 'everything is on the canvas');
+}
+// With the voice loop on (the default) the map is a different one: hearing, the model, tool use and the voice are
+// sections of the one agent framework node, and the app's own hearing is not in the picture.
+{
+  const { LOOP, wiresFor, layout } = await import('./web/flow-graph.js');
+  const { STAGES, NODES, WIRES } = LOOP;
+  for (const w of WIRES) {
+    const [a, out] = w.from.split('.'), [b, inp] = w.to.split('.');
+    assert(NODES[a]?.out.some(p => p.id === out), `loop map: wire starts at a real output: ${w.from}`);
+    assert(NODES[b]?.in.some(p => p.id === inp), `loop map: wire ends at a real input: ${w.to}`);
+  }
+  assert(!NODES.stt, 'no separate hearing node: the agent does the hearing');
+  assert.equal(Object.keys(NODES).filter(k => NODES[k].owner !== 'app').join(), 'agent', 'the agent is the one framework node, and nothing is external');
+  const heads = NODES.agent.inside.filter(r => r.head);
+  assert.deepEqual(heads.map(r => [r.id, r.on, r.stage]), [['hearing', true, 'stt'], ['model', true, 'agent'], ['tools', true, 'tools'], ['voice', true, 'voice'], ['scene', true, 'scene'], ['io', false, undefined], ['vision', false, undefined]],
+    'the agent card has a hearing, a model, a tool use, a voice and a scenes section, each lit by its own traced stage');
+  assert(STAGES.every(s => NODES[s] || heads.some(h => h.stage === s)), 'every traced stage is a node or a section of the agent');
+  assert(NODES.agent.inside.some(r => r.id === 'avatar' && r.on), 'the avatar tool is listed under tool use');
+  assert(NODES.tts.name !== 'Voice (TTS)' && /reel/.test(NODES.tts.does) && /replies/.test(NODES.tts.does), 'the app\'s own voice is named for what still uses it');
+  const lit = (s, e) => wiresFor(s, e, true, WIRES).map(w => `${w.from}>${w.to}`).join();
+  assert.equal(lit('mic', 'speech start'), 'mic.frames>agent.audio,mic.state>anim.listen,mic.duck>speaker.duck', 'the microphone sound goes to the agent');
+  assert.equal(lit('stt', 'transcript'), 'agent.heard>perform.heard');
+  assert.equal(lit('voice', 'clip ready'), 'agent.speech>perform.speech,agent.lips>lipsync.track,perform.play>speaker.clip,perform.play>lipsync.audio', 'the agent\'s voice goes to the speaker and the lip sync');
+  assert.equal(lit('tools', 'tool'), 'agent.calls>control.remote,control.answer>agent.results', 'an avatar call goes to the control link and its answer comes back');
+  assert.equal(lit('agent', 'done'), 'agent.reply>perform.reply');
+  assert.equal(lit('tts', 'request'), 'perform.say>tts.text', 'reel and intro lines still go to the app\'s own voice');
+  assert.equal(lit('control', 'feel'), 'control.face>anim.commands');
+  assert.equal(lit('perform', 'cue'), 'perform.cue>agent.cue', 'when the sound reaches a cue, the page tells the agent, whose avatar tool makes the move');
+  assert.equal(lit('scene', 'request'), '', 'a scene comes from the page itself, like typed words');
+  assert(NODES.agent.in.some(q => q.id === 'scene') && NODES.agent.inside.some(r => r.id === 'cues' && r.on), 'the agent takes a scene and lists the cues it sends with the sound');
+  assert(!/not timed to a spoken line/.test(NODES.agent.inside.find(r => r.id === 'avatar').does), 'the avatar tool is no longer described as untimed');
+  assert(NODES.agent.inside.findIndex(r => r.id === 'scenetool') === NODES.agent.inside.findIndex(r => r.id === 'avatar') + 1, 'the scene tool, with which the model writes a scene, is listed under tool use beside the avatar tool');
+  const wired = new Set(WIRES.flatMap(w => [w.from, w.to]));
+  for (const [k, n] of Object.entries(NODES)) {
+    assert(n.inside?.length && n.inside.every(r => r.id && r.name && r.does && typeof r.on === 'boolean' && typeof r.note === 'string'), `loop map: ${k} lists what is inside it`);
+    assert.equal(new Set(n.inside.map(r => r.id)).size, n.inside.length, `loop map: ${k} part ids are unique`);
+    for (const side of ['in', 'out']) assert.equal(new Set(n[side].map(q => q.id)).size, n[side].length, `loop map: ${k} port ids are unique`);
+    for (const q of [...n.in, ...n.out]) { assert(q.label.length <= 18, `loop map: port label fits the card: ${k}.${q.id}`); assert(!(q.off && wired.has(`${k}.${q.id}`)), `loop map: a port marked off has no wire: ${k}.${q.id}`); }
+  }
+  assert.equal(new Set(Object.values(NODES).map(n => n.at.join())).size, Object.keys(NODES).length, 'loop map: no two cards share a place');
+  const L = layout(NODES, WIRES), segs = L.routes.map(r => r.slice(1).map((q, i) => [r[i], q]));
+  assert(L.routes.length === WIRES.length && segs.flat().every(([a, b]) => a.x === b.x || a.y === b.y), 'loop map: every wire is routed, straight across or up and down');
+  const inside = ([a, b], c) => Math.max(a.x, b.x) > c.x && Math.min(a.x, b.x) < c.x + c.w && Math.max(a.y, b.y) > c.y && Math.min(a.y, b.y) < c.y + c.h;
+  segs.forEach((ss, i) => ss.forEach(s => assert(!Object.values(L.cards).some(c => inside(s, c)), `loop map: no wire runs through a card: ${WIRES[i].from} > ${WIRES[i].to}`)));
+  const near = ([a, b], [c, d]) => a.x === b.x && c.x === d.x && Math.abs(a.x - c.x) < 5 ? Math.min(Math.max(a.y, b.y), Math.max(c.y, d.y)) - Math.max(Math.min(a.y, b.y), Math.min(c.y, d.y)) > 0
+    : a.y === b.y && c.y === d.y && Math.abs(a.y - c.y) < 5 && Math.min(Math.max(a.x, b.x), Math.max(c.x, d.x)) - Math.max(Math.min(a.x, b.x), Math.min(c.x, d.x)) > 0;
+  WIRES.forEach((w, i) => WIRES.forEach((v, j) => { if (j > i && w.from !== v.from && w.to !== v.to)
+    assert(!segs[i].some(s => segs[j].some(t => near(s, t))), `loop map: two unrelated wires keep apart: ${w.from} > ${w.to} and ${v.from} > ${v.to}`); }));
+  assert(Object.values(L.cards).every(c => c.x >= 0 && c.x + c.w <= L.GW && c.y + c.h <= L.GH) && segs.flat().flat().every(q => q.x > 0 && q.x < L.GW), 'loop map: everything is on the canvas');
+}
+{ // Settings says what the voice loop runs on, part by part
+  const { partsLine } = await import('./web/settings.js');
+  const line = partsLine({ voice: { module: 'jaeger_kokoro_tts', version: '0.13.0', compute: 'mlx', model: 'af_heart' },
+    hearing: { module: 'jaeger_whisper_stt', version: '0.14.0', compute: 'metal', model: 'large-v3-turbo' },
+    ctx: 32768, tools_enabled: true, max_iterations: 24, tool_list: 'short list', load_s: 16.9 });
+  for (const part of ['jaeger_kokoro_tts 0.13.0 on mlx (af_heart)', 'jaeger_whisper_stt 0.14.0 on metal (large-v3-turbo)', '32768', 'tools on (short list', '16.9 s'])
+    assert(line.includes(part), `the Settings page names ${part}: ${line}`);
+  assert.equal(partsLine({}), '', 'no voice loop, nothing claimed');
+}
+
+// The voice comparison page: a clip as the server sends it (one 16-bit mono WAV), and the plain facts shown under each side.
+{
+  const sr = 24000, n = 2400, wav = new ArrayBuffer(44 + n * 2), dv = new DataView(wav);
+  const put = (at, text) => [...text].forEach((ch, i) => dv.setUint8(at + i, ch.charCodeAt(0)));
+  put(0, 'RIFF'); dv.setUint32(4, 36 + n * 2, true); put(8, 'WAVE'); put(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true);
+  dv.setUint16(22, 1, true); dv.setUint32(24, sr, true); dv.setUint32(28, sr * 2, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+  put(36, 'data'); dv.setUint32(40, n * 2, true);
+  for (let i = 240; i < 1920; i++) dv.setInt16(44 + i * 2, 16384, true);   // 10 ms of quiet, 70 ms of sound at half scale, 20 ms of quiet
+  const clip = readWav(wav);
+  assert.equal(clip.sr, sr, 'the clip keeps its own sample rate');
+  assert.equal(clip.samples.length, n);
+  const f = clipFacts(clip.samples, clip.sr, [[0.01, 0.03, 'p'], [0.04, 0.05, 'f'], [0.06, 0.07, 'p']]);
+  assert.deepEqual([f.seconds, f.peak, f.leadMs, f.tailMs, f.marks, f.closures, f.tucks], [0.1, 0.5, 10, 20, 3, 2, 1], 'length, level, dead air and lip marks');
+  assert(Math.abs(f.rms - 0.5 * Math.sqrt(0.7)) < 1e-3, `loudness over the whole clip: ${f.rms}`);
+  const none = clipFacts(new Float32Array(240), sr, []);
+  assert.deepEqual([none.peak, none.leadMs, none.tailMs, none.marks], [0, 10, 0, 0], 'a silent clip is all lead, no marks');
+}

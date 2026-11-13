@@ -26,9 +26,10 @@ for the new vector studies and their scope.
 
 For conversation, install the optional [JaegerAgent host](dev/docs/runtime/SETUP.md).
 It runs the public JaegerAgent API in a separate Python 3.11/3.12 environment,
-with LM Studio at `http://127.0.0.1:1234` by default. The header identifies the
-actual brain; without the agent/model, scripted replies and performances remain
-available. JaegerAI is not required. The current agent has no tools enabled.
+with the language model loaded inside the agent (llama.cpp, on the GPU): no
+model server. Model files (GGUF) are read from `~/.lmstudio/models` and
+`~/models`. The header identifies the actual brain; without the agent or a
+model file, scripted replies and performances remain available. JaegerAI is not required. By default the agent is Jaeger Agent's voice loop: its tools are on, its voice and hearing come from the Jaeger Kokoro and Whisper modules, and it moves the avatar with its own `avatar` tool.
 
 ## Characters and packs
 

@@ -138,6 +138,7 @@
   #log { font-size:12.5px; line-height:18px; height:18px; color:var(--dim); overflow:hidden; margin:0 4px 6px; white-space:nowrap; text-overflow:ellipsis; }
   form { display:flex; gap:7px; margin:0; }
   #cloneName { font:inherit; padding:6px 9px; color:var(--ink); background:var(--panel2); border:1px solid var(--line); border-radius:9px; min-width:0; }
+  #scene { width:100%; resize:vertical; font:12.5px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; padding:9px 12px; color:var(--ink); background:var(--panel); border:1px solid var(--line); border-radius:10px; white-space:pre; overflow-x:auto; }
   #lyrics { width:100%; resize:vertical; font:inherit; padding:9px 12px; color:var(--ink); background:var(--panel); border:1px solid var(--line); border-radius:10px; }
   #lyrics:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
   #form { flex-shrink:0; display:flex; flex-direction:column; gap:6px; padding:9px 10px 8px; background:var(--panel2); border:1px solid var(--line); border-radius:14px; }
@@ -254,7 +255,7 @@
 <div id="app">
   <header>
     <div class="brand"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#1c2034"/><rect x="14" y="20" width="13" height="24" rx="6" fill="#5fe0d0"/><rect x="37" y="20" width="13" height="24" rx="6" fill="#5fe0d0"/></svg>Jaeger Avatar</div>
-    <a href="/demo-packs.html" style="white-space:nowrap">Demo packs</a><button id="libraryOpen">Avatar library · 50</button><div id="tabs" role="tablist" aria-label="Bodies and modes"></div>
+    <a href="/demo-packs.html" style="white-space:nowrap">Demo packs</a><a href="/compare.html" style="white-space:nowrap">Compare voices</a><button id="libraryOpen">Avatar library · 50</button><div id="tabs" role="tablist" aria-label="Bodies and modes"></div>
     <div class="conn"><i id="light"></i><span id="status" aria-live="polite"></span><span id="privacy">Mic off · Camera off</span></div>
     <button id="flowOpen" title="Watch every stage live: mic, hearing, agent, voice, animation">Data flow</button>
     <button id="settingsOpen" title="Agent, voice and hearing">Settings</button>
@@ -302,6 +303,11 @@
       <div><h2>Feelings</h2><div id="emo"></div></div>
       <div id="movesBox" hidden><h2 id="movesTitle">Full-body moves</h2><div id="moves"></div></div>
       <div><h2>Sounds and gestures</h2><div class="chips" id="act"></div></div>
+      <div class="stack"><h2>Scene</h2>
+        <textarea id="scene" rows="5" spellcheck="false" aria-label="Scene script"></textarea>
+        <button id="scenePlay">Perform scene</button><p class="note" id="sceneNote" role="status"></p>
+        <p class="note">Steps in order, split by <code>|</code> or a new line. <code>say</code> a line, <code>wait</code> seconds of quiet, and moves: <code>emotion</code>, <code>action</code>, <code>look</code>. A move happens as the next line or wait starts. <code>hold</code> keeps the moves before it that many seconds before going on; <code>on</code> a word puts the moves before it on that word of the line just said. The agent performs it in its own voice. You can also ask her for a scene in words.</p>
+      </div>
     </section>
     <section class="panel" id="talkPanel" role="tabpanel" aria-labelledby="talkTab" hidden>
       <div id="talkHead"><h2 id="talkTitle" style="margin:0">Conversation</h2><button id="fresh" title="Start this conversation over">Start over</button></div>
@@ -406,9 +412,9 @@ Here with you tonight</textarea>
     <label class="row"><span>Model</span><select id="setModel"></select></label>
     <label class="row"><span>Creativity</span><input id="setTemp" type="range" min="0" max="1.5" step="0.05"><output id="setTempOut"></output></label>
     <label class="row"><span>Longest reply</span><input id="setTokens" type="number" min="100" max="4000" step="50"><span class="note">tokens</span></label>
-    <label class="row"><span>Timeout</span><input id="setTimeout" type="number" min="5" max="600" step="5"><span class="note">seconds per model call</span></label>
-    <label class="row"><span>Skip hidden thinking</span><input id="setSkip" type="checkbox"><span class="note">starts each reply on an acting tag: about 1 s to the first word instead of 4–12 s</span></label>
-    <div class="note">JaegerAgent through LM Studio. Changes apply from the next reply and keep the conversation.</div>
+    <label class="row"><span>Timeout</span><input id="setTimeout" type="number" min="5" max="600" step="5"><span class="note">seconds without a new word before a model call is stopped</span></label>
+    <label class="row"><span>Skip hidden thinking</span><input id="setSkip" type="checkbox"><span class="note">the model answers straight away instead of planning first: seconds faster to the first word</span></label>
+    <div class="note">JaegerAgent with its model loaded in-process (llama.cpp). Changes keep the conversation; a new model, or the thinking switch, reloads the model (about 12 s).</div>
     <details id="agentAll"><summary>Every JaegerAgent setting</summary><div id="agentAllBody" class="note">The agent has not reported its settings yet.</div></details>
   </section>
   <section id="setVoice" class="stack" role="tabpanel" hidden>

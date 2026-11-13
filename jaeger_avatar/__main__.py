@@ -14,8 +14,9 @@ def main():
     os.environ['JAEGER_AVATAR_PORT']=str(args.port)
     if args.scripted:os.environ['NORI_BRAIN']='scripted'
     os.environ.setdefault('HF_HOME',str(root/'app/.cache/hf'))
-    os.environ.setdefault('JAEGER_AGENT_NO_TOOLS','1')
-    os.environ.setdefault('JAEGER_AGENT_NO_SKILLS','1')
+    if os.environ.get('JAEGER_AVATAR_LOOP','1')=='0':   # the old in-app path: a plain model, no tools. The voice loop keeps the agent's tools.
+        os.environ.setdefault('JAEGER_AGENT_NO_TOOLS','1')
+        os.environ.setdefault('JAEGER_AGENT_NO_SKILLS','1')
     sys.path.insert(0,str(root/'app'))
     runpy.run_path(str(root/'app/server.py'),run_name='__main__')
 

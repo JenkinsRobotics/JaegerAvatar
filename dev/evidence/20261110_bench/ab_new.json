@@ -1,0 +1,73 @@
+{
+ "label": "new (Jaeger modules)",
+ "load_s": 6.882,
+ "load_marks": [
+  [
+   0.028,
+   "loading voice\u2026"
+  ],
+  [
+   4.118,
+   "loading hearing large-v3-turbo\u2026"
+  ]
+ ],
+ "voice_short": {
+  "first_chunk_s": 0.1137,
+  "total_s": 0.1137,
+  "audio_s": 2.05,
+  "chunks": 1,
+  "rtf": 0.0555,
+  "all_total_s": [
+   0.1189,
+   0.1118,
+   0.1123,
+   0.1137,
+   0.1611
+  ]
+ },
+ "voice_long": {
+  "first_chunk_s": 0.7846,
+  "total_s": 0.7846,
+  "audio_s": 15.75,
+  "chunks": 1,
+  "rtf": 0.0498,
+  "all_total_s": [
+   1.064,
+   0.8714,
+   0.6954,
+   0.7846,
+   0.6832
+  ]
+ },
+ "hear_clip": {
+  "clip_s": 15.75,
+  "median_s": 0.7013,
+  "all_s": [
+   0.7013,
+   0.6674,
+   0.6794,
+   0.7414,
+   0.7243
+  ],
+  "text": "Octopuses have three hearts and blue blood. Two of the hearts pump blood through the gills, while the third sends it around the rest of the body. When an octopus swims, the third heart stops beating, which is why they prefer to crawl along the sea floor instead."
+ },
+ "hear_segments_4s": {
+  "median_s": 0.5537,
+  "all_s": [
+   0.5604,
+   0.5489,
+   0.5559,
+   0.5537,
+   0.5442
+  ],
+  "segments": [
+   {
+    "text": "Octopuses have three hearts and blue blood. Two of the hearts pop up",
+    "t0": 0,
+    "t1": 400
+   }
+  ]
+ },
+ "tts_node": {},
+ "stt_node": {}
+}

@@ -16,7 +16,8 @@ if (channel) channel.onmessage = e => {
 export function describe(fn) { snapshot = fn; }
 export function resend() { if (flowOpen()) channel.postMessage({ type: 'snapshot', at: now(), ...snapshot() }); }
 
-// stage: mic, stt, agent, perform, tts, speaker, anim, control. data is copied as is, so keep it small and plain.
+// stage: mic, stt, agent, perform, tts, speaker, anim, control; with the voice loop also tools and voice (the agent's
+// tool use and its voice; stt is then its hearing, tts the app's own voice). data is copied as is, so keep it small and plain.
 export function trace(stage, event, data = {}) {
   if (channel && flowOpen()) try { channel.postMessage({ type: 'event', at: now(), stage, event, data }); } catch (e) { console.warn('flow trace', stage, event, e); }
 }
@@ -32,5 +33,5 @@ export function channels(rig) {
   const v = rig.voice;
   channel.postMessage({ type: 'channels', at: now(), mode: rig.mode, emotion: rig.emotion, out,
     voice: v ? { open: +(v.open ?? 0).toFixed(3), wide: +(v.wide ?? 0).toFixed(3), round: +(v.round ?? 0).toFixed(3) } : null,
-    layers: { gestures: rig.gestures.length, reaction: rig.reaction?.name ?? null, move: rig.act?.name ?? null } });
+    layers: { gestures: rig.gestures.length, reaction: rig.reaction?.name ?? null, move: rig.act?.name ?? null, waiting: rig.next ?? null } });
 }

@@ -150,6 +150,25 @@ export function sampleTrack(tr, t) {
     shut: tr.shut ? at(tr.shut) : 0, tuck: tr.tuck ? at(tr.tuck) : 0 };
 }
 
+// A clip as the server sends it: a WAV of 16-bit sound. Two channels are a song as heard, then the voice alone.
+export function readWav(buf) {
+  const dv = new DataView(buf);
+  let at = 12, sr = SR, ch = 1;
+  while (at < dv.byteLength - 8 && dv.getUint32(at) !== 0x64617461) { if (dv.getUint32(at) === 0x666d7420) { ch = dv.getUint16(at + 10, true); sr = dv.getUint32(at + 12, true); } at += 8 + dv.getUint32(at + 4, true); }
+  const len = Math.min(dv.getUint32(at + 4, true), dv.byteLength - at - 8) >> 1, n = Math.floor(len / ch), x = new Float32Array(n), y = ch > 1 ? new Float32Array(n) : null;
+  for (let i = 0; i < n; i++) { x[i] = dv.getInt16(at + 8 + i * 2 * ch, true) / 32768; if (y) y[i] = dv.getInt16(at + 10 + i * 4, true) / 32768; }
+  return y ? { samples: x, sr, voice: y } : { samples: x, sr };   // two channels: the song as heard, then her voice alone
+}
+
+// The plain facts of one clip, for comparing voices: length, level, dead air at each end, and the lip marks that came with it.
+export function clipFacts(samples, sr, marks = []) {
+  let sum = 0, peak = 0, first = -1, last = -1;
+  samples.forEach((x, i) => { const a = Math.abs(x); sum += x * x; if (a > peak) peak = a; if (a > 0.005) { if (first < 0) first = i; last = i; } });
+  const n = samples.length, ms = k => Math.round(k / sr * 1000);
+  return { seconds: +(n / sr).toFixed(2), rms: Math.sqrt(sum / (n || 1)), peak, leadMs: ms(first < 0 ? n : first), tailMs: first < 0 ? 0 : ms(n - 1 - last),
+    marks: marks.length, closures: marks.filter(m => m[2] === 'p').length, tucks: marks.filter(m => m[2] === 'f').length };
+}
+
 // --- Source-filter synth: glottal saw + noise through a 3-formant cascade ---
 const VOWEL = { a: [850, 1350, 2800], e: [560, 2000, 2850], i: [330, 2500, 3200], o: [520, 950, 2700], u: [350, 850, 2400], m: [280, 1100, 2500] };
 

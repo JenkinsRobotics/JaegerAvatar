@@ -5,7 +5,7 @@ Voice settings (which voice, how fast) belong to the viewer and stay in the page
 import json
 from pathlib import Path
 
-# faster-whisper model names, with roughly what the first use downloads.
+# Whisper model names (the same in whisper.cpp and faster-whisper), with roughly what the first use downloads.
 WHISPER = {'tiny.en': '75 MB', 'base.en': '140 MB', 'small.en': '470 MB', 'medium.en': '1.5 GB', 'large-v3-turbo': '1.6 GB'}
 LANGUAGES = {'en': 'English', 'auto': 'Detect automatically'}
 
@@ -19,14 +19,14 @@ def _number(v, lo, hi, kind):
 
 
 def apply(current, patch, models):
-    """current plus patch, checked. models: the agent models that can be chosen now. Raises ValueError naming the problem."""
+    """current plus patch, checked. models: the model files that can be chosen now. Raises ValueError naming the problem."""
     if not isinstance(patch, dict) or not set(patch) <= {'agent', 'hearing'}:
         raise ValueError('Settings are {agent?, hearing?}')
     a, h = patch.get('agent', {}), patch.get('hearing', {})
     if not (isinstance(a, dict) and set(a) <= set(current['agent']) and isinstance(h, dict) and set(h) <= set(current['hearing'])):
         raise ValueError('Unknown setting')
     if 'model' in a and a['model'] != current['agent']['model'] and a['model'] not in models:
-        raise ValueError('That model is not available in LM Studio')
+        raise ValueError('That model file is not on this machine')
     if 'temperature' in a and not _number(a['temperature'], 0, 1.5, float):
         raise ValueError('Creativity is 0 to 1.5')
     if 'max_tokens' in a and not _number(a['max_tokens'], 100, 4000, int):

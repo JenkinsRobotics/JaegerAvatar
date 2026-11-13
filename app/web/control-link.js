@@ -37,5 +37,6 @@ export function startControlLink({ capabilities, avatar, apply, note = () => {} 
       prev = s;
     } catch { /* the demo server is down or restarting; try again next tick */ } finally { busy = false; }
   };
-  return setInterval(tick, 50);
+  setInterval(tick, 50);
+  return { get standing() { return standing; } };   // true while a newer page has the body: this page then leaves it alone
 }

@@ -1,6 +1,8 @@
 anthropic
 piper-tts
+# Hearing: whisper.cpp on Metal on Apple Silicon. faster-whisper supplies the voice filter there, and is the engine (CUDA or CPU) elsewhere.
 faster-whisper
+pywhispercpp==1.5.1; sys_platform == "darwin" and platform_machine == "arm64"
 numpy
 mlx-audio; sys_platform == "darwin" and platform_machine == "arm64"
 # Kokoro on MLX: its pronunciation rules, and the small English model they use

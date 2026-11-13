@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice comparison · Jaeger Avatar</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  html, body { margin:0; min-height:100%; background:#0b0d12; color:#e6e9ef; font:14px/1.45 ui-sans-serif,system-ui,-apple-system,sans-serif; }
+  main { max-width:1180px; margin:auto; padding:16px; display:grid; gap:12px; }
+  a { color:#9cc4ff; }
+  h1 { font-size:20px; margin:0; }
+  .tiny { font-size:12px; color:#9aa3b2; }
+  form, .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  input[type=text] { flex:1; min-width:220px; }
+  input[type=text], select, button { background:#1b1f2a; color:inherit; border:1px solid #2c3242; border-radius:8px; padding:6px 10px; font:inherit; }
+  button { cursor:pointer; } button:disabled { opacity:.5; cursor:default; }
+  .pair { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:12px; }
+  .side { display:grid; gap:8px; padding:10px; border:1px solid #2c3242; border-radius:12px; min-width:0; }
+  .side.speaking { border-color:#9cc4ff; }
+  .pane { position:relative; aspect-ratio:4/5; max-height:62vh; width:100%; overflow:hidden; background:#000; border-radius:8px; }
+  .pane canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
+  dl { display:grid; grid-template-columns:max-content 1fr; gap:2px 12px; margin:0; font-variant-numeric:tabular-nums; }
+  dt { color:#9aa3b2; } dd { margin:0; overflow-wrap:anywhere; }
+</style>
+</head>
+<body>
+<main>
+  <div class="row"><a href="/">Jaeger Avatar</a><h1>Two voices, side by side</h1></div>
+  <div class="tiny">The same character twice. Each side speaks the same line through the voice you pick for it, one after the other, never together. The numbers under each side are measured on that clip.</div>
+  <form id="say">
+    <label>Character <select id="who" aria-label="Character"></select></label>
+    <input id="line" type="text" aria-label="Line to speak" maxlength="1000" value="My puppy found five big blue marbles, wow!">
+    <button id="both">Speak left, then right</button>
+    <label><input id="raw" type="checkbox"> Play as made (no levelling)</label>
+  </form>
+  <div id="note" class="tiny" role="status"></div>
+  <section class="pair">
+    <article class="side"><div class="row"><strong>Left</strong><select class="voice" aria-label="Left voice"></select><button class="one" type="button">Speak</button></div>
+      <div class="pane"><canvas></canvas><canvas class="ov"></canvas></div><dl class="stats"></dl></article>
+    <article class="side"><div class="row"><strong>Right</strong><select class="voice" aria-label="Right voice"></select><button class="one" type="button">Speak</button></div>
+      <div class="pane"><canvas></canvas><canvas class="ov"></canvas></div><dl class="stats"></dl></article>
+  </section>
+</main>
+<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/","@pixiv/three-vrm":"./vendor/three-vrm.module.min.js"}}</script>
+<script type="module" src="compare.js"></script>
+</body>
+</html>

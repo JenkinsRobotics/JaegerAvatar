@@ -50,7 +50,7 @@ export function isEcho(heard, said) {
 
 const WORKLET = `registerProcessor('mic', class extends AudioWorkletProcessor { process([[x]]) { if (x) this.port.postMessage(x.slice()); return true; } })`;
 
-// on: { start, pause(Float32Array), resume, cancel, end(Float32Array) }. strict() says whether her voice is playing right now.
+// on: { start, pause(Float32Array), resume, cancel, end(Float32Array), frame(Float32Array, event)? }. strict() says whether her voice is playing right now.
 let worklet = null;   // a processor name can only be registered once per page
 export async function openMic(ctx, on, strict) {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
@@ -68,6 +68,7 @@ export async function openMic(ctx, on, strict) {
       frame[n++] = sum / got; sum = got = 0;
       if (n < FRAME) continue;
       const event = vad.push(frame, strict());
+      on.frame?.(frame, event);                                // the voice loop listens on its own: it is offered every frame
       frame = new Float32Array(FRAME); n = 0;                  // the Vad keeps the old one
       if (event === 'end' || event === 'pause') on[event](vad.audio);
       else if (event) on[event]();
@@ -81,4 +82,27 @@ export function toPcm(x) {
   const out = new Int16Array(x.length);
   for (let i = 0; i < x.length; i++) out[i] = Math.max(-1, Math.min(1, x[i])) * 32767;
   return out;
+}
+
+// The other way: the voice loop's sound (base64, 16-bit) back as samples.
+export function fromPcm(b64) {
+  const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  return Float32Array.from(new Int16Array(bytes.buffer, 0, bytes.length >> 1), v => v / 32768);
+}
+
+// What the voice loop gets to hear. It listens on its own, so it gets every frame while she is quiet. While she talks it
+// gets nothing (it would hear her), until the Vad says someone is talking over her: then the last 0.6 s and on until they stop.
+// push returns the frames to send now. Frames held while she talked are dropped when she stops: they are her last words.
+const HOLD = frames(0.6);
+export class Gate {
+  held = []; open = false;
+  push(frame, talking, event) {
+    if (event === 'start') this.open = true;
+    let out = [frame];
+    if (this.open) out = [...this.held, frame];
+    else if (talking) { out = []; this.held.push(frame); if (this.held.length > HOLD) this.held.shift(); }
+    if (out.length) this.held = [];
+    if (event === 'end' || event === 'cancel') this.open = false;
+    return out;
+  }
 }
