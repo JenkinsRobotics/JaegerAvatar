@@ -443,15 +443,60 @@ acceptance remains unverified; these tests do not measure tracking accuracy.
 - Not run: a live microphone, echo with real speakers, other characters or
   models, non-Apple hardware.
 
+## Fresh install — November 13, 2026
+
+`./run.sh` on a fresh checkout now installs everything but the model file.
+It makes the app's environment, then the agent's (`.agent-venv`, Python 3.12
+or 3.11) from `requirements-agent.txt`, which pins JaegerOS, Jaeger Agent,
+Jaeger Kokoro and Jaeger Whisper each to one commit. Before this the agent,
+voice and hearing were read from three dev checkouts beside the app, and the
+file pinned an agent commit with no streaming and no scenes.
+
+Tried once, on this Mac, from the committed `dev` branch cloned into an empty
+folder, with pip's cache off (machine busy, load 13 to 30):
+
+- **First run, no model file:** both environments were built in 6 min 4 s
+  (939 MB and 1.8 GB), llama.cpp compiled, and the app started. Header,
+  terminal and `/health` said "no model file in ~/models".
+- **Second run, model file present:** nothing was installed again. The agent
+  was ready 73 s after `./run.sh`, which includes downloading the voice
+  (340 MB). All four Jaeger packages were loaded from the new environment,
+  none from a checkout.
+- **Asked "How are you today?":** one avatar call (joy), three spoken clips.
+- **Asked for a scene in words:** she wrote it, it played, and its two moves
+  landed 8 and 25 ms after their moment. No errors on the page or in the
+  agent's log.
+
+What this run did not show:
+
+- The three module commits (agent `816a619`, Kokoro `ba4085e`, Whisper
+  `a46e903`) are on `dev` on this machine only. For the test git read those
+  three repos from disk; JaegerOS and every other package came from the
+  network. Until the three `dev` branches are pushed, nobody else can install.
+- The model file was the one already on this Mac. The download address in the
+  README answers (5.3 GB) but the file was not downloaded again.
+- Whisper's model files were already on this Mac (pywhispercpp keeps them
+  outside the app's folder), and nothing was spoken into a microphone.
+- Same computer: its Python 3.11, its compiler, Apple Silicon. Not a second
+  machine, not Linux, not Windows.
+
+When only scripted replies answer, the app now gives the reason
+(`why_scripted` in `app/server.py`): started with `--scripted`, the agent is
+not installed, no model file, or the agent stopped. `tests/test_install.py`
+runs `run.sh` against stand-in Pythons: fresh checkout, second run, 3.11 for
+3.12, no usable Python, and an install that fails (removed, tried again).
+
 ## Still planned / limited
 
 - GUI pack authoring, packaged desktop installers, persistent agent memory.
 - Connected JaegerAI, JaegerOS speech/pose bus integration and robot deployment.
 - General execution of imported MScript/Python character representations.
 - Word/beat-aligned acting. Both current lip methods estimate mouth shapes from audio.
-- Clean-machine installer qualification. Local verification used existing model
-  caches; real webcam hardware, room microphone behavior and OBS capture remain
-  separate acceptance checks. Fresh song timing is not a latency guarantee.
+- Installing on another machine. A fresh checkout was installed in an empty
+  folder on this Mac (see "Fresh install" below); a second computer, Linux and
+  Windows are not tried. Real webcam hardware, room microphone behavior and OBS
+  capture remain separate acceptance checks. Fresh song timing is not a latency
+  guarantee.
 
 ## Verification
 

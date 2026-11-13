@@ -11,19 +11,30 @@ webcam access are requested only when their controls are enabled.
 JaegerOS currently requires Python >=3.11,<3.13. Avatar therefore keeps the agent
 in `.agent-venv`, separately from audio. No agent internals are vendored.
 
+`./run.sh` makes that environment on its first run: it looks for `python3.12`,
+then `python3.11`, and installs `requirements-agent.txt` (the first install
+builds llama.cpp and takes some minutes). With neither Python, or if the install
+fails, the app starts on scripted replies and says so; a failed install is
+removed, so the next run tries again. By hand it is:
+
 ```sh
 python3.11 -m venv .agent-venv
 .agent-venv/bin/python -m pip install -r requirements-agent.txt
-./run.sh
 ```
 
-`requirements-agent.txt` pins the reviewed base Git revisions. The JaegerOS checkout
-contained pre-existing local changes when its verification wheel was built; see
-`dev/evidence/migration/runtime-sources.json`. Clean pinned installation remains
-a separate qualification step. The local verification
-used wheels built from those checkouts. Hardware and multimodal extras
-were not exercised. The normal installer resolves the packages' declared
-dependencies; installation on a clean machine has not been benchmarked.
+`requirements-agent.txt` pins four Jaeger repos, each to one commit: JaegerOS,
+Jaeger Agent, Jaeger Kokoro (voice) and Jaeger Whisper (hearing). Nothing is
+read from a checkout beside the app.
+
+The language model is one GGUF file, downloaded once (5.3 GB):
+
+```sh
+curl -L --create-dirs -o ~/models/gemma-4-E4B-it-Q4_K_M.gguf https://huggingface.co/lmstudio-community/gemma-4-E4B-it-GGUF/resolve/main/gemma-4-E4B-it-Q4_K_M.gguf
+```
+
+When only scripted replies answer, the header, the terminal and `/health`
+(`why`) give the reason: the agent is not installed, there is no model file,
+or the agent stopped (`app/.cache/agent.log`).
 
 Override `JAEGER_AGENT_PYTHON` for another supported environment. The model
 runs inside the agent worker: JaegerAgent's llama.cpp adapter loads a GGUF file

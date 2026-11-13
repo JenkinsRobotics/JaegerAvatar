@@ -16,15 +16,24 @@ the prepared Singer A performance.
 
 Open **http://127.0.0.1:8790/**. `./run.sh --scripted` needs no conversational
 model; `--port 8790` selects the local port. On a fresh checkout, the launcher
-creates `.venv` and installs `requirements-app.txt`. Neural voice/hearing models
-are downloaded on first use. The application currently runs from source; there
-is no packaged desktop installer.
+creates `.venv` and installs `requirements-app.txt`, then creates `.agent-venv`
+(Python 3.11 or 3.12) and installs the agent with its voice and hearing from
+`requirements-agent.txt`. Neural voice/hearing models are downloaded on first
+use. The language model is one file you download once:
+
+```sh
+curl -L --create-dirs -o ~/models/gemma-4-E4B-it-Q4_K_M.gguf https://huggingface.co/lmstudio-community/gemma-4-E4B-it-GGUF/resolve/main/gemma-4-E4B-it-Q4_K_M.gguf
+```
+
+It is 5.3 GB. Without it, or without the agent, the header says why and
+scripted replies answer. The application currently runs from source; there is
+no packaged desktop installer.
 
 The [demo pack launcher](http://127.0.0.1:8790/demo-packs.html) opens each live
 character directly. See the [demo pack review](dev/docs/packs/DEMO_PACK_REVIEW.md)
 for the new vector studies and their scope.
 
-For conversation, install the optional [JaegerAgent host](dev/docs/runtime/SETUP.md).
+Conversation is the [JaegerAgent host](dev/docs/runtime/SETUP.md).
 It runs the public JaegerAgent API in a separate Python 3.11/3.12 environment,
 with the language model loaded inside the agent (llama.cpp, on the GPU): no
 model server. Model files (GGUF) are read from `~/.lmstudio/models` and
