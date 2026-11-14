@@ -242,7 +242,7 @@ function setView(id) {
 // --- Audio ---------------------------------------------------------------------
 let ac = null;
 const audio = () => (ac ??= new (window.AudioContext || window.webkitAudioContext)());
-const unlock = () => { if (!reelPaused) audio().resume(); };
+const unlock = () => { if (!reelPaused && !held) audio().resume(); };
 // Every clip goes through output, so she can drop her voice when someone talks over her and so a recording can listen in. Mute comes after that, so it never silences a recording.
 let output = null, master = null, meter = null, muted = !!saved.muted;
 const speaker = () => { if (!output) { output = audio().createGain(); master = audio().createGain(); master.gain.value = muted ? 0 : 1; meter = audio().createAnalyser(); meter.fftSize = 512; output.connect(master); master.connect(meter); master.connect(audio().destination); } return output; };
@@ -490,6 +490,7 @@ const queue = [];
 let reel = null, reelPaused = false, chatAbort = null;
 let spoken = '', runId = 0, running = false, owner = -1, pushEmotion = 'neutral', firstSoundAt = 0, lastLatency = null, sentAt = 0;
 function stopAll() {
+  unhold('she stops');
   if (queue.length || clip) logInput('stop', 'speech and motion cleared together');
   runId++; queue.length = 0; sceneHold = null;
   if(song){song.off=true;if(song.id)fetch('/singer/stop',{method:'POST',body:JSON.stringify({id:song.id})}).catch(()=>{});song=null;}
@@ -694,6 +695,8 @@ function onLoop(e) {
   if (!['user', 'assistant', 'audio'].includes(kind)) {       // what the loop is doing, not part of a reply: shown in the Data flow window
     trace(kind === 'live' || HEARS.has(text) ? 'stt' : kind === 'tool' ? 'tools' : kind === 'scene' ? 'scene' : SPEAKS.has(text) ? 'voice' : 'agent', kind, { text, data: e.data });   // which section of the agent it came from
     if (kind === 'state' && !['transcribing', 'hearing you'].includes(text)) micIdle();
+    if (kind === 'state' && text === 'hearing you') loopHeard = true;
+    if (kind === 'state' && /dropped|discarded|ignored|not addressed/.test(text)) unhold(text);   // the loop heard no one talking to her: she carries on
     if (kind === 'status' && text.startsWith('error')) { console.warn('voice loop', text); if (loopBusy && !loopSkip) enqueue(parse(OOPS)); }
     if (kind === 'scene' && text === 'refused') $('#sceneNote').textContent = e.data;   // a script the agent could not read, in its words
     if (kind === 'scene' && text === 'begin' && !loopSkip) { const id = runId; loopChain = loopChain.then(() => { if (id === runId) sceneHold ??= []; }); }   // a scene's sound follows (yours, or one the model wrote): hold it, after the words already on their way
@@ -709,6 +712,7 @@ function onLoop(e) {
     trace('stt', 'transcript', { text, by: serverHearing });
     micIdle();
     if (overHer && isEcho(text, spoken)) {                    // her own voice came back through the mic: drop that turn, she keeps talking
+      unhold('her own words');
       loopSkip++; fetch('/agent/interrupt', { method: 'POST', body: JSON.stringify({ session: sessionId(), pack: current.packId }) }).catch(() => {});
       return;
     }
@@ -890,10 +894,25 @@ $('#form').onsubmit = e => {
 $('#input').addEventListener('input', () => rig.typing());
 $('#input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('#form').requestSubmit(); } });   // Shift-Enter for a new line
 // Voice: click the mic once and just talk. When you stop, Whisper on this machine turns it into text and she answers.
-// Talk over her and her voice drops at once; she only stops for good when the words turn out to be yours, not her own echo.
-let closeMic = null, micOpening = false, hearing = false, overHer = false, turn = 0, lastHear = null;
+// Talk over her and her voice drops at once (duck). Keep talking and she holds her line where it is (hold): the sound's
+// clock stops, so her mouth and a scene's moves wait with it. Then the words decide. Yours: she stops for good and answers.
+// Her own echo, a cough, nothing: she carries on from the same syllable.
+// ?hold=ms is how long you must keep talking before she holds; 0 never holds, she only drops her voice. It depends on the
+// speakers, the microphone and the room: too short, and her own voice coming back can hold her for a moment.
+const HOLD_MS = +(params.get('hold') ?? 250);
+let closeMic = null, micOpening = false, hearing = false, overHer = false, turn = 0, lastHear = null, held = false, holdTimer = 0, micAudio = null, loopHeard = false;
 const talking = () => running || !!clip;
 const duck = on => speaker().gain.setTargetAtTime(on ? 0.2 : 1, audio().currentTime, 0.03);
+function hold() {
+  clearTimeout(holdTimer);
+  if (HOLD_MS) holdTimer = setTimeout(() => { if (!hearing || !talking() || reelPaused) return; held = true; audio().suspend(); trace('mic', 'she holds her line', { afterMs: HOLD_MS }); }, HOLD_MS);
+}
+function unhold(why) {
+  clearTimeout(holdTimer);
+  if (!held) return;
+  held = false; if (!reelPaused) audio().resume();
+  trace('mic', 'hold over', { why });
+}
 function micState(state, note) {
   const b = $('#mic');
   b.textContent = { off: 'Mic', on: 'Listening', hearing: 'Hearing you', working: 'Got it…' }[state];
@@ -916,38 +935,44 @@ async function heard(samples) {
   lastHear = performance.now() - t0;
   micState('on', failed ? "Couldn't reach the speech model. You can still type." : undefined);
   duck(false);
-  if (text && !(wasOver && isEcho(text, spoken))) ask(text);
+  if (text && !(wasOver && isEcho(text, spoken))) ask(text); else unhold('nothing said to her');
 }
 // With the voice loop the agent does the hearing: every frame goes up to it. While she talks the frames are held back until a clearly
 // louder voice starts (the gate), so she does not hear herself; the words come back as a 'user' event.
 const gate = new Gate();
-let micBuf = [], micSending = false, micWait = 0;
+let micBuf = [], micSending = false, micWait = 0, micEnd = false;   // micEnd: tell the loop the phrase is over with the next sound sent
 const micIdle = () => { clearTimeout(micWait); if (closeMic && !hearing) { micState('on'); duck(false); } };
 async function flushMic() {                      // one request at a time; frames that arrive meanwhile go in the next
-  if (micSending || !micBuf.length) return;
+  if (micSending || !(micBuf.length || micEnd)) return;
   micSending = true;
-  const frames = micBuf.splice(0), all = new Float32Array(frames.reduce((n, f) => n + f.length, 0));
+  const frames = micBuf.splice(0), all = new Float32Array(frames.reduce((n, f) => n + f.length, 0)), end = micEnd;
+  micEnd = false;
   frames.reduce((at, f) => (all.set(f, at), at + f.length), 0);
-  await fetch('/agent/audio', { method: 'POST', body: toPcm(all).buffer }).catch(() => {});
+  await fetch('/agent/audio' + (end ? '?end=1' : ''), { method: 'POST', body: toPcm(all).buffer }).catch(() => {});
   micSending = false; flushMic();
 }
 async function setMic(on) {
-  if (!on) { closeMic?.(); closeMic = null; hearing = false; early = null; turn++; micBuf.length = 0; clearTimeout(micWait); duck(false); showPrivacy(); return micState('off'); }
+  if (!on) { closeMic?.(); closeMic = null; hearing = false; early = null; turn++; micBuf.length = 0; micEnd = false; clearTimeout(micWait); duck(false); unhold('mic off'); showPrivacy(); return micState('off'); }
   if (!serverEars) return micState('off', 'The speech model did not load. See the server output, or type here.');
   if (micOpening) return;                        // a permission prompt can stay up for a while, and a second click must not open a second mic
   micOpening = true;
   try {
     if (!window.AudioWorkletNode || !navigator.mediaDevices) throw new Error('unsupported');
-    closeMic = await openMic(audio(), {
-      start() { trace('mic', 'speech start', { strict: talking() }); hearing = true; overHer = talking(); turn++; lastTalk = performance.now(); duck(true); micState('hearing'); },
-      frame(f, event) { if (!loopOn()) return; micBuf.push(...gate.push(f, talking(), event)); if (micBuf.length > 1000) micBuf.splice(0, micBuf.length - 1000); flushMic(); },   // 1000 frames = 30 s: under the server's limit
+    micAudio ??= new (window.AudioContext || window.webkitAudioContext)();   // the mic's own clock: her sound's clock stops while she holds her line, and the mic must go on hearing
+    await micAudio.resume();
+    closeMic = await openMic(micAudio, {
+      start() { trace('mic', 'speech start', { strict: talking() }); hearing = true; overHer = talking(); turn++; lastTalk = performance.now(); duck(true); loopHeard = false; if (overHer) hold(); micState('hearing'); },
+      frame(f, event) { if (!loopOn()) return; micBuf.push(...gate.push(f, talking(), event)); if (micBuf.length > 1000) micBuf.splice(0, micBuf.length - 1000);   // 1000 frames = 30 s: under the server's limit
+        if (gate.stopped) micEnd = true;           // they stopped talking over her: no sound follows, so the loop is told the phrase is over
+        flushMic(); },
       pause(samples) { rig.gesture('nod'); if (loopOn()) return trace('mic', 'pause', { seconds: +(samples.length / 16000).toFixed(2), then: 'the voice loop is already listening' });
         trace('mic', 'pause', { seconds: +(samples.length / 16000).toFixed(2), then: 'transcribes early in case this is the end' }); early = transcribe(samples); early.catch(() => {}); },
       resume() { trace('mic', 'resumed', {}); early = null; },
-      cancel() { trace('mic', 'cancelled', { why: 'too short to be speech' }); hearing = false; early = null; duck(false); micState('on'); },
+      cancel() { trace('mic', 'cancelled', { why: 'too short to be speech' }); hearing = false; early = null; duck(false); unhold('too short to be speech'); micState('on'); },
       end(samples) { trace('mic', 'speech end', { seconds: +(samples.length / 16000).toFixed(2) }); hearing = false;
         if (!loopOn()) return heard(samples);
-        micState('working'); clearTimeout(micWait); micWait = setTimeout(micIdle, 4000); },   // the loop answers with a 'user' event; this is for when it heard nothing
+        if (!loopHeard) unhold('the loop heard no voice in it');   // loud, but not a voice (a door, a cough): no verdict will come
+        micState('working'); clearTimeout(micWait); micWait = setTimeout(() => { unhold('no answer from the loop'); micIdle(); }, 4000); },   // the loop answers with a 'user' event or a verdict; this is for when it says nothing
     }, talking);
     micState('on'); showPrivacy();
   } catch (e) {

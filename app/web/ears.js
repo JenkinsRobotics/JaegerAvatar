@@ -93,16 +93,20 @@ export function fromPcm(b64) {
 // What the voice loop gets to hear. It listens on its own, so it gets every frame while she is quiet. While she talks it
 // gets nothing (it would hear her), until the Vad says someone is talking over her: then the last 0.6 s and on until they stop.
 // push returns the frames to send now. Frames held while she talked are dropped when she stops: they are her last words.
+// stopped: this push was the last of someone talking over her. No sound follows while she talks, so the loop would wait
+// for a quiet that never comes: it has to be told the phrase is over.
 const HOLD = frames(0.6);
 export class Gate {
-  held = []; open = false;
+  held = []; open = false; stopped = false;
   push(frame, talking, event) {
     if (event === 'start') this.open = true;
     let out = [frame];
     if (this.open) out = [...this.held, frame];
     else if (talking) { out = []; this.held.push(frame); if (this.held.length > HOLD) this.held.shift(); }
     if (out.length) this.held = [];
-    if (event === 'end' || event === 'cancel') this.open = false;
+    const ends = event === 'end' || event === 'cancel';
+    this.stopped = ends && this.open && talking;
+    if (ends) this.open = false;
     return out;
   }
 }

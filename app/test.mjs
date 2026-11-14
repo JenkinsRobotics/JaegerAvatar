@@ -155,9 +155,14 @@ console.log('ok');
   const over = sent(f(40), true, 'start');
   assert.deepEqual([over.length, over[0], over.at(-1)], [21, 20, 40], 'someone talks over her: the last 0.6 s, then live');
   assert.deepEqual(sent(f(41), true), [41]);
+  assert.equal(g.stopped, false, 'the sound is still flowing');
   assert.deepEqual(sent(f(42), true, 'end'), [42]);
+  assert.equal(g.stopped, true, 'they stopped and she is still talking: the sound stops here, so the loop is told the phrase is over');
   assert.deepEqual(sent(f(43), true), [], 'kept back again once they stop');
+  assert.equal(g.stopped, false, 'said once');
   assert.deepEqual(sent(f(44), false), [44], 'her last words are dropped, not sent late');
+  sent(f(45), false, 'start'); sent(f(46), false, 'end');
+  assert.equal(g.stopped, false, 'she is quiet: the sound goes on, and the loop finds the end of the phrase itself');
 }
 
 // The display robots' eyes: every emotion settles, and any change can interrupt any other without a jump or a bad number.

@@ -2,7 +2,7 @@
 # Each line is one Jaeger repo at one commit. The framework comes first: the others ask for it by version only.
 jaeger-os @ git+https://github.com/JenkinsRobotics/JaegerOS.git@949edcd828e998ca912d4933f6e8666632140130
 # The model runs inside the agent: llama-cpp-python is one of jaeger-agent's own dependencies. No model server.
-jaeger-agent @ git+https://github.com/JenkinsRobotics/jaeger-module-agent.git@816a6191354ee39fefd1758e62821f6e9e3e3ae8
+jaeger-agent @ git+https://github.com/JenkinsRobotics/jaeger-module-agent.git@a12a0f402572750dd01e68e6ca4d2045f3251b49
 # Voice and hearing are the Jaeger modules, used through the agent's voice loop (app/agent_loop.py).
 jaeger-kokoro-tts @ git+https://github.com/JenkinsRobotics/jaeger-module-kokoro.git@ba4085ee3c35bcfd8d0fe3398d44e375be542032
 jaeger-whisper-stt @ git+https://github.com/JenkinsRobotics/jaeger-module-whisper.git@a46e903058549d24cc85c0d80d5dd551a6eb962c

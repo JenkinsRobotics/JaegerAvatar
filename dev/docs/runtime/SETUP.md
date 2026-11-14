@@ -51,7 +51,14 @@ By default the worker is Jaeger Agent's voice loop (`app/agent_loop.py`): hearin
 (Jaeger Whisper), the model with its tools, and the voice (Jaeger Kokoro) run in
 one process, and the app copies none of it. The page sends typed text and
 microphone sound in, plays the voice sound it gets back and moves the mouth
-itself. The agent's tools are on (the short tool list; `JAEGER_FULL_TOOLS=1`
+itself. The microphone stays open while she talks (the agent's open mic,
+`half_duplex=False`). The page holds her own voice back: the browser's echo
+canceller, then a gate that passes only a clearly louder voice. What a person
+says over her goes straight to the agent. Her voice drops the moment they
+start, and if they keep talking (`?hold=250`, in ms; `0` turns it off) she
+holds her line where it is. Then the words decide: theirs, and she stops and
+answers, the agent cutting the reply it was still writing; her own echo, a
+noise or nothing, and she carries on from the same syllable. The agent's tools are on (the short tool list; `JAEGER_FULL_TOOLS=1`
 shows every tool) and the context is 32768 tokens. The agent moves the body
 with its own `avatar` tool (`jaeger_avatar/embedded/agent_tools.py`), which
 goes over the same control link a robot body uses; the app has no list of

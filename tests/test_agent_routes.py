@@ -121,6 +121,9 @@ class AgentRoutesTest(unittest.TestCase):
         pcm = bytes(range(8))
         self.assertEqual(self.call('POST', '/agent/audio', pcm)[0], 200)
         self.assertEqual(self.host.sent, [{'op': 'audio', 'pcm': base64.b64encode(pcm).decode()}])
+        self.host.sent.clear()
+        self.assertEqual(self.call('POST', '/agent/audio?end=1', pcm)[0], 200)   # the page's mic went quiet: the phrase ends with this sound
+        self.assertEqual(self.host.sent, [{'op': 'audio', 'pcm': base64.b64encode(pcm).decode(), 'end': True}])
         self.assertEqual(self.call('POST', '/agent/audio', b'', **{'Content-Length': str(server.MIC_LIMIT + 1)})[0], 413)
 
     def test_a_loop_that_is_still_loading_says_so(self):

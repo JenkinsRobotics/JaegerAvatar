@@ -584,12 +584,12 @@ class Handler(SimpleHTTPRequestHandler):
             relay.model = data
             relay.model_rev += 1
             return self.reply(200, json.dumps({"rev": relay.model_rev}).encode())
-        if LOOP and self.path == "/agent/audio":   # microphone sound for the voice loop: 16 kHz 16-bit mono, as it is heard
+        if LOOP and self.path in ("/agent/audio", "/agent/audio?end=1"):   # microphone sound for the voice loop: 16 kHz 16-bit mono, as it is heard; end=1: the mic went quiet after it
             if size > MIC_LIMIT:
                 self.close_connection = True
                 return self.reply(413, b'{"error":"too long"}')
             pcm = self.rfile.read(size)
-            try: agent_host.send({"op": "audio", "pcm": base64.b64encode(pcm).decode()})
+            try: agent_host.send({"op": "audio", "pcm": base64.b64encode(pcm).decode(), **({"end": True} if self.path.endswith("end=1") else {})})
             except RuntimeError: return self.reply(503, b'{"error":"The agent is still loading"}')
             return self.reply(200, b"{}")
         if self.path.startswith("/hear"):

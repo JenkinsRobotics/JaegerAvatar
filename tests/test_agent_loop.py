@@ -29,7 +29,7 @@ class Engine:
     sample_rate = 24000
 
     def __init__(self, loop):
-        self.loop, self.calls, self.hears, self.voice = loop, [], False, 'af_heart'
+        self.loop, self.calls, self.hears, self.voice, self.turn = loop, [], False, 'af_heart', None
 
     def report(self):
         return {'voice': {'module': 'jaeger_kokoro_tts', 'model': self.voice}}
@@ -39,12 +39,17 @@ class Engine:
         self.loop.on_event(Event(kind='user', text=text, data=None))
         self.loop.on_event(Event(kind='audio', text='Hi.', data=np.array([0, 0.5, -2], dtype=np.float32)))
         self.loop.on_event(Event(kind='assistant', text='Hi.', data=None))
+        self.loop.on_event(OVER)
 
     def push_audio(self, frame):
         self.calls.append(('audio', frame))
-        if self.hears:
-            self.loop.on_event(Event(kind='user', text='hello there', data=None))
-            self.loop.on_event(Event(kind='assistant', text='Hi.', data=None))
+        if self.hears:                        # a heard turn runs on a thread of the engine's own: the mic stays open
+            self.turn = threading.Thread(target=lambda: [self.loop.on_event(e) for e in (
+                Event(kind='user', text='hello there', data=None), Event(kind='assistant', text='Hi.', data=None), OVER)])
+            self.turn.start()
+
+    def end_phrase(self):
+        self.calls.append(('end',))
 
     def switch_session(self, key, persona, voice=None):
         self.calls.append(('persona', key, persona) + ((voice,) if voice else ()))
@@ -52,6 +57,9 @@ class Engine:
 
     def force_listen(self):
         self.calls.append(('stop',))
+
+
+OVER = Event(kind='turn', text='end', data=None)   # the engine's word that a turn is over
 
 
 def NOBODY(op, value, ttl_ms):
@@ -83,14 +91,27 @@ class LoopTest(unittest.TestCase):
 
     def test_microphone_sound_is_fed_in_and_only_a_heard_turn_ends_with_done(self):
         frame = base64.b64encode(np.array([0, 16384], '<i2').tobytes()).decode()
-        self.run_all({'op': 'audio', 'pcm': frame})
+        self.loop.receive({'op': 'audio', 'pcm': frame})
         self.assertEqual(self.engine.calls[0][1].tolist(), [0, 0.5])
         self.assertEqual(self.out, [])
         self.engine.hears = True
-        self.loop.work.queue.clear()
-        self.run_all({'op': 'audio', 'pcm': frame})
+        self.loop.receive({'op': 'audio', 'pcm': frame})
+        self.engine.turn.join(2)
         self.assertEqual([o.get('event') for o in self.out], ['user', 'assistant', 'done'])
         self.assertEqual(self.out[0]['text'], 'hello there')
+
+    def test_microphone_sound_does_not_wait_behind_a_turn(self):
+        frame = base64.b64encode(np.array([0, 16384], '<i2').tobytes()).decode()
+        self.loop.busy.set()                                      # a reply is being written
+        self.loop.receive({'op': 'audio', 'pcm': frame})
+        self.assertEqual([c[0] for c in self.engine.calls], ['audio'])   # heard now: this is how a person cuts in
+        self.assertTrue(self.loop.work.empty())
+
+    def test_the_app_saying_the_sound_stopped_ends_the_phrase(self):
+        frame = base64.b64encode(np.array([0, 16384], '<i2').tobytes()).decode()
+        self.loop.receive({'op': 'audio', 'pcm': frame, 'end': True})
+        self.loop.receive({'op': 'audio', 'pcm': '', 'end': True})         # the mic went quiet with nothing left to send
+        self.assertEqual([c[0] for c in self.engine.calls], ['audio', 'end', 'end'])
 
     def test_character_switch_and_interrupt(self):
         self.run_all({'op': 'persona', 'session': 's:mochi', 'persona': 'You are Mochi.'}, {'op': 'interrupt'})
@@ -164,6 +185,7 @@ class LoopTest(unittest.TestCase):
             self.engine.calls.append(('scene', script))
             self.loop.on_event(Event(kind='audio', text='Hi there.', data=cued))
             self.loop.on_event(Event(kind='assistant', text='Hi there.', data={'source': 'scene'}))
+            self.loop.on_event(OVER)
         self.engine.perform = perform
         self.loop.control = NOBODY
         self.run_all({'op': 'scene', 'script': 'say Hi there. | action wave | on there'})
@@ -282,6 +304,16 @@ class LoopTest(unittest.TestCase):
         self.run_all({'op': 'text', 'text': 'hello'})
         self.assertEqual([o.get('event') for o in self.out], ['status', 'done'])
         self.assertIn('division', self.out[0]['text'])
+
+    def test_a_turn_the_engine_reported_and_ended_itself_is_not_reported_twice(self):
+        def send_text(text):
+            self.loop.on_event(Event(kind='status', text='error: the model stopped', data=None))
+            self.loop.on_event(OVER)
+            failure = RuntimeError('the model stopped'); failure.told = True
+            raise failure
+        self.engine.send_text = send_text
+        self.run_all({'op': 'text', 'text': 'hello'})
+        self.assertEqual([o.get('event') for o in self.out], ['status', 'done'])
 
 
 if __name__ == '__main__':

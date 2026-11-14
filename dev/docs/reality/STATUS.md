@@ -488,6 +488,79 @@ not installed, no model file, or the agent stopped. `tests/test_install.py`
 runs `run.sh` against stand-in Pythons: fresh checkout, second run, 3.11 for
 3.12, no usable Python, and an install that fails (removed, tried again).
 
+## Talking to her, and cutting in — November 13, 2026
+
+Recorded speech was played into the real page as its microphone (Chrome's
+fake microphone, headless and muted), on this Mac while macOS was indexing
+(load 5 to 20). **No real microphone, speaker or room was used**, so her own
+voice never came back into the mic in any run.
+
+What it showed before any change:
+
+- A spoken question was heard right and answered.
+- **Talking over her did nothing.** The worker took microphone sound in order,
+  behind the reply being written, and the page stopped sending sound once the
+  person stopped while she talked, so the agent never saw the phrase end. In
+  one run "What is two plus two?", said over a story, was answered after the
+  whole story, about 50 s later.
+
+What changed:
+
+- **The agent hears while it answers** (`half_duplex=False`, in Jaeger Agent):
+  sound goes straight in, a heard turn runs on its own thread, a phrase said
+  over a reply cuts that reply, and every turn says when it is over. The app's
+  worker no longer queues sound or guesses when a turn ended.
+- **The page tells the agent when the sound stops** (`/agent/audio?end=1`,
+  `end_phrase()`), because while she talks it sends nothing after the person
+  stops.
+- **She holds her line.** Her voice drops when someone starts over her, and
+  after 250 ms more (`?hold=`) her sound's clock stops: voice, mouth and a
+  scene's moves wait. The microphone has its own clock now. The words decide
+  what follows.
+- **A cut reply no longer costs the next one ten seconds.** Jaeger Agent reset
+  the model after every interruption, so the next reply read the whole prompt
+  again. It now keeps what the model has read when the reply stopped cleanly.
+
+Measured after:
+
+| | Result |
+| --- | --- |
+| She holds, after the other voice starts | 0.4 to 0.5 s (5 runs) |
+| Her answer, after the person's last word: spoken turn, nobody talking over | 1.8 to 2.9 s (5 turns) |
+| Same, cutting in after she had finished writing | 3.0 s (1 run) |
+| Same, cutting in while she was still writing | 4.7 and 4.8 s (2 runs) |
+| A 0.8 s noise that is not a voice | held 1.1 s, then carried on from the same clip (2 runs) |
+| Typing over a spoken turn's reply | she answered 0.7 and 1.6 s later (2 runs) |
+| First sound after a cut, model reset as before | 10.3 to 11.3 s (12 cuts) |
+| First sound after a cut, model keeps what it read | 0.78 to 1.04 s (12 cuts) |
+
+The last two rows were run on the worker alone, alternating four cuts each
+way in three passes, the cut at a different point of the reply each time. All
+24 answers were right and the worker exited cleanly each pass.
+
+The app's install now pins the agent commit with these changes (`a12a0f4`, on
+`dev`). The voice path needs it: with the earlier agent a spoken turn never
+reports its end. A fresh install with the new pin was not run.
+
+Not shown, or not good yet:
+
+- **Echo.** Whether her own voice from real speakers gets past the browser's
+  echo canceller and the gate, and holds her, is not known. `?hold=` is there
+  to tune or turn off.
+- **Cutting in while she writes is slow** (4.7 and 4.8 s). Hearing then shares
+  the GPU with the model and the voice: the words took 1.9 and 2.0 s to come
+  back, against 0.25 s when she had finished writing. She also keeps writing while she
+  holds; that work is thrown away when the words are the person's.
+- **The reset was there for a reason.** The agent's notes say a crash followed
+  an aborted reply in May. 15 cuts here ran without one. That is not proof.
+- A voice-like sound with no words in it (a cough, "mm") is released by the
+  agent's "no words" verdict. That has a test in the agent; it was not run
+  through the page.
+- Stopping her on the words as they form was tried and taken out: they
+  arrived 2.4 to 3.1 s in on this machine.
+- The older path (`JAEGER_AVATAR_LOOP=0`) got the hold too; it was not run.
+- Closing the mic mid-sentence leaves the agent with half a phrase.
+
 ## Still planned / limited
 
 - GUI pack authoring, packaged desktop installers, persistent agent memory.

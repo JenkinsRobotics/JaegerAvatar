@@ -9,6 +9,9 @@ each line's moves with its sound as cues. The app plays the sound and, when a cu
 says so; the move is then made by the same `avatar` tool the model calls. The model can write a scene itself with its
 `scene` tool; the agent performs it once that reply's words are spoken.
 
+The microphone stays open while she answers (the engine's open mic): sound goes straight to the engine, never behind a turn,
+so a person can talk over her. The engine cuts the reply on its way and says when each turn is over; that is this worker's 'done'.
+
 In (one JSON line each): {op: start, ...} first, then {op: text | audio | persona | interrupt | control_result | say | scene | cue}.
 Out: {ready, schema, model, report}, {event, text, data}, {event: audio, text, rate, pcm, marks, cues}, {event: done}, {control, id},
 {id, rate, pcm, marks, ms} (the answer to say), {report} (after a voice change), {event: scene, text: begin | end} (around a scene's sound), {event: scene, text: refused, data} (a script it could not read).
@@ -26,17 +29,17 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
-TURN = {'user', 'assistant', 'audio'}     # the engine did one of these: a turn happened, so it ends with 'done'
 CONTROL_WAIT = 3                          # seconds the avatar tool waits for the app to answer
 
 
 class Loop:
-    """One engine, one thread: work arrives in order; an interrupt cuts in from the reader's thread."""
+    """One engine. Typed lines, scenes and the rest arrive in order on one thread; microphone sound, an interrupt and a
+    cue go in at once from the reader's thread."""
 
     def __init__(self, emit):
         self.emit, self.engine = emit, None
         self.work, self.busy, self.waiting = queue.Queue(), threading.Event(), {}
-        self.typed = self.turn = False
+        self.worker = self.ended = None       # the thread that runs the work in order; whether the engine ended a turn on it
         self.hint = ''                        # one avatar call in the loaded model's own form, added to every persona
         self.extra = {}                       # what this worker adds to the engine's report: which tool list, the load time
 
@@ -45,8 +48,11 @@ class Loop:
         return {**self.engine.report(), **self.extra}
 
     def on_event(self, e):
-        if e.kind == 'user' and self.typed: return          # the page already showed what was typed
-        if e.kind in TURN: self.turn = True
+        mine = threading.current_thread() is self.worker
+        if e.kind == 'turn':                  # the engine's word that a turn is over (typed, heard or a scene), before the next one's words
+            self.ended = self.ended or mine
+            return self.emit({'event': 'done'})
+        if e.kind == 'user' and mine: return  # the page already showed what was typed; a heard turn runs on the engine's own thread
         if e.kind == 'audio':
             pcm = (np.clip(e.data, -1, 1) * 32767).astype('<i2').tobytes()
             self.emit({'event': 'audio', 'text': e.text, 'rate': self.engine.sample_rate, 'pcm': base64.b64encode(pcm).decode(),
@@ -74,6 +80,9 @@ class Loop:
             if box: box.put(r.get('result') or {})
         elif op == 'interrupt':
             self.engine.force_listen()
+        elif op == 'audio':                   # heard now, not after the reply on its way: this is how a person cuts in
+            if r.get('pcm'): self.engine.push_audio(np.frombuffer(base64.b64decode(r['pcm']), '<i2').astype(np.float32) / 32768)
+            if r.get('end'): self.engine.end_phrase()   # the page's mic went quiet or was gated: the phrase ends here
         elif op == 'cue':                     # its moment has come: it cannot wait behind the lines still being voiced
             threading.Thread(target=self.cue, args=(r.get('call'),), daemon=True).start()
         else:
@@ -136,13 +145,13 @@ class Loop:
             self.emit({'id': r.get('id'), 'error': str(exc)})
 
     def run(self):
+        self.worker = threading.current_thread()
         while (r := self.work.get()) is not None:
             op = r.get('op')
-            self.typed = self.turn = op in ('text', 'scene')   # a typed turn or a scene always ends with 'done': the page is waiting
+            self.ended = False
             self.busy.set()
             try:
                 if op == 'text': self.engine.send_text(str(r.get('text', '')))
-                elif op == 'audio': self.engine.push_audio(np.frombuffer(base64.b64decode(r['pcm']), '<i2').astype(np.float32) / 32768)
                 elif op == 'persona':   # who it is now, and (when the app names one) the character's voice in the same voice module
                     voice = r.get('voice')
                     self.engine.switch_session(r['session'], r.get('persona', '') + self.hint, **({'voice': voice} if voice else {}))
@@ -150,13 +159,11 @@ class Loop:
                 elif op == 'say': self.say(r)
                 elif op == 'scene': self.engine.perform(r.get('script'), fit=self.fitter(strict=True)[0])
             except Exception as exc:
-                self.turn = True
                 if op == 'scene' and isinstance(exc, ValueError): self.emit({'event': 'scene', 'text': 'refused', 'data': str(exc)})   # a script it could not read: the director is told, nothing is said
-                else: self.emit({'event': 'status', 'text': f'error: {exc}'})
+                elif not getattr(exc, 'told', False): self.emit({'event': 'status', 'text': f'error: {exc}'})   # the engine reports a turn's own failure
             finally:
                 self.busy.clear()
-                if self.turn: self.emit({'event': 'done'})
-                self.typed = self.turn = False
+                if op in ('text', 'scene') and not self.ended: self.emit({'event': 'done'})   # it never began, and the page is waiting
 
 
 def call_hint(engine):
@@ -205,8 +212,9 @@ def main():
     register_tool_from_function(scene_tool(loop.stage), name='scene', side_effect='performance')   # the scene is the reply: no second model call to narrate it
     began = time.time()
     # Speech only, no wake word, no speaker of its own: the page plays the sound and moves the mouth.
+    # The mic is open (half_duplex=False): the page's microphone has the browser's echo canceller, and it holds her own voice back.
     engine = loop.engine = GemmaMultimodal(
-        on_event=loop.on_event, play=False, audio_mode='plain', output_mode='speech', extra_prompt=start.get('persona', ''),
+        on_event=loop.on_event, play=False, half_duplex=False, audio_mode='plain', output_mode='speech', extra_prompt=start.get('persona', ''),
         config=MultimodalConfig(audio_mode='plain', output_mode='speech', wake_required=False,
                                 stt_model=start.get('hearing', 'large-v3-turbo'), session_key=start.get('session', 'avatar')),
         runtime_config={'model_path': str(found[name]), 'model': name,
