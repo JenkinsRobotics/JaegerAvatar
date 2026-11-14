@@ -7,6 +7,7 @@ import json
 import os
 import platform
 import queue
+import re
 import sys
 import threading
 import time
@@ -22,6 +23,7 @@ from jaeger_avatar.embedded.agent_tools import link_transport
 from kin_lipsync import analyze as analyze_kin
 
 from agent_bridge import agent_host
+import display_stream
 import lyra_singer
 import singing
 from voice_engine import KOKORO_VOICES, SAMPLE_LIMIT, engine, to_wav
@@ -54,6 +56,7 @@ STT = config["hearing"]["model"]
 settings_lock = threading.Lock()   # two saves at once must not undo each other
 HEAR_LIMIT = 16000 * 2 * 30  # 30 s of 16 kHz 16-bit audio; the page sends at most 20 s
 FRAME_LIMIT = 64 * 1024
+DEVICE_OUTPUT = re.compile(r"[a-z0-9]+/[A-Za-z0-9]+")   # a device and one of its outputs, as hardware.js names them: jp01/face
 MIC_LIMIT = 1024 * 1024   # one post of microphone sound for the voice loop; the page sends a fraction of a second at a time
 EVENT_WAIT = 15   # seconds of quiet on the loop's event stream before a keep-alive line
 MODEL_LIMIT = 200 * 1024 * 1024
@@ -481,7 +484,27 @@ class Handler(SimpleHTTPRequestHandler):
             if LOOP:   # the loop's ears: the hearing module, and what it computes on
                 h = (agent_host.report or {}).get("hearing") or {}
                 ears, where = agent_host.ready, " · ".join(str(h[k]) for k in ("module", "version", "compute", "model") if h.get(k))
-            return self.reply(200, json.dumps({"brain": brain(), "why": why_scripted(), "loop": LOOP, "voice": VOICE if voices.get(VOICE) else None, "ears": ears, "hearing": where, "natural": engine.status}).encode())
+            return self.reply(200, json.dumps({"brain": brain(), "why": why_scripted(), "loop": LOOP, "voice": VOICE if voices.get(VOICE) else None, "ears": ears, "hearing": where, "natural": engine.status, "hardware": display_stream.wanted()}).encode())
+        if route.startswith("/hardware/stream/"):   # a device output as plain pixels, for a robot or anything else outside the browser (display_stream.py)
+            key = route[len("/hardware/stream/"):]
+            if not DEVICE_OUTPUT.fullmatch(key): return self.reply(404, b'{"error":"Unknown output"}')
+            try: fps = min(60.0, max(1.0, float(parse_qs(urlparse(self.path).query).get("fps", ["30"])[0])))
+            except ValueError: return self.reply(400, b'{"error":"fps is a number"}')
+            frames = display_stream.read(key, fps)
+            self.send_response(200)
+            self.send_header("Content-Type", "application/octet-stream")
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.close_connection = True
+            try:
+                for frame in frames:
+                    self.wfile.write(frame)
+                    self.wfile.flush()
+            except OSError:  # the reader left
+                pass
+            finally:
+                frames.close()
+            return
         if LOOP and self.path == "/agent/events":   # everything the voice loop does, as it happens: words, voice sound, timings
             q = agent_host.listen()
             self.send_response(200)
@@ -584,6 +607,15 @@ class Handler(SimpleHTTPRequestHandler):
             relay.model = data
             relay.model_rev += 1
             return self.reply(200, json.dumps({"rev": relay.model_rev}).encode())
+        if self.path.startswith("/hardware/frame/"):   # the page's frame for a device output someone is reading: RGBA at the output's size
+            url = urlparse(self.path); key, query = url.path[len("/hardware/frame/"):], parse_qs(url.query)
+            if not DEVICE_OUTPUT.fullmatch(key): return self.reply(404, b'{"error":"Unknown output"}')
+            if size > display_stream.LIMIT:
+                self.close_connection = True
+                return self.reply(413, b'{"error":"too large"}')
+            try: wanted = display_stream.put(key, int(query["w"][0]), int(query["h"][0]), self.rfile.read(size))
+            except (KeyError, ValueError) as exc: return self.reply(400, json.dumps({"error": str(exc)}).encode())
+            return self.reply(200, json.dumps({"wanted": wanted}).encode())
         if LOOP and self.path in ("/agent/audio", "/agent/audio?end=1"):   # microphone sound for the voice loop: 16 kHz 16-bit mono, as it is heard; end=1: the mic went quiet after it
             if size > MIC_LIMIT:
                 self.close_connection = True

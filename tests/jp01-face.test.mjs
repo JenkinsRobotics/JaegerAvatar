@@ -100,3 +100,38 @@ test('the waveform mouth is nearly flat when quiet and ripples when talking', ()
   assert.ok(peak(waveLine({ aa: 1 }, 0, 1)) > .4);
   for (const [x, y] of waveLine({ ee: 1, aa: 1 }, 0, 2)) assert.ok(Number.isFinite(x + y) && Math.abs(x) <= .85);
 });
+
+// The look made for the real panel: the same face drawn straight onto 64 x 64 LEDs, not the big screen shrunk.
+import { GRID } from '../app/web/kin/jp01.js';
+const lit = P => { const out = []; for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) { const i = (y * GRID + x) * 4, v = Math.max(P.data[i], P.data[i + 1], P.data[i + 2]); if (v > 40) out.push([x, y, v]); } return out; };
+const middle = pts => [pts.reduce((s, p) => s + p[0], 0) / pts.length, pts.reduce((s, p) => s + p[1], 0) / pts.length];
+const wave64 = (mood, v = {}, t = 1, more = {}) => FACES.mochi_wave.native({ ...faceTarget({ faceMood: FACE_MOODS.indexOf(mood) / (FACE_MOODS.length - 1) }, t), ...more }, 0, { t, v, layout: { scale: 1.55, spread: .8 } });   // laid out as the JP01 stage lays it out
+
+test('the 64 x 64 waveform face puts the twin\'s eyes and voice line on the panel, in whole bright pixels', () => {
+  const P = wave64('neutral'), on = lit(P), top = on.filter(p => p[1] < 36), left = top.filter(p => p[0] < 32), right = top.filter(p => p[0] >= 32);
+  // the twin's layout divided by 16: eyes centred 12.7 px either side of the middle, 22.3 px down
+  for (const [eye, x] of [[left, 19.3], [right, 44.7]]) { const [mx, my] = middle(eye); assert.ok(Math.abs(mx + .5 - x) < 1 && Math.abs(my + .5 - 22.3) < 1, `eye at ${mx},${my}`); }
+  assert.ok(left.length > 150 && right.length > 150, 'each eye is a solid block of LEDs, not an outline');
+  const full = on.filter(p => p[2] > 240).length;
+  assert.ok(full / on.length > .7, `most lit LEDs are at full brightness, not a blur (${full} of ${on.length})`);
+  const [r, g, b] = [0, 1, 2].map(k => P.data[(22 * GRID + 19) * 4 + k]);
+  assert.deepEqual([r, g, b], [190, 255, 225], 'in Mochi\'s own eye colour');
+  const voice = on.filter(p => p[1] >= 40), rows = new Set(voice.map(p => p[1])), cols = new Set(voice.map(p => p[0]));
+  assert.ok(rows.size >= 2 && rows.size <= 3, `quiet: a flat line two LEDs thick (${[...rows]})`);
+  assert.ok(Math.abs(middle(voice)[1] + .5 - 46.9) < 1 && cols.size >= 16, 'under the eyes, across the mouth');
+});
+
+test('the 64 x 64 voice line ripples with speech and every mood stays on the panel', () => {
+  const rows = P => new Set(lit(P).filter(p => p[1] >= 38).map(p => p[1])).size;
+  assert.ok(rows(wave64('neutral', { aa: 1 })) >= 7, 'talking: the line swings several LEDs up and down');
+  assert.equal(lit(wave64('neutral', {}, 1, { width: 0, height: 0 })).length, 0, 'the first wake step is a dark panel');
+  assert.ok(lit(wave64('neutral', {}, 1, { blinkL: 1, blinkR: 1 })).filter(p => p[1] < 36).length < 80, 'a blink closes the eyes to a line');
+  for (const mood of FACE_MOODS) {
+    const P = wave64(mood, { oh: .6 }, 2.3);
+    assert.ok(lit(P).length > 30, `${mood} lights the panel`);
+    assert.ok(P.data.every(Number.isFinite) && P.data.length === GRID * GRID * 4);
+  }
+  const hollow = wave64('surprised'), [x, y] = [19, 21];   // surprised eyes are rings: dark in the middle
+  assert.ok(Math.max(...[0, 1, 2].map(k => hollow.data[(y * GRID + x) * 4 + k])) < 60, 'a ring eye is hollow');
+  assert.ok(FACES.matrix.native && FACES.tface.native, 'the faces that were always drawn on the grid offer it too');
+});

@@ -54,8 +54,10 @@ acceptance remains unverified; these tests do not measure tracking accuracy.
   app's own agent, TTS and STT already drive the pack.
 - Under the stage, Outputs shows each simulated hardware stream at native size
   (JP01 face 64 × 64 and both rings, Mochi 256 × 256) at 60 fps, inline or in its
-  own window. Face streams are stand-ins (the twin scaled down) until a pack ships
-  a native-resolution look.
+  own window. JP01's waveform, Matrix and T-face are streamed as looks made for
+  the 64 × 64 panel; any other face is still a stand-in (the twin scaled down).
+  The same streams can be read outside the browser (see "JP01: a face made for
+  its panel").
 - A Settings window (top bar) has a page each for the app's own agent, voice and
   hearing. Agent: the model file, creativity and longest reply, applied from the
   next reply without losing the conversation. Voice: the voice picker and a
@@ -560,6 +562,69 @@ Not shown, or not good yet:
   arrived 2.4 to 3.1 s in on this machine.
 - The older path (`JAEGER_AVATAR_LOOP=0`) got the hold too; it was not run.
 - Closing the mic mid-sentence leaves the agent with half a phrase.
+
+## JP01: a face made for its panel — November 14, 2026
+
+- **Waveform is JP01's default face.** The JP01 pack (now 0.3.0) sets
+  `face: mochi_wave`: Mochi's eyes over a voice line. The Face menu still
+  switches to the others.
+- **A look made for the real panel.** `FACES.mochi_wave.native`
+  (`app/web/kin/jp01.js`) draws that face straight onto 64 × 64 LEDs: whole
+  bright pixels, no glow. Its geometry is the twin's divided by 16, so the
+  robot and its twin show one face. It covers all 16 moods, the hollow ring
+  eyes, brows, blush, tears, sparkles, the thinking dots and the ? z ♪ marks.
+  The twin's second, smaller z is left out.
+- **Frames leave the browser.** `GET /hardware/stream/jp01/face` (also
+  `ringL`, `ringR`) is plain pixels: 8 bytes (width, height, frame number)
+  then width × height × 3 bytes of RGB, row by row (`app/display_stream.py`).
+  The page posts frames only while someone reads them.
+  `scripts/read_display.py` is an example reader.
+
+Checked on this Mac, JP01 on stage in a muted headless browser, a model-free
+server, the machine very busy (load 20 to 90):
+
+- A reader got 64 × 64 frames at 22 to 24 a second (30 asked for) and the
+  24-LED ring frames. During a spoken line the voice line was 2 to 8 LEDs tall
+  and taller than 3 in 146 of 330 frames; quiet, it was a flat line 2 LEDs
+  thick.
+- One received frame, put through JP01's own driver
+  (`avc01_driver.build_matrix_frame`, read from its repo, nothing changed
+  there), gave an `FM[...]` command with the 24,576 characters that driver
+  calls valid.
+
+Not shown, or not done:
+
+- **Nothing was sent to a real panel.** Orientation, brightness and colour on
+  the real LEDs are unknown.
+- A page with JP01 on stage must be open: the page draws the frames. A reader
+  waits up to 5 s for the page to notice it.
+- Both rings are streamed apart; JP01's firmware drives them as one.
+- Only the waveform face has a new panel look; mouth and lips do not.
+
+**JP01's export: the face as a program, with no browser.**
+`scripts/build_panel_runtime.py --avatar jp01 --output DIR` builds a folder of
+13 files (104 KB): the control package, the face program
+(`app/web/kin/panel.js`, `panel-run.mjs`, run by Node) and a manifest. Control
+state goes in, the 64 × 64 face and the 24-LED ring come out, in the same form
+as the stream above. `jaeger_avatar/embedded/panel.py` starts it and reads its
+frames (`dev/docs/runtime/EMBEDDING.md`).
+
+Run from the built folder alone, on this Mac (load 35), a mouth value changing
+all the time:
+
+| Asked for | Delivered | Processor time in 8 s |
+| --- | --- | --- |
+| 30 frames a second | 29.3 | 0.31 s |
+| 60 frames a second | 59.2 | 0.49 s |
+
+The last frame gave a valid 24,576-character command through JP01's driver. A
+face with no panel look (`jp01_ring`) is refused at build time.
+
+Not shown: the robot's Jetson (slower than this Mac, and it needs Node), the
+real panel, and speech driving the mouth from a real voice. The program takes
+the mouth's opening (`jaw`) only, so the voice line's pitch does not follow
+vowels as it does in the page. Mochi's export is unchanged
+(`scripts/build_embedded_mochi.py`).
 
 ## Still planned / limited
 

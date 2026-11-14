@@ -1,7 +1,7 @@
 // A live view of one simulated hardware stream: exactly the pixels the device receives, shown large and faithful.
 // A screen is drawn pixel for pixel (or as round LEDs, for an LED panel); a ring shows its 24 x 1 row and the same
 // row laid out as the ring it is on the robot. Used inline under the app and in its own window (output.html).
-import { HARDWARE, CHANNEL, STAND_IN } from './hardware.js';
+import { HARDWARE, CHANNEL, STAND_IN, MADE } from './hardware.js';
 
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 
@@ -16,7 +16,7 @@ export function mountViewer(host, hw, outId, { size = 256 } = {}) {
   if (ring) { view.width = size; view.height = size; } else { view.width = out.w * scale; view.height = out.h * scale; }
   const strip = el('canvas'); strip.width = out.w * scale; strip.height = scale; const sg = strip.getContext('2d');
   box.append(head, view, ...(ring ? [strip] : [toggle]), stats);
-  if (!ring) box.append(el('div', 'tiny standIn', STAND_IN));
+  const how = el('div', 'tiny standIn', ''); if (!ring) box.append(how);
   host.append(box);
 
   let frames = 0, last = -1, dropped = 0, t0 = 0, fps = 0, character = '';
@@ -44,7 +44,7 @@ export function mountViewer(host, hw, outId, { size = 256 } = {}) {
     const m = e.data; if (m?.key !== key) return;
     ng.putImageData(new ImageData(new Uint8ClampedArray(m.data), m.w, m.h), 0, 0); draw();
     if (last >= 0 && m.seq > last + 1) dropped += m.seq - last - 1;
-    last = m.seq; frames++; character = m.character;
+    last = m.seq; frames++; character = m.character; how.textContent = m.standIn ? STAND_IN : MADE;
     if (!t0) t0 = m.t; else if (m.t - t0 >= 1000) { fps = frames / ((m.t - t0) / 1000); frames = 0; t0 = m.t; }
     stats.textContent = `${character} · ${fps ? fps.toFixed(0) + ' fps' : 'measuring'} · frame ${m.seq} · ${dropped} skipped · ${(m.w * m.h * 4 / 1024).toFixed(m.w * m.h > 4096 ? 0 : 1)} KB a frame`;
   };

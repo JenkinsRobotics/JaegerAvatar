@@ -324,10 +324,11 @@ export class AvatarStage {
    this.robot.position.set(0,.82,0);this.robot.rotation.set(0,0,0);
    const wake=this.shape==='jp01'?this.wakeAge(v,t):null,asleep=wake==null?0:1-Math.min(1,wake/WAKE)**2;
    if(this.pan){this.pan.rotation.y=clamp((v.headY||0)*.45,-.45,.45)*(1-asleep);this.tilt.rotation.x=clamp(-(v.headX||0)*.3,-.25,.25)+.28*asleep;}// JP01 pans at the neck and tilts at the hubs (no roll axis); it wakes from a bowed head
-   if(this.facePainter){this.ctx.save();try{this.facePainter(this.ctx,v,dt,t);}finally{this.ctx.restore();}}
+   if(this.facePainter){this.nativeFace=null;this.ctx.save();try{this.facePainter(this.ctx,v,dt,t);}finally{this.ctx.restore();}}
    else {const face=wakeFace(this.faceAnimator.update(v,dt,t),wake),look=FACES[this.faceStyle];
     const keys=Object.keys(REACTIONS),mood=FACE_MOODS[Math.round(clamp(v.faceMood||0,0,1)*(FACE_MOODS.length-1))],reaction=keys[Math.round((v.faceReaction||0)*keys.length)-1];
     const lit=look?look.paint(this.ctx,face,clamp(v.jaw||0,0,1),{mood,reaction,t,v,layout:this.faceLayout}):drawFace(this.ctx,face,t,this.faceLayout);// JP01 can wear other faces
+    this.nativeFace=look?.native&&(()=>look.native(face,clamp(v.jaw||0,0,1),{mood,reaction,t,v,layout:this.faceLayout}));// this frame as the real 64 x 64 panel shows it, made only when a stream asks
     if(this.rings){const levels=ringLevels(wake,t,v.jaw),[r,g,b]=lit||look?.ring||[face.red,face.green,face.blue];this.rings.forEach((led,i)=>led.material.color.setRGB(r/255*levels[i%24],g/255*levels[i%24],b/255*levels[i%24]));}}
    this.faceTexture.needsUpdate=true;
   }else if(showPose){this.anime.position.set(0,v.lift,0);this.poseAnime(v,this.onTwos?0:dt,t);this.lastPose=Math.floor(t*12);}

@@ -5,6 +5,7 @@ import io
 import json
 import os
 import queue
+import struct
 import sys
 import tempfile
 import threading
@@ -125,6 +126,21 @@ class AgentRoutesTest(unittest.TestCase):
         self.assertEqual(self.call('POST', '/agent/audio?end=1', pcm)[0], 200)   # the page's mic went quiet: the phrase ends with this sound
         self.assertEqual(self.host.sent, [{'op': 'audio', 'pcm': base64.b64encode(pcm).decode(), 'end': True}])
         self.assertEqual(self.call('POST', '/agent/audio', b'', **{'Content-Length': str(server.MIC_LIMIT + 1)})[0], 413)
+
+    def test_a_robot_reads_the_device_stream_and_the_page_is_told(self):
+        c = http.client.HTTPConnection('127.0.0.1', self.httpd.server_port, timeout=5)
+        c.request('GET', '/hardware/stream/t9/face?fps=1000', headers={'Host': '127.0.0.1'})
+        r = c.getresponse()
+        self.assertEqual((r.status, r.getheader('Content-Type')), (200, 'application/octet-stream'))
+        self.assertEqual(r.fp.read(8), struct.pack('<HHI', 0, 0, 0))            # no picture yet
+        self.assertIn('t9/face', json.loads(self.call('GET', '/health')[1])['hardware'])   # the page learns someone is reading
+        status, data = self.call('POST', '/hardware/frame/t9/face?w=1&h=1', bytes([5, 6, 7, 255]))
+        self.assertEqual((status, json.loads(data)), (200, {'wanted': True}))
+        self.assertEqual(r.fp.read(11), struct.pack('<HHI', 1, 1, 1) + bytes([5, 6, 7]))   # width, height, frame number, then RGB
+        c.close()
+        self.assertEqual(self.call('POST', '/hardware/frame/t9/face?w=2&h=2', bytes(4))[0], 400)
+        self.assertEqual(self.call('POST', '/hardware/frame/t9?w=1&h=1', bytes(4))[0], 404)
+        self.assertEqual(self.call('GET', '/hardware/stream/t9')[0], 404)
 
     def test_a_loop_that_is_still_loading_says_so(self):
         self.host.ready = False

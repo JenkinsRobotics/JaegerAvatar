@@ -11,7 +11,7 @@ import { RENDERER, fromPack, styledFace } from './kin/styles.js';
 import { STYLES, styleOf, styleCard, LIVE, faceSheet, sheetPng, assetCard } from './exhibit.js';
 import { controlsOf } from './controls.js';
 import { startControlLink } from './control-link.js';
-import { HARDWARE, hardwareFor, publish as publishHardware } from './hardware.js';
+import { HARDWARE, hardwareFor, publish as publishHardware, serverReads } from './hardware.js';
 import { mountViewer } from './output-view.js';
 import { AnimeChar, TIMING } from './render-anime.js';
 import { Char3D } from './render-3d.js';
@@ -281,7 +281,7 @@ const loopVoice = () => { const v = chosenVoice(); return v?.startsWith('kokoro:
 const loopWho = () => ({ ...who(), controls: controls(), session: sessionId(), voice: loopVoice() });   // the loop is also told what the body can do: it moves it with its avatar tool
 let warmed = '';
 const warmAgent = () => { if (!serverBrain || serverBrain === 'scripted') return; const w = JSON.stringify(serverLoop ? loopWho() : who()); if (w === warmed) return; warmed = w; fetch('/warm', { method: 'POST', body: w }).catch(() => { warmed = ''; }); };
-const checkHealth=()=>fetch('/health').then(r=>r.json()).then(h=>{serverVoice=h.voice;serverBrain=h.brain;serverWhy=h.why||'';serverEars=h.ears;serverHearing=h.hearing||'';serverLoop=!!h.loop;
+const checkHealth=()=>fetch('/health').then(r=>r.json()).then(h=>{serverVoice=h.voice;serverBrain=h.brain;serverWhy=h.why||'';serverEars=h.ears;serverHearing=h.hearing||'';serverLoop=!!h.loop;serverReads(h.hardware||[]);   // device outputs a robot is reading from the server
   if(serverBrain==='scripted'&&(loopBusy||loopSkip)){loopBusy=false;loopSkip=0;streamDone=true;}   // the loop went away mid-turn: nothing more will come
   if(serverLoop&&!loopEvents&&!params.has('obs')){loopEvents=new EventSource('/agent/events');loopEvents.onmessage=m=>{try{onLoop(JSON.parse(m.data));}catch(e){console.warn('voice loop event',e);}};}
   hudStatic();resendFlow();warmAgent();}).catch(hudStatic);checkHealth();setInterval(checkHealth,5000);

@@ -3,6 +3,7 @@
 // native size every frame and sent to any open stream viewer (output.html). The avatar never writes a device's
 // pixels: the device decodes the stream and lights them itself.
 // ponytail: hardware is hard-coded here until devices declare themselves; a new device is one more entry.
+import { GRID } from './kin/jp01.js';
 export const HARDWARE = {
   jp01: { name: 'JP01', outputs: [
     { id: 'face', label: 'Face', w: 64, h: 64, kind: 'screen', note: '64 × 64 LED panel, large pixels' },
@@ -15,13 +16,20 @@ export const HARDWARE = {
 };
 // Which device a render is the twin of.
 export const hardwareFor = c => c.rep.preset === 'jp01' ? 'jp01' : ['mochi', 'momo'].includes(c.rep.preset) ? 'mochi' : null;
-// None of today's packs ships a look made at a device's native size, so the face stream is the twin's screen scaled
-// down (area-averaged, as each LED would average it). A pack with its own native look replaces this.
-export const STAND_IN = 'Stand-in: the twin\'s screen scaled to native size. No pack ships a look made for this resolution yet.';
+// A face with a look made for the panel (`native` in kin/jp01.js: JP01's waveform, Matrix and T-face) is streamed as
+// that look. Any other face has none, so its stream is the twin's screen scaled down (area-averaged, as each LED
+// would average it).
+export const STAND_IN = 'Stand-in: the twin\'s screen scaled to native size. This face has no look made for this resolution.';
+export const MADE = 'Made for this panel: drawn at its own resolution, LED by LED.';
 
 export const CHANNEL = 'jaeger-hardware';
 const native = {}, wanted = new Map();   // output key -> last time a viewer asked for it
 let channel = null, seq = 0;
+// Readers outside the browser (a robot reading /hardware/stream/jp01/face): the server says which outputs are being
+// read, and those frames are posted to it, one at a time so a slow link drops frames and never queues them.
+let reads = new Set();
+const posting = new Set();
+export function serverReads(keys) { reads = new Set(keys); }
 
 function shrink(src, w, h) {   // halve until close, then the last step: an average per target pixel, not a nearest sample
   let c = src;
@@ -47,17 +55,30 @@ function ringFrame(leds, out) {
   return d;
 }
 
+// One output's frame for the character on stage: { data: RGBA at the output's size, standIn }, or null with nothing to show.
+export function frameFor(out, face) {
+  if (out.kind === 'ring') return { data: ringFrame(face?.stage?.rings, out), standIn: false };
+  const made = out.w === GRID && out.h === GRID && face?.stage?.nativeFace?.();   // the look made for a 64 x 64 panel
+  if (made) { const data = made.data.slice(); for (let i = 3; i < data.length; i += 4) data[i] = 255; return { data, standIn: false }; }
+  const screen = face?.stage?.face ?? face?.eyes?.c;   // the twin's own screen, drawn at high resolution
+  return screen ? { data: faceFrame(screen, out), standIn: true } : null;
+}
+
 // Called once per drawn frame with the character on stage and its renderer.
 export function publish(c, face) {
   if (!channel) { channel = new BroadcastChannel(CHANNEL); channel.onmessage = e => { if (e.data?.want) wanted.set(e.data.want, performance.now()); }; }
   const hw = hardwareFor(c), now = performance.now();
-  if (!hw || ![...wanted.values()].some(t => now - t < 2000)) return;
-  const screen = face?.stage?.face ?? face?.eyes?.c;   // the twin's own screen, drawn at high resolution
+  if (!hw || !(reads.size || [...wanted.values()].some(t => now - t < 2000))) return;
   seq++;
   for (const out of HARDWARE[hw].outputs) {
     const key = hw + '/' + out.id;
-    if (!(now - (wanted.get(key) ?? -1e9) < 2000)) continue;
-    const data = out.kind === 'ring' ? ringFrame(face?.stage?.rings, out) : screen ? faceFrame(screen, out) : null;
-    if (data) channel.postMessage({ key, w: out.w, h: out.h, seq, t: now, character: c.label, standIn: out.kind === 'screen', data });   // a few KB to a few hundred KB a frame
+    const viewer = now - (wanted.get(key) ?? -1e9) < 2000, server = reads.has(key) && !posting.has(key);
+    const frame = (viewer || server) && frameFor(out, face);
+    if (!frame) continue;
+    if (viewer) channel.postMessage({ key, w: out.w, h: out.h, seq, t: now, character: c.label, ...frame });   // a few KB to a few hundred KB a frame
+    if (server) {
+      posting.add(key);
+      fetch(`/hardware/frame/${key}?w=${out.w}&h=${out.h}`, { method: 'POST', body: frame.data }).then(r => r.json()).then(j => { if (!j.wanted) reads.delete(key); }, () => reads.delete(key)).finally(() => posting.delete(key));
+    }
   }
 }

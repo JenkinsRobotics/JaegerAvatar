@@ -25,6 +25,8 @@ class RuntimeCatalogTests(unittest.TestCase):
         featured=[(p,r) for p,r in live if not r['defaults'].get('library')]
         self.assertEqual(len(featured),14)
         self.assertEqual({p['id'] for p,r in featured},{'vita','mochi','vee','nori','ace','sol','pip','bo','rook','maya','momo','aster','jp01'})
+        jp01=next(r for p,r in featured if p['id']=='jp01')
+        self.assertEqual(jp01['defaults'].get('face'),'mochi_wave')   # JP01 wears Mochi's eyes over a voice waveform unless told otherwise
         mochi=next(p for p in rows if p['id']=='mochi')
         self.assertEqual(mochi['defaultProfile'],'jaeger_ai')
         self.assertEqual(mochi['defaultRepresentation'],'mochi')

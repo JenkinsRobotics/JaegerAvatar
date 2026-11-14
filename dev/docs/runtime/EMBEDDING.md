@@ -111,3 +111,31 @@ from a clip to live eyes cannot inherit its coordinate transform. Consumers
 pin the immutable bundle and checksum-manifest hash in avatar.lock.json.
 The schema version describes compatibility; the pack/runtime release numbers
 identify a particular set of art and implementation files.
+
+## A robot's own panel, with no browser: JP01
+
+A robot that is the body needs only the face. `scripts/build_panel_runtime.py
+--avatar jp01 --output DIR` builds a folder (about 100 KB) with the control
+package, the face program and a manifest:
+
+```python
+from avatar_runtime import Controller
+from avatar_runtime.panel import Panel
+
+controller = Controller(manifest)              # avatar-control/v1: emotion, reaction, gaze, speaking, jaw
+panel = Panel(controller, face=manifest["face"])
+for width, height, number, rgb in panel.frames():   # the 64 x 64 face, then the 24-LED ring, every tick
+    ...                                             # JP01: build_matrix_frame(rgb.hex()) when height == 64
+```
+
+The face program is Node (`panel/kin/panel-run.mjs`): the controller's state in
+on stdin, frames out on stdout, each as 8 bytes (width, height, frame number)
+and then RGB rows. It is the page's own arithmetic, so the robot and its twin
+show the same face. It needs Python and Node 18 or newer, and no browser,
+graphics card or network. With no state for a second the face rests.
+
+Only a face with a look made for the panel can be exported (`native` in
+`app/web/kin/jp01.js`: the waveform, Matrix and T-face). The build runs the
+finished folder once and refuses otherwise. The mouth follows `jaw`; the host
+sends it while it plays speech, as Mochi's host does.
+

@@ -1,8 +1,8 @@
 schema: avatar/v1
 avatar: jp01
 name: JP01
-version: 0.2.1
-description: Jenkins Robotics' pan-tilt display robot, with Mochi's face on a square screen.
+version: 0.3.0
+description: Jenkins Robotics' pan-tilt display robot, with Mochi's eyes over a voice waveform on a square screen.
 default_profile: jp01
 default_representation: jp01_3d
 profiles:
@@ -137,6 +137,7 @@ representations:
         kokoro: af_heart
         pitch: 1
         led: true
+        face: mochi_wave
         intro: '[joy] I''m JP01, the first Jenkins Robotics robot. [excited] My whole face fits on this
           square screen, and my neck turns so I can look at you. [wink]'
         pack: jp01

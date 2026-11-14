@@ -210,7 +210,7 @@ FACES.emote = {
 
 // ---- Mochi with a mouth: the default Mochi eyes, lifted, over a mouth. The mouths lip sync from Vita's five vowel
 // shapes (aa ee ih oh ou): Mochi's round smile that opens, lips, or a voice waveform.
-import { drawFace } from './eyes.js';
+import { drawFace, eyeContour } from './eyes.js';
 export function mouthShape(v = {}, jaw = 0) {
   const s = k => clamp(v[k] || 0), aa = s('aa'), ee = s('ee'), ih = s('ih'), oh = s('oh'), ou = s('ou');
   const open = clamp(Math.max(aa, oh * .85, ih * .6, ee * .45, ou * .7, clamp(jaw) * .8));
@@ -278,14 +278,83 @@ export function mochiWave(ctx, p, v, jaw, { scale = 1.45, t = 0 } = {}) {
 }
 
 // Mochi's eyes, lifted to make room, over one of the mouths.
+const LIFT = { scale: .92, dy: -110 };   // of a 1024 screen
 const withMochiEyes = mouth => ({
   paint(ctx, p, jaw, { t = 0, v = {}, layout = {} } = {}) {
-    const scale = (layout.scale || 1.55) * .92;
-    drawFace(ctx, p, t, { ...layout, scale, dy: -110 * ctx.canvas.height / 1024 }); mouth(ctx, p, v, jaw, { scale, t });
+    const scale = (layout.scale || 1.55) * LIFT.scale;
+    drawFace(ctx, p, t, { ...layout, scale, dy: LIFT.dy * ctx.canvas.height / 1024 }); mouth(ctx, p, v, jaw, { scale, t });
   },
 });
 FACES.mochi_mouth = withMochiEyes(mochiMouth);
 FACES.mochi_lips = withMochiEyes(mochiLips);
 FACES.mochi_wave = withMochiEyes(mochiWave);
+
+// ---- The look made for the real panel. `native` draws a face straight onto the 64 x 64 LEDs: whole bright pixels and
+// no glow, where the twin's big screen shrunk to 64 is a dim blur. The geometry is the twin's own (same layout numbers,
+// divided by 16), so the robot and its twin show one face. A face without `native` is streamed as the shrunk stand-in.
+const K = GRID / 1024, cover = new Float32Array(GRID * GRID);
+// Fill a shape given as points in panel pixels. Four sample rows a pixel: an edge LED dims by how much of it is covered.
+function fill(P, pts, color, alpha = 1) {
+  let y0 = Infinity, y1 = -Infinity;
+  for (const [, y] of pts) { y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  y0 = Math.max(0, Math.floor(y0)); y1 = Math.min(GRID, Math.ceil(y1));
+  for (let row = y0 * 4; row < y1 * 4; row++) {
+    const y = (row + .5) / 4, xs = [];
+    for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [ax, ay] = pts[i], [bx, by] = pts[j]; if ((ay > y) !== (by > y)) xs.push(ax + (y - ay) / (by - ay) * (bx - ax)); }
+    xs.sort((a, b) => a - b);
+    for (let k = 0; k + 1 < xs.length; k += 2) {
+      const a = Math.max(0, xs[k]), b = Math.min(GRID, xs[k + 1]);
+      for (let x = Math.floor(a); x < b; x++) cover[(row >> 2) * GRID + x] += (Math.min(b, x + 1) - Math.max(a, x)) / 4;
+    }
+  }
+  for (let y = y0; y < y1; y++) for (let x = 0; x < GRID; x++) { const i = y * GRID + x; if (cover[i]) { P.set(x, y, color, Math.min(1, cover[i]) * alpha); cover[i] = 0; } }
+}
+// A near-level line as a band `w` pixels tall.
+const band = (P, pts, w, color, alpha) => fill(P, [...pts.map(([x, y]) => [x, y - w / 2]), ...pts.map(([x, y]) => [x, y + w / 2]).reverse()], color, alpha);
+const GLYPHS = { question: ['111', '001', '011', '000', '010'], sleep: ['111', '001', '010', '100', '111'], notes: ['011', '011', '010', '110', '110'] };   // ? z and a note, 3 x 5 LEDs
+// Mochi's eyes and marks (eyes.js drawFace) on the panel.
+function mochiEyes64(P, p, t, { scale = 1.55, spread = 1 } = {}) {
+  const s = scale * LIFT.scale * K, X = x => GRID / 2 + (x - 512) * s, Y = y => (512 + LIFT.dy) * K + (y - 320) * s;
+  const color = [p.red, p.green, p.blue].map(c => clamp(c, 0, 255));
+  for (const side of [-1, 1]) {
+    const cx = X(512 + side * p.spread * spread + p.x), cy = Y(288 + p.y), blink = clamp(side < 0 ? p.blinkL : p.blinkR);
+    const contour = eyeContour(p, side).map(([x, y]) => [cx + x * s, cy + y * s]);
+    if (Math.max(3, p.height * (1 - blink)) * 2 * s < 1.6) for (const d of [-.4, .4]) fill(P, contour.map(([x, y]) => [x, y + d]), color);   // a closed eye is still a line of whole LEDs
+    else fill(P, contour, color);
+    if (p.ring > .01) { const r = clamp(p.ring, 0, .84); fill(P, contour.map(([x, y]) => [cx + (x - cx) * r, cy + (y - cy) * r]), [0, 0, 0]); }
+    if (p.brows > .01) {
+      const lift = -143 - p.browLift, slope = side * p.browSlope * 55;
+      band(P, Array.from({ length: 9 }, (_, i) => { const u = i / 8, y = (1 - u) ** 2 * (lift - slope) + 2 * u * (1 - u) * (lift - 9) + u * u * (lift + slope); return [cx + (u * 116 - 58) * s, cy + y * s]; }), Math.max(1.5, 8 * s), color, clamp(p.brows));
+    }
+    for (let i = 0; i < 3 && p.blush > .01; i++) P.box(Math.round(X(512 + side * 302 * spread)) + i * 2 + .5, Math.round(Y(410)) + .5, 1, 3, 0, [255, 168, 186], clamp(p.blush) * .65);   // one LED wide, every other column: 19 units apart is under two LEDs
+    if (p.tear > .02) { const phase = (t * .48 + (side > 0 ? .4 : 0)) % 1; P.box(X(512 + side * 245 * spread + p.x), Y(340 + phase * 147), 1.5, 2.5, .7, [157, 207, 255], clamp(p.tear) * Math.sin(phase * Math.PI)); }
+  }
+  for (let i = 0; i < 5 && p.sparkles > .02; i++) {
+    const phase = (t * .4 + i * .19) % 1, a = Math.sin(phase * Math.PI) * clamp(p.sparkles) * .85, x = X([190, 800, 500, 237, 772][i]), y = Y([154, 165, 110, 442, 426][i] - phase * 15);
+    P.set(x, y, color, a); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) P.set(x + dx, y + dy, color, a * .5);
+  }
+  for (let i = 0; i < 3 && p.dots > .02; i++) P.box(X(476 + i * 36), Y(465), 2, 2, 0, color, clamp(p.dots) * (.25 + .75 * (.5 + .5 * Math.sin(t * 3 - i * .8))));
+  for (const [field, x, y] of [['question', 765, 138], ['sleep', 768, 167], ['notes', 205, 150]]) if (p[field] > .02)   // ponytail: one z, where the twin has a second, smaller one
+    GLYPHS[field].forEach((row, j) => [...row].forEach((on, i) => { if (on === '1') P.set(X(x) + i, Y(y - Math.sin(t * 1.7) * 5) - 5 + j, color, clamp(p[field]) * .7); }));
+}
+// The voice line: the twin's waveform, resting on whole rows. Each column of LEDs is lit from the line's height on its
+// left edge to its height on the right edge, one LED past each end: two LEDs thick when flat, unbroken when steep.
+function wave64(P, p, v, jaw, t, scale) {
+  const cx = (512 + (p.x || 0) * scale * .5) * K, cy = Math.round((750 + (p.y || 0) * .4) * K), color = [p.red, p.green, p.blue].map(c => clamp(c, 0, 255));
+  const pts = waveLine(v, jaw, t).map(([x, y]) => [cx + x * 380 * K, cy + y * 95 * K]);
+  let i = 0;
+  const at = x => { while (i < pts.length - 2 && pts[i + 1][0] < x) i++; const [ax, ay] = pts[i], [bx, by] = pts[i + 1]; return ay + (by - ay) * clamp((x - ax) / (bx - ax || 1)); };
+  for (let x = Math.ceil(pts[0][0]); x + 1 <= pts.at(-1)[0]; x++) {
+    const a = at(x), b = at(x + 1), top = Math.min(a, b) - 1, bottom = Math.max(a, b) + 1;
+    for (let y = Math.floor(top); y < bottom; y++) P.set(x, y, color, Math.min(bottom, y + 1) - Math.max(top, y));
+  }
+}
+FACES.mochi_wave.native = (p, jaw, { t = 0, v = {}, layout = {} } = {}) => {
+  const P = panel();
+  if (p.width > 0) { mochiEyes64(P, p, t, layout); wave64(P, p, v, jaw, t, (layout.scale || 1.55) * LIFT.scale); }
+  return P;
+};
+FACES.matrix.native = p => matrixFace(p);
+FACES.tface.native = (p, jaw) => tFace(p, jaw);
 // The faces a JP01 can switch between live, in picker order ('' = Mochi eyes, the default).
 export const FACE_CHOICES = [['', 'Mochi eyes'], ['mochi_mouth', 'Mochi eyes + mouth'], ['mochi_lips', 'Mochi eyes + lips'], ['mochi_wave', 'Mochi eyes + waveform'], ['matrix', 'Matrix'], ['tface', 'T-face'], ['ring', 'Ring eyes'], ['emote', 'Neon emotes']];
