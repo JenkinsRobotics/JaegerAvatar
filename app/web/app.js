@@ -694,7 +694,7 @@ function onLoop(e) {
     return;
   }
   if (!['user', 'assistant', 'audio'].includes(kind)) {       // what the loop is doing, not part of a reply: shown in the Data flow window
-    trace(kind === 'live' || HEARS.has(text) ? 'stt' : kind === 'tool' ? 'tools' : kind === 'scene' ? 'scene' : SPEAKS.has(text) ? 'voice' : 'agent', kind, { text, data: e.data });   // which section of the agent it came from
+    trace(kind === 'live' || HEARS.has(text) ? 'stt' : kind === 'tool' ? 'tools' : kind === 'scene' ? 'scene' : kind === 'feeling' || SPEAKS.has(text) ? 'voice' : 'agent', kind, { text, data: e.data });   // which section of the agent it came from
     if (kind === 'state' && !['transcribing', 'hearing you'].includes(text)) micIdle();
     if (kind === 'state' && text === 'hearing you') loopHeard = true;
     if (kind === 'state' && /dropped|discarded|ignored|not addressed/.test(text)) unhold(text);   // the loop heard no one talking to her: she carries on

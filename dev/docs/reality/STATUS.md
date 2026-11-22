@@ -950,7 +950,7 @@ sound. Not measured on a quiet machine.
 Not done or not known:
 
 - **A fresh install needs a push first.** `requirements-agent.txt` pins the
-  agent commit with these changes (`39b0f6e`), which is committed on the
+  agent commit with these changes (`33fd94e`), which is committed on the
   agent's `dev` but not pushed, so `./run.sh` on a fresh checkout cannot
   fetch it yet. This machine runs the agent from its local checkout.
 - Sound was not judged by ear, and the recording is a synthetic voice.
@@ -964,6 +964,25 @@ Not done or not known:
   fails too, until a restart.
 - While a sentence is being joined the terminal can show its first part as
   a line of its own before the whole.
+
+## The voice is told how a line feels — November 22, 2026
+
+The feeling the model picks for the face with each reply (its `avatar` tool
+call), and a scene's `emotion` step before a line, now also go to the voice
+with each line (Jaeger Agent: `engine.feel`, then `synth(text, feeling=...)`
+for a voice module that takes one). The Data flow window shows it under
+Voice. With Kokoro, which takes no feeling, speech is unchanged: run through
+the virtual Mochi, muted, two replies and a scene had their feelings set
+before their lines ("joy", "sad", then "excited" and "love"), with no errors.
+
+This is only the agent's half, and nothing acts on it yet. Jaeger Agent
+stays on the Kokoro and Whisper modules; Jaeger Lyra's expressive voice is
+going into Omni, not here (the direction on November 22). So in this app and
+in Mochi the voice still reads every line in one tone. A voice module whose
+`synth` takes a `feeling` would get it with no further change; the Lyra
+session has such a module for comparing by ear, not installed. What a
+feeling sounds like for one character is meant to be the pack's to say; no
+pack says it yet.
 
 ## Still planned / limited
 

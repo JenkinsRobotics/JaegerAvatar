@@ -65,6 +65,9 @@ class Engine:
     def end_scene(self):
         self.calls.append(('scene over',))
 
+    def feel(self, feeling):
+        self.calls.append(('feel', feeling))
+
 
 OVER = Event(kind='turn', text='end', data=None)   # the engine's word that a turn is over
 
@@ -198,6 +201,30 @@ class LoopTest(unittest.TestCase):
         self.loop.receive({'op': 'control_result', 'id': line['id'], 'result': {'ok': True}})
         asked.join(2)
         self.assertEqual(answer, {'ok': True})
+
+    def answering(self, result):
+        """The app's side: answer each control the worker sends with `result`."""
+        def answer():
+            seen = 0
+            for _ in range(300):
+                for line in self.out[seen:]:
+                    if 'control' in line: self.loop.receive({'op': 'control_result', 'id': line['id'], 'result': result})
+                seen = len(self.out)
+                threading.Event().wait(0.01)
+        threading.Thread(target=answer, daemon=True).start()
+
+    def test_a_feeling_the_body_took_from_the_model_is_told_to_the_voice_too(self):
+        self.answering({'ok': True})
+        self.assertEqual(self.loop.felt('emotion', 'joy', 10000), {'ok': True})          # the model's own avatar call
+        self.assertEqual(self.loop.felt('gaze', [1, 0], 10000), {'ok': True})            # a look is not a feeling
+        self.assertEqual(self.engine.calls, [('feel', 'joy')])
+        self.loop.control('emotion', 'sad', 10000)                                       # a scene's move at its moment: its line was voiced with it already
+        self.assertEqual(self.engine.calls, [('feel', 'joy')])
+
+    def test_a_feeling_the_body_refused_is_not_told_to_the_voice(self):
+        self.answering({'ok': False, 'error': 'Unknown emotion'})
+        self.assertFalse(self.loop.felt('emotion', 'furious', 10000)['ok'])
+        self.assertEqual(self.engine.calls, [])
 
     def test_an_app_that_never_answers_is_a_refusal_not_a_hang(self):
         self.addCleanup(setattr, agent_loop, 'CONTROL_WAIT', agent_loop.CONTROL_WAIT)
