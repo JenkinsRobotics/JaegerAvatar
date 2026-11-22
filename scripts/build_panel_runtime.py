@@ -22,7 +22,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 import sys
 sys.path.insert(0, str(ROOT))
-from jaeger_avatar.character import who
+from jaeger_avatar.character import dynamics, manner, who
 KIN = ROOT / 'app/web/kin'
 
 
@@ -55,7 +55,7 @@ def _build(output, avatar):
     }
     # Who the character is, for the host's agent and voice. No tools, credentials or conversation travel with it.
     sheet = {**pack['profiles'][pack['default_profile']]['character'], 'schema': 'character/v1', 'character': avatar, 'name': pack['name']}
-    manifest['character'] = {'who': who(sheet, pack['name']), 'voice': look['defaults'].get('kokoro') or sheet.get('identity', {}).get('voice_id', '')}   # ready for a host that reads only JSON
+    manifest['character'] = {'who': who(sheet, pack['name']), 'manner': manner(sheet), 'dynamics': dynamics(sheet), 'voice': look['defaults'].get('kokoro') or sheet.get('identity', {}).get('voice_id', '')}   # ready for a host that reads only JSON
     manifest['activity'] = {a: a for a in ('thinking', 'listening') if a in emotions}   # the feeling shown while the agent thinks or hears someone
     (runtime / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     (runtime / 'character.yaml').write_text(yaml.safe_dump(sheet, sort_keys=False, allow_unicode=True))

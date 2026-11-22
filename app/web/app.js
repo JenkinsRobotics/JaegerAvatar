@@ -223,7 +223,7 @@ function setView(id) {
   for(const f of Object.values(faces))f.suspend?.();
   view = id;
   const next = CHARACTERS.find(c => c.id === id);
-  if (next && next !== current) { stopAll(); current = next; rig.mode = 'idle'; rig.setEmotion('neutral'); hudStatic(); rig.gesture('wave'); resendFlow(); warmAgent(); }
+  if (next && next !== current) { stopAll(); current = next; rig.mode = 'idle'; rig.setEmotion('neutral'); showEnergy();showDials(); hudStatic(); rig.gesture('wave'); resendFlow(); warmAgent(); }
   remember({ view: id });
   $('#stage').className = id === 'all' ? 'all' : 'single';
   for (const [k, p] of Object.entries(panes)) p.classList.toggle('on', (id === 'all' && CHARACTERS.find(c=>c.id===k).featured) || id === k);
@@ -278,9 +278,9 @@ describeFlow(() => ({ character: current.name, body: current.rep?.name || curren
 const who = () => ({ character: current.id, pack: current.personaPack || current.packId, profile: current.profileId, body: current.rep.name || current.ownName || current.name, actions: agentActions() });
 // The loop speaks in the Kokoro voice chosen for this character; a voice its module does not have (a clone) falls back to the character's own.
 const loopVoice = () => { const v = chosenVoice(); return v?.startsWith('kokoro:') ? v : 'kokoro:' + current.kokoro; };
-const loopWho = () => ({ ...who(), controls: controls(), session: sessionId(), voice: loopVoice() });   // the loop is also told what the body can do: it moves it with its avatar tool
-let warmed = '';
-const warmAgent = () => { if (!serverBrain || serverBrain === 'scripted') return; const w = JSON.stringify(serverLoop ? loopWho() : who()); if (w === warmed) return; warmed = w; fetch('/warm', { method: 'POST', body: w }).catch(() => { warmed = ''; }); };
+const loopWho = () => ({ ...who(), controls: controls(), session: sessionId(), voice: loopVoice(), dials: saved.dialsBy?.[current.id] ?? {} });   // the loop is also told what the body can do: it moves it with its avatar tool
+let warmed = '', warming = Promise.resolve();   // one at a time, in order: two dials turned together must not reach the agent the wrong way round
+const warmAgent = () => { if (!serverBrain || serverBrain === 'scripted') return; const w = JSON.stringify(serverLoop ? loopWho() : who()); if (w === warmed) return; warmed = w; warming = warming.then(() => fetch('/warm', { method: 'POST', body: w })).then(r => r.json()).then(j => { $('#mannerSaid').textContent = j.manner ? 'She is told with each turn: ' + j.manner : serverLoop ? 'No dial is near an end: she talks as she is written.' : ''; }).catch(() => { warmed = ''; }); };
 const checkHealth=()=>fetch('/health').then(r=>r.json()).then(h=>{serverVoice=h.voice;serverBrain=h.brain;serverWhy=h.why||'';serverEars=h.ears;serverHearing=h.hearing||'';serverLoop=!!h.loop;serverReads(h.hardware||[]);   // device outputs a robot is reading from the server
   if(serverBrain==='scripted'&&(loopBusy||loopSkip)){loopBusy=false;loopSkip=0;streamDone=true;}   // the loop went away mid-turn: nothing more will come
   if(serverLoop&&!loopEvents&&!params.has('obs')){loopEvents=new EventSource('/agent/events');loopEvents.onmessage=m=>{try{onLoop(JSON.parse(m.data));}catch(e){console.warn('voice loop event',e);}};}
@@ -1006,8 +1006,26 @@ for (const b of $('#panelTabs').children) {
   };
 }
 // Expression and sound
-function setEnergy(v) { rig.energy = v; $('#energy').value = v; $('#energyVal').textContent = Math.round(v * 100) + '%'; remember({ energy: v }); }
-$('#energy').oninput = e => setEnergy(+e.target.value);
+// How big she moves. It starts where the character's own liveliness puts it (her pack's traits, or performance.energy), so a quiet
+// character is calmer than a bubbly one in the same body. Moving the dial is your choice for this character; a double click gives hers back.
+const ownProfile = c => PACKS.find(p => p.id === (c.personaPack || c.packId))?.profiles.find(p => p.id === c.profileId);
+const ownEnergy = c => ownProfile(c)?.dynamics ?? 1;
+// Her personality dials (her pack's expression traits, each where the pack puts it). A dial turned toward an end changes
+// how she talks from her next reply on: the server makes the dials her manner and the agent says it with each turn, in
+// the same conversation. Near the middle a dial says nothing.
+const turnedDials = () => saved.dialsBy?.[current.id] ?? {};
+function showDials() {
+  const own = ownProfile(current)?.dials ?? {}, mine = turnedDials();   // the names are the server's own list, the values numbers
+  $('#dialsBox').hidden = !Object.keys(own).length;
+  $('#dials').innerHTML = Object.entries(own).map(([k, v]) => `<label>${k}<input type="range" min="0" max="1" step="0.05" data-dial="${k}" value="${mine[k] ?? v}" title="Her own: ${Math.round(v * 100)}%. Double click to go back to it."><output>${Math.round((mine[k] ?? v) * 100)}%</output></label>`).join('');
+}
+$('#dials').oninput = e => { remember({ dialsBy: { ...saved.dialsBy, [current.id]: { ...turnedDials(), [e.target.dataset.dial]: +e.target.value } } }); e.target.nextElementSibling.textContent = Math.round(e.target.value * 100) + '%'; };
+$('#dials').onchange = () => warmAgent();   // let go: the agent is told
+$('#dials').ondblclick = e => { const k = e.target.dataset?.dial; if (!k) return; const { [k]: _, ...rest } = turnedDials(); remember({ dialsBy: { ...saved.dialsBy, [current.id]: rest } }); showDials(); warmAgent(); };
+function setEnergy(v) { rig.energy = v; $('#energy').value = v; $('#energyVal').textContent = Math.round(v * 100) + '%'; $('#energy').title = `Her own: ${Math.round(ownEnergy(current) * 100)}%. Double click to go back to it.`; }
+const showEnergy = () => setEnergy(saved.energyBy?.[current.id] ?? ownEnergy(current));
+$('#energy').oninput = e => { remember({ energyBy: { ...saved.energyBy, [current.id]: +e.target.value } }); setEnergy(+e.target.value); };
+$('#energy').ondblclick = () => { const { [current.id]: _, ...rest } = saved.energyBy ?? {}; remember({ energyBy: rest }); showEnergy();showDials(); };
 function setMuted(on) { muted = on; if (master) master.gain.setTargetAtTime(on ? 0 : 1, audio().currentTime, 0.02); $('#mute').textContent = on ? 'Muted' : 'Sound on'; $('#mute').setAttribute('aria-pressed', on); remember({ muted: on }); }
 $('#mute').onclick = () => setMuted(!muted);
 $('#fresh').onclick = () => { stopEverything(); histories[current.packId] = []; conversationIds[current.packId]=crypto.randomUUID(); showHistory(); $('#log').textContent = ''; };
@@ -1494,7 +1512,7 @@ requestAnimationFrame(frame);
 setView(view);
 setBg(BGS.includes(params.get('bg')) ? params.get('bg') : 'room');
 setDisplay(DISPLAYS.includes(params.get('display')) ? params.get('display') : DISPLAYS.includes(saved.display) ? saved.display : 'mouth');
-setEnergy(typeof saved.energy === 'number' ? saved.energy : 1);
+showEnergy();showDials();
 setMuted(muted);
 setTiming(saved.onTwos ?? true);
 setCalm(!!saved.calm); setBackdrop(saved.backdrop ?? true);
@@ -1517,7 +1535,7 @@ function fillProfiles(){
 }
 $('#packProfile').onchange=()=>{stopEverything();const v=$('#packProfile').value;if(!setPersona(current,v))return;
   remember({personas:{...saved.personas,[current.id]:v}});delete histories[current.packId];delete conversationIds[current.packId];// a new mind starts a new conversation
-  if(faces[current.id])dress(current,faces[current.id]);showHistory();showVoices();fillMoves();fillAssets();$('#plate').textContent=current.name;toast(`${current.ownName} now thinks and speaks as ${current.name}.`);};
+  if(faces[current.id])dress(current,faces[current.id]);showEnergy();showDials();showHistory();showVoices();fillMoves();fillAssets();$('#plate').textContent=current.name;toast(`${current.ownName} now thinks and speaks as ${current.name}.`);};
 mountLibrary(PACKS,CHARACTERS,setView);
 const sampleCache=new Map();
 async function preparedSample(name){

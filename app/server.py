@@ -15,7 +15,8 @@ import wave
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse, unquote
-from jaeger_avatar.catalog import catalog, persona, ROOT as PACKS
+from jaeger_avatar.catalog import catalog, character, persona, turned, ROOT as PACKS
+from jaeger_avatar.character import manner, profile as profile_words
 from jaeger_avatar.packs import local_path, PackError
 from jaeger_avatar.embedded.control import ControlError
 from jaeger_avatar.embedded.link import ControlLink, link_transport
@@ -121,19 +122,22 @@ def chat_system(body):
         return system_for(body.get("character"))
 
 
-loop_key, loop_lock = None, threading.Lock()   # the character the loop was last told to be
+loop_key, loop_manner, loop_lock = None, '', threading.Lock()   # the character the loop was last told to be, and her manner
 
 
 def loop_who(body):
-    """Who the voice loop is: the character, the body on stage and what it offers. What a character in a body is told
-    about replying and moving is the agent's to write (its persona rules); it moves the body with its avatar tool."""
+    """Who the voice loop is: the character, her manner, the body on stage and what it offers. What a character in a body
+    is told about replying and moving is the agent's to write (its persona rules); it moves the body with its avatar tool.
+    Her manner is her pack's expression dials as rules, with any the person at the controls has turned (`dials`); the
+    agent says it with each turn (loop_as)."""
     try:
-        name, profile = persona(body.get('pack', body.get('character', 'vita')), body.get('profile'))
-        who = f"You are {name}, an AI character. {profile}"
+        sheet, name = character(body.get('pack', body.get('character', 'vita')), body.get('profile'))
+        sheet = turned(sheet, body.get('dials'))
+        who, how = f"You are {name}, an AI character. {profile_words(sheet)}", manner(sheet)
     except (OSError, ValueError):
-        who = PERSONAS.get(body.get('character'), PERSONAS['nori'])
+        who, how = PERSONAS.get(body.get('character'), PERSONAS['nori']), ''
     controls = body.get('controls')
-    return {'who': who, 'body': str(body.get('body', ''))[:60], 'offers': controls if isinstance(controls, dict) else {}}
+    return {'who': who, 'body': str(body.get('body', ''))[:60], 'offers': controls if isinstance(controls, dict) else {}, 'manner': how}
 
 
 def loop_voice(body):
@@ -143,14 +147,20 @@ def loop_voice(body):
 
 
 def loop_as(body):
-    """Tell the loop which character, body and voice it is, once per change. Each character and body has its own conversation."""
-    global loop_key
+    """Tell the loop which character, body and voice it is, once per change. Each character and body has its own conversation.
+    Her manner is not part of that: the agent says it with each turn, so a dial turned is one line to it, in the same
+    conversation, with nothing for the model to read again. Returns the manner she is given, for the page to show."""
+    global loop_key, loop_manner
     told, voice = loop_who(body), loop_voice(body)
+    how = told.pop('manner')
     key = f"{str(body.get('session', ''))[:40]}:{hashlib.sha1(json.dumps(told, sort_keys=True, default=str).encode()).hexdigest()[:10]}"
     with loop_lock:
         if (key, voice) != loop_key:
-            agent_host.send({'op': 'persona', 'session': key, **told, **({'voice': voice} if voice else {})})
+            agent_host.send({'op': 'persona', 'session': key, **told, 'manner': how, **({'voice': voice} if voice else {})})
             loop_key = (key, voice)
+        elif how != loop_manner: agent_host.send({'op': 'manner', 'manner': how})
+        loop_manner = how
+    return how
 
 
 def loop_start():
@@ -731,11 +741,12 @@ class Handler(SimpleHTTPRequestHandler):
             wav = speak(text, rate, name)
             return self.reply(200, wav, "audio/wav") if wav else self.reply(422, b'{"error":"nothing to say"}')
         if self.path == '/warm':   # the page names its character before the first message, so that reply is not the slow one
+            how = ''
             try:
-                if LOOP:loop_as(body)
+                if LOOP:how = loop_as(body)
                 else:agent_host.warm(chat_system(body), config['agent'])
             except RuntimeError:pass   # still loading: the first message names the character again
-            return self.reply(200,b'{}')
+            return self.reply(200,json.dumps({'manner': how}).encode())   # the manner she is given with each turn, for the page to show
         if self.path == '/agent/interrupt':
             try:
                 if LOOP:agent_host.send({'op':'interrupt'})

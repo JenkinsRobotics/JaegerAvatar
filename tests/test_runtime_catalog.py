@@ -5,6 +5,7 @@ import unittest
 import yaml
 
 from jaeger_avatar.catalog import catalog, persona, ROOT
+from jaeger_avatar.character import EXPRESSION
 from jaeger_avatar.packs import load_pack, PackError
 
 
@@ -58,8 +59,18 @@ class PersonaPromptTest(unittest.TestCase):
         from jaeger_avatar.catalog import persona
         name, text = persona('bender')
         self.assertEqual(name, 'Bender')   # the character's name, not the pack's
-        for part in ('bending-unit', 'Your voice: gravelly', 'How you talk:', 'Style:'):
+        for part in ('bending-unit', 'Your voice: gravelly', 'How you talk:', 'What you tend to do:', 'Your nature:'):
             self.assertIn(part, text)
+
+    def test_each_profile_comes_with_how_lively_its_body_is(self):
+        from jaeger_avatar.catalog import catalog
+        packs = catalog()
+        pack = next(p for p in packs if p['id'] == 'mochi')
+        mochi = next(q for q in pack['profiles'] if q['id'] == pack['defaultProfile'])
+        self.assertEqual(mochi['dynamics'], 1.33)                    # warm, playful and outgoing: she moves big
+        self.assertEqual(set(mochi['dials']), set(EXPRESSION))        # her personality dials, each where her pack puts it (the middle when it says nothing)
+        self.assertTrue(all(0 <= v <= 1 for q in (q for p in packs for q in p['profiles']) for v in q['dials'].values()))
+        self.assertTrue(all(0.5 <= q['dynamics'] <= 1.5 for p in packs for q in p['profiles']))
 
 
     def test_controls_are_validated(self):

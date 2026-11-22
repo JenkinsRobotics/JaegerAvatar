@@ -5,7 +5,7 @@ import yaml
 ROOT=Path(__file__).resolve().parents[1]
 import sys
 sys.path.insert(0,str(ROOT))
-from jaeger_avatar.character import who
+from jaeger_avatar.character import dynamics, manner, who
 WEB=ROOT/'app/web'
 
 def _build(output, visual_baseline=None):
@@ -58,7 +58,7 @@ def _build(output, visual_baseline=None):
     manifest['activity']={'thinking':'thinking','listening':'listening','error':'confused','failed':'confused'}
     look=pack['representations']['procedural_3d']['presentation']['defaults']
     manifest['face']=look.get('face','')   # which of the renderer's faces this look uses ('' = eyes only)
-    manifest['character']={'who':who(profile,'Mochi'),'voice':look.get('kokoro') or profile.get('identity',{}).get('voice_id','')}   # who the agent is told it is, ready for a host that reads only JSON
+    manifest['character']={'who':who(profile,'Mochi'),'manner':manner(profile),'dynamics':dynamics(profile),'voice':look.get('kokoro') or profile.get('identity',{}).get('voice_id','')}   # who the agent is told it is, ready for a host that reads only JSON
     (runtime/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
     # Existing Mochi chat/persona adapter reads this projection; original character
     # metadata is retained and no tools, credentials or conversation are exported.

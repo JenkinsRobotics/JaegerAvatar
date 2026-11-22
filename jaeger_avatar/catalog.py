@@ -4,7 +4,7 @@ from urllib.parse import quote
 
 import yaml
 
-from .character import profile as profile_words
+from .character import EXPRESSION, dial, dials, dynamics, profile as profile_words
 from .packs import SCREEN_LOOK, PackError, load_pack, local_path, screen_look
 
 ROOT = Path(__file__).resolve().parents[1] / 'avatar-packs'
@@ -77,7 +77,7 @@ def catalog(root=ROOT):
             reps.append(entry)
         profiles = []
         for key, profile in pack['profiles'].items():
-            entry = dict(id=key, character=profile['character'])
+            entry = dict(id=key, character=profile['character'], dynamics=dynamics(profile['character']), dials=own_dials(profile['character']))   # how lively her body is, and where her personality dials start
             if profile.get('card'):entry['card']=asset_url(folder,local_path(folder,profile['card']))
             profiles.append(entry)
         rows.append(dict(id=pack['avatar'],name=pack['name'],description=pack.get('description',''),
@@ -86,9 +86,28 @@ def catalog(root=ROOT):
     return rows
 
 
+def character(pack_id, profile_id=None):
+    """A profile's character sheet, and the pack's name for it."""
+    pack = load_pack(local_path(ROOT, pack_id), verify_sources=False)
+    sheet = pack['profiles'].get(profile_id or pack['default_profile'], {}).get('character', {})
+    return sheet, sheet.get('name') or pack['name']
+
+
 def persona(pack_id, profile_id=None):
-    folder = local_path(ROOT, pack_id)
-    pack = load_pack(folder, verify_sources=False)
-    profile = pack['profiles'].get(profile_id or pack['default_profile'], {})
-    character = profile.get('character', {})
-    return character.get('name') or pack['name'], profile_words(character)   # the words are built in one place, for every host
+    sheet, name = character(pack_id, profile_id)
+    return name, profile_words(sheet)   # the words are built in one place, for every host
+
+
+def own_dials(sheet):
+    """Her personality dials as her pack sets them: every expression dial, in the middle where the pack says nothing."""
+    traits = sheet.get('traits') if isinstance(sheet.get('traits'), dict) else {}
+    return {**dict.fromkeys(EXPRESSION, 0.5), **{k: v for k, v in dials(traits.get('expression')).items() if k in EXPRESSION}}
+
+
+def turned(sheet, dials):
+    """The sheet with some of its expression dials turned ({name: 0..1}, from whoever is at the controls): the dials are
+    hers to start with, and turning one is a choice made while she is on stage, not a change to her pack."""
+    known = {k: v for k, v in (dials if isinstance(dials, dict) else {}).items() if k in EXPRESSION and dial(v) is not None}
+    if not known: return sheet
+    traits = sheet.get('traits') if isinstance(sheet.get('traits'), dict) else {}
+    return {**sheet, 'traits': {**traits, 'expression': {**(traits.get('expression') if isinstance(traits.get('expression'), dict) else {}), **known}}}

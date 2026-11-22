@@ -60,7 +60,7 @@ class AgentRoutesTest(unittest.TestCase):
         cls.httpd.shutdown(); cls.httpd.server_close()
 
     def setUp(self):
-        for name in ('agent_host', 'LOOP', 'loop_key', 'config', 'SETTINGS_FILE'):
+        for name in ('agent_host', 'LOOP', 'loop_key', 'loop_manner', 'config', 'SETTINGS_FILE'):
             self.addCleanup(setattr, server, name, getattr(server, name))
         server.agent_host, server.LOOP, server.loop_key = Host(), True, None
         self.host = server.agent_host
@@ -85,11 +85,34 @@ class AgentRoutesTest(unittest.TestCase):
         self.assertTrue(persona['who'].startswith('You are '))
         self.assertEqual(persona['body'], WHO['body'])
         self.assertEqual(persona['offers'], WHO['controls'])   # as the page declared them; the agent keeps only plain names
+        self.assertIn('manner', persona)           # her pack's dials as rules; the agent says them with each turn
         self.post('/agent/text', {**WHO, 'text': 'again'})
         self.assertEqual([s['op'] for s in self.host.sent], ['persona', 'text', 'text'])   # same character: not told twice
         self.post('/agent/text', {**WHO, 'controls': {'emotions': ['joy'], 'reactions': [], 'actions': []}, 'text': 'new body'})
         self.assertEqual(self.host.sent[-2]['op'], 'persona')
         self.assertNotEqual(self.host.sent[-2]['session'], persona['session'])           # another body: its own conversation
+
+
+    def test_a_dial_turned_at_the_controls_changes_her_manner_in_the_same_conversation(self):
+        """The agent says her manner with each turn, so a turned dial is one line to it: no new conversation, and nothing
+        for the model to read again (a new one took 11 to 14 s to her next word, 2026-11-22)."""
+        self.post('/agent/text', {**WHO, 'text': 'hi'})
+        own = self.host.sent[0]
+        self.post('/agent/text', {**WHO, 'text': 'hi', 'dials': {'formality': 0.95, 'humor': 0.05, 'whimsy': 1, 'warmth': 'lots'}})
+        told = self.host.sent[-2]
+        self.assertEqual(set(told), {'op', 'manner'}); self.assertEqual(told['op'], 'manner')
+        self.assertIn('no contractions', told['manner']); self.assertIn('Do not joke', told['manner'])
+        self.assertNotIn('no contractions', own['manner'])
+        self.assertEqual([m['op'] for m in self.host.sent], ['persona', 'text', 'manner', 'text'])   # she is not told who she is again
+        self.post('/agent/text', {**WHO, 'text': 'hi', 'dials': {'formality': 0.95, 'humor': 0.05}})
+        self.assertEqual(self.host.sent[-2]['op'], 'text')             # nothing turned since: nothing said
+        self.post('/agent/text', {**WHO, 'text': 'hi'})                # the dials let go: her own manner again
+        self.assertEqual(self.host.sent[-2], {'op': 'manner', 'manner': own['manner']})
+
+    def test_the_page_is_told_the_manner_she_is_given(self):
+        status, data = self.post('/warm', {**WHO, 'dials': {'verbosity': 0.0}})
+        self.assertEqual(status, 200)
+        self.assertIn('at most ten words', json.loads(data)['manner'])
 
     def test_the_character_speaks_in_the_voice_chosen_for_it(self):
         self.post('/agent/text', {**WHO, 'voice': 'kokoro:af_bella', 'text': 'hi'})

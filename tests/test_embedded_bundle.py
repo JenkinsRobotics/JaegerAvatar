@@ -20,6 +20,8 @@ class MochiBundleTest(unittest.TestCase):
             self.assertEqual(manifest['character']['voice'], 'af_heart')                      # the voice this look was given, not the sheet's first idea
             self.assertTrue(manifest['character']['who'].startswith('You are Mochi, an AI character.'))
             self.assertEqual(manifest['activity']['listening'], 'listening')
+            self.assertIn('Never be sarcastic', manifest['character']['manner'])               # her dials as rules, for the agent to say last
+            self.assertEqual(manifest['character']['dynamics'], 1.33)                         # how lively her body is
             for part in ('control.py', 'server.py', 'panel.py', 'link.py', 'public/kin/jp01.js'):
                 self.assertTrue((bundle / 'avatar_runtime' / part).is_file(), part)
             for agents in ('agent_loop.py', 'agent_tools.py', 'persona.py', 'device.py'):   # the agent's own, in the agent: a bundle is a body

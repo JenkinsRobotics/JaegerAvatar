@@ -1021,6 +1021,58 @@ Not done: this app's own server still runs on a Python without the Jaeger
 packages, so the page's controller and link are this repo's copy, not the
 animation module's. The renderer and the bundle builders are still here.
 
+## Personality dials that change how she talks — November 22, 2026
+
+On `dev` in this repo and in jaeger-module-agent (`c6a750d`, pinned in
+`requirements-agent.txt`).
+
+- **What a pack's character sheet now reaches the model as words**
+  (`jaeger_avatar/character.py`): role, instructions, backstory, voice tone,
+  speech patterns, quotes, three behaviours and three ideals, and from the
+  traits her nature (HEXACO far from the middle), what she loves and knows
+  little about (domains), and how she sees herself (ability scores).
+  Mannerisms are left out on purpose: told one, the model wrote it into its
+  reply as a stage direction (5 of 5).
+- **The eight expression dials** (humor, sarcasm, warmth, verbosity,
+  formality, directness, empathy, aggression) are her manner: one short rule
+  for each dial at 30% or below, or 70% or above. The agent says the manner
+  with each turn (`[manner: ...]` before what the user said), not in the
+  system prompt.
+- **In the app:** the Perform tab has a Personality block with the eight
+  dials, each starting where the character's pack puts it, and under them the
+  manner she is being told. Turning a dial changes her next reply in the same
+  conversation; a double click puts a dial back. The Expression dial (how big
+  her body moves) starts at each character's own liveliness (Vita 122%, Mochi
+  133%, HAL 9000 80%; 27 of 62 profiles have no traits and start at 100%).
+- **Measured** on gemma-4-E4B through the real worker, typed, sound muted,
+  same five asks, on a machine under load (load average 10 to 30):
+
+  | Where the rules were said | Words a reply | Contractions in 5 replies | "!" in 5 replies |
+  | --- | --- | --- | --- |
+  | Nowhere (her sheet only, two runs) | 23 | 4 to 5 | 6 to 8 |
+  | End of system prompt: formal, few words, serious | 16 | 4 | 4 |
+  | With each turn: formal | 26 | 1 | 1 |
+  | With each turn: few words | 8 | 2 | 5 |
+  | With each turn: formal, few words, serious | 7 | 0 | 0 |
+
+  Changed in mid-conversation: 25 words a reply became 8 at the next reply.
+  Through the app's page, with Vita's own four rules plus three turned (six
+  rules): 37 words a reply became 17, formal and serious, then 42 again once
+  the dials were put back. The first reply after the dials were turned came in
+  2.4 s; a change that needs a new conversation (another character) took 11 to
+  14 s to her first word. The avatar tool was called on every turn (48 of 48,
+  and 9 of 9 in the app). Time to the first token was the same with four rules
+  and six (0.4 to 0.7 s).
+- **Limits.** One step each side of a dial: 70% and 100% say the same rule.
+  With six rules at once "at most ten words" gave two short sentences, not
+  one. After dials go back to the middle the conversation's earlier replies
+  still colour the next one or two. Replies under "formal" start with longer
+  sentences, so her first sound came about 0.3 to 0.5 s later in those runs.
+  Not run: spoken turns with a manner, the JP01 stand-in, Mochi (its vendored
+  bundle 0.3.3 was built before bundles carried a manner, so Mochi talks as
+  written until a new bundle is built). Mannerisms and a profile's
+  `performance.sounds` are still not used by the agent.
+
 ## Still planned / limited
 
 - GUI pack authoring, packaged desktop installers, persistent agent memory.
