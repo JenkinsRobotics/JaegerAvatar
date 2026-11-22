@@ -949,10 +949,10 @@ sound. Not measured on a quiet machine.
 
 Not done or not known:
 
-- **A fresh install needs a push first.** `requirements-agent.txt` pins the
-  agent commit with these changes (`33fd94e`), which is committed on the
-  agent's `dev` but not pushed, so `./run.sh` on a fresh checkout cannot
-  fetch it yet. This machine runs the agent from its local checkout.
+- **A fresh install was not tried.** `requirements-agent.txt` pins the agent
+  commit with these changes (`33fd94e`); it was pushed to the agent's `dev`
+  on November 22 and GitHub has it, but `./run.sh` on a fresh checkout was
+  not run after the pin moved.
 - Sound was not judged by ear, and the recording is a synthetic voice.
 - She waits for a pause of up to about her thinking time. A person who
   stops for longer than that gets an answer to the first part, as before.
