@@ -1,32 +1,42 @@
 # Connecting a device to the agent
 
 A device is a body with a speaker and a microphone: the virtual Mochi on a Mac,
-JP01 with its panel, rings and head. Jaeger Agent is the mind; Jaeger Avatar's
-bundle is the face and the connection. The device holds no agent, voice or
-hearing code. Everything below is in the bundle (`avatar_runtime/`, built from
-`jaeger_avatar/embedded/`), the same files for every device.
+JP01 with its panel, rings and head, and this app's own page. Three parts meet
+in it, each from its own repository:
+
+- **Jaeger Agent** is the mind, with its own model, voice (Kokoro), hearing
+  (Whisper), tools and turn-taking. Its package `jaeger_agent.body` is what a
+  device imports.
+- **The animation module** (`jaeger-module-animation`) is the body's engine:
+  the face controller, the face page or panel frames, and the player that
+  moves the mouth with her voice. The agent opens it through the JaegerOS
+  `animation` slot; a device does not import it to connect.
+- **A bundle** from Jaeger Avatar is one character's body as data: who it is,
+  what it offers, its face. Mochi and other apps ship one bundle. This app is
+  where many characters are tried: its page is the body, and it holds the
+  whole library of packs.
+
+The device holds no agent, voice, hearing or face code.
 
 ## What a device provides
 
-| Part | What the device gives or takes | In the bundle |
+| Part | What the device gives or takes | Where |
 | --- | --- | --- |
-| The bundle | A folder it pins and checks (`avatar.lock.json`, `SHA256SUMS.json`). `manifest.json` says who the character is (`character.who`, `character.voice`), what the body offers (`capabilities`: emotions, reactions, actions), which feeling shows while the agent thinks or hears (`activity`) and, for a panel, its `outputs`. | `manifest.json` |
-| A Python for the agent | One that has Jaeger Agent with the Kokoro and Whisper modules. It need not be the device's own Python. The agent picks its own model. | `agent_host.AgentHost(python, log, cwd)` |
-| A speaker | `play(samples, rate)` that returns at once, and `stop()`. Mono floats, the rate given with each clip (24000 Hz from Kokoro). | `device.Speaker` is this computer's |
+| The bundle | A folder it pins and checks (`avatar.lock.json`, `SHA256SUMS.json`). `manifest.json` says who the character is (`character.who`, `character.voice`), what the body offers (`capabilities`: emotions, reactions, actions), which feeling to show while thinking and listening (`activity`), and which face to draw (`face`). | Jaeger Avatar builds it (`scripts/build_embedded_mochi.py`, `scripts/build_panel_runtime.py`) |
+| A Python with the agent | Python 3.11 or 3.12 with Jaeger Agent, the Kokoro and Whisper modules and the animation module (this repo's `.agent-venv`, from `requirements-agent.txt`). The agent picks its own model. | `jaeger_agent.body.AgentHost()` starts the agent's worker in it |
+| A speaker | `play(samples, rate)` that returns at once, and `stop()`. Mono floats, the rate given with each clip (24000 Hz from Kokoro). | `jaeger_animation.avatar.Speaker` is this computer's |
 | A microphone | 16 kHz mono floats, any frame length, handed to `device.hear(frame)`. | |
-| A face | Either the bundle's page in a window (`RuntimeServer(public, controller).start()` gives its address), or frames for a panel: `Panel(controller).frames()` yields `(width, height, number, rgb bytes)` for each output on every tick, 30 a second. | `server.py`, `panel.py` |
-| A head, if it has one | `controller.snapshot()['gaze']`: `[x, y]`, each -1 to 1, right and up positive. The device turns it into its own joint angles. | `control.py` |
+| A face | The bundle's page in a window (`device.body.serve()` gives its address), or frames for a panel: `device.body.panel().frames()` yields `(width, height, number, rgb bytes)` for each output on every tick. | the animation module |
+| A head, if it has one | `device.body.controller.snapshot()['gaze']`: `[x, y]`, each -1 to 1, right and up positive. The device turns it into its own joint angles. | the animation module |
 
 ## Connecting
 
 ```python
-from avatar_runtime import Controller, RuntimeServer
-from avatar_runtime.agent_host import AgentHost
-from avatar_runtime.device import Device, Speaker
+from jaeger_agent.body import AgentHost, Device
 
-controller = Controller(manifest)                      # the body's state: every face is drawn from it
-device = Device(controller, AgentHost(python, log=..., cwd=...), speaker=Speaker())
+device = Device(AgentHost(log=..., cwd=...), bundle, checksum=..., speaker=speaker)
 device.start()                                         # the agent loads; device.ready says when (about 20 to 40 s)
+url = device.body.serve()                              # her face as a page, or device.body.panel() for a robot's panel
 
 device.text('Hello')                                   # typed words
 device.hear(frame)                                     # microphone sound, as it arrives
@@ -34,6 +44,9 @@ device.scene('say Hi! | emotion listening | listen')   # a scene; with listen, a
 device.stop()                                          # Stop
 device.close()
 ```
+
+`device.body` is `None` when nothing fills the animation slot in that Python:
+the agent is then a voice with no face.
 
 That is the whole connection. `Device` does the rest:
 

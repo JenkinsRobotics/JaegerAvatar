@@ -22,7 +22,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 import sys
 sys.path.insert(0, str(ROOT))
-from jaeger_avatar.embedded.persona import who
+from jaeger_avatar.character import who
 KIN = ROOT / 'app/web/kin'
 
 

@@ -51,7 +51,7 @@ instructions through it once (about 12 s the first time), so the first reply is
 as fast as the rest. The app header reports **JaegerAgent · model file** while
 the worker is up and the file is on disk; otherwise it reports scripted mode.
 
-By default the worker is Jaeger Agent's voice loop (`jaeger_avatar/embedded/agent_loop.py`): hearing
+By default the worker is Jaeger Agent's own voice loop for a body (`jaeger_agent/body/loop.py` in jaeger-module-agent, run in `.agent-venv`): hearing
 (Jaeger Whisper), the model with its tools, and the voice (Jaeger Kokoro) run in
 one process, and the app copies none of it. The page sends typed text and
 microphone sound in, plays the voice sound it gets back and moves the mouth
@@ -67,12 +67,12 @@ holds her line where it is. Then the words decide: theirs, and she stops and
 answers, the agent cutting the reply it was still writing; her own echo, a
 noise or nothing, and she carries on from the same syllable. The agent's tools are on (the short tool list; `JAEGER_FULL_TOOLS=1`
 shows every tool) and the context is 32768 tokens. The agent moves the body
-with its own `avatar` tool (`jaeger_avatar/embedded/agent_tools.py`), which
+with its own `avatar` tool (`jaeger_agent/body/tools.py`), which
 goes over the same control link a robot body uses; the app has no list of
 moves of its own. The character's prompt ends with the body it is in, the
 feelings and moves that body offers, and one rule: begin every reply with one
 avatar tool call, then the words. Each conversation opens with two example
-exchanges the worker hands the agent (`EXAMPLES` in `jaeger_avatar/embedded/agent_loop.py`, through
+exchanges the worker hands the agent (`EXAMPLES` in `jaeger_agent/body/loop.py`, through
 the engine's `prime`): a greeting answered with an avatar call and then words,
 and a scene request answered with one scene call. Gemma follows what is already
 in the conversation far more surely than a rule in its prompt. They are stored

@@ -950,7 +950,7 @@ sound. Not measured on a quiet machine.
 Not done or not known:
 
 - **A fresh install was not tried.** `requirements-agent.txt` pins the agent
-  commit with these changes (`33fd94e`); it was pushed to the agent's `dev`
+  commit this app needs (`b7e5a50`); it was pushed to the agent's `dev`
   on November 22 and GitHub has it, but `./run.sh` on a fresh checkout was
   not run after the pin moved.
 - Sound was not judged by ear, and the recording is a synthetic voice.
@@ -983,6 +983,43 @@ in Mochi the voice still reads every line in one tone. A voice module whose
 session has such a module for comparing by ear, not installed. What a
 feeling sounds like for one character is meant to be the pack's to say; no
 pack says it yet.
+
+## One agent for every body — November 22, 2026
+
+This app, Mochi and the JP01 stand-in now all run the same thing: Jaeger
+Agent as it is, with its own model, its Kokoro voice, its Whisper hearing,
+its tools and its turn-taking, started by the agent's own worker
+(`jaeger_agent/body/loop.py` in jaeger-module-agent). The copy of that code
+this repo carried is gone (`jaeger_avatar/embedded` keeps `control.py`,
+`server.py`, `panel.py` and `link.py`).
+
+- **This app** is where characters are tried: its page is the body, it holds
+  the whole library of packs, and it tells the agent who is on stage, in
+  which body and what that body offers. The agent writes what the character
+  is told. The app's bridge (`app/agent_bridge.py`) only starts the worker
+  and passes lines.
+- **Mochi and other apps** ship one bundle. The agent opens it through the
+  animation module (`jaeger-module-animation`, the `animation` slot).
+  `requirements-agent.txt` pins that module too.
+
+Checked in `.agent-venv` and in Mochi's environment: the agent's default
+model (gemma-4-E4B) is on disk; the voice slot is `jaeger_kokoro_tts`
+0.13.0, hearing `jaeger_whisper_stt` 0.14.0, the body `jaeger_animation`
+0.3.0. The worker sets two things that are not the agent's defaults, because
+a body in a conversation needs them: replies are spoken (`output_mode`
+speech) and no wake word is needed.
+
+Run that day with sound muted, the machine still loaded by other jobs: the
+simulated JP01 (face 64 x 64 at 29.4 frames a second, 750 of 750 frames
+changing while it spoke, head to pan -45 and tilt 25, a scene for two heard
+"My name is Sam."); this app, one typed turn and 3 of 3 spoken asks answered
+with a feeling and a move, no page errors; Mochi's scene 4 of 4 beats. Tests:
+96 Python and 51 JavaScript here (the worker's and the tools' tests went to
+the agent with their code: 698 there).
+
+Not done: this app's own server still runs on a Python without the Jaeger
+packages, so the page's controller and link are this repo's copy, not the
+animation module's. The renderer and the bundle builders are still here.
 
 ## Still planned / limited
 

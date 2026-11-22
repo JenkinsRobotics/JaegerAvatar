@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """A simulated JP01 connected to Jaeger Agent: the connection the real robot makes, with stand-ins for its hardware.
 
-    python3 scripts/jp01_sim.py                       # type to it; /scene, /stop, /quit as in Mochi
-    python3 scripts/jp01_sim.py --script steps.txt --out run/      # nobody at the keyboard; pictures of the panel in run/
+    .agent-venv/bin/python scripts/jp01_sim.py                       # type to it; /scene, /stop, /quit as in Mochi
+    .agent-venv/bin/python scripts/jp01_sim.py --script steps.txt --out run/      # nobody at the keyboard; pictures of the panel in run/
 
-It builds JP01's bundle the way the robot gets it (scripts/build_panel_runtime.py), then joins the bundle's Device to
-five stand-ins, one for each thing the robot has (dev/docs/runtime/DEVICE.md):
+Run it with the Python that has Jaeger Agent and the animation module (.agent-venv; ./run.sh makes it). JP01 is a
+body: the agent (jaeger_agent.body) with its own model, voice, hearing and turn-taking, which opens JP01's body from
+the animation slot. This builds JP01's bundle the way the robot gets it (scripts/build_panel_runtime.py) and gives
+the agent five stand-ins, one for each thing the robot has (dev/docs/runtime/DEVICE.md):
 
     face panel   64 x 64 RGB frames, 30 a second          SimDisplay('face')   real: the AVC01 matrix driver
     LED ring     24 x 1 RGB frames, 30 a second           SimDisplay('ring')   real: the AVC01 ring driver
@@ -13,12 +15,11 @@ five stand-ins, one for each thing the robot has (dev/docs/runtime/DEVICE.md):
     microphone   16 kHz mono frames to device.hear()      --mic-file, or none  real: the robot's audio in
     head         gaze -1..1 -> pan and tilt degrees       SimHead              real: joints j1 (pan), j2 (tilt)
 
-Moving to the real robot is giving Device the real speaker and microphone and handing the same frames and gaze to the
-real drivers. Nothing in the agent, the bundle or the Device changes.
+Moving to the real robot is giving the agent's Device the real speaker and microphone and handing the same frames and
+gaze to the real drivers. Nothing in the agent, the animation module or the bundle changes.
 """
 import argparse
 import json
-import os
 import struct
 import sys
 import tempfile
@@ -78,15 +79,11 @@ def main():
     args.add_argument('--out', type=Path, help='a folder for pictures of the panel (two a second), events.jsonl and report.json')
     args = args.parse_args()
 
+    try: from jaeger_agent.body import AgentHost, Device
+    except ImportError: raise SystemExit('Jaeger Agent is not in this Python. Run it with .agent-venv/bin/python (./run.sh makes it).')
     import build_panel_runtime
     with tempfile.TemporaryDirectory(prefix='jp01-sim-') as tmp:
         bundle = build_panel_runtime.build(Path(tmp) / 'jp01-panel')       # the folder the robot vendors and pins
-        sys.path.insert(0, str(bundle))
-        from avatar_runtime import Controller
-        from avatar_runtime.agent_host import AgentHost
-        from avatar_runtime.device import Device
-        from avatar_runtime.panel import Panel
-        manifest = json.loads((bundle / 'avatar_runtime/manifest.json').read_text())
 
         began = time.monotonic()
         if args.out: args.out.mkdir(parents=True, exist_ok=True)
@@ -98,11 +95,12 @@ def main():
             record({**{k: v for k, v in e.items() if k != 'pcm'}, **({'seconds': round(len(e['pcm']) * 3 / 8 / e['rate'], 2)} if e.get('event') == 'audio' else {})})
         def show(line): record({'event': 'shown', 'text': line}); print(line, flush=True)
 
-        controller = Controller(manifest)
         face, ring, speaker, head = SimDisplay('face'), SimDisplay('ring'), SimSpeaker(), SimHead()
-        host = AgentHost(Path(os.environ.get('JAEGER_AGENT_PYTHON', ROOT / '.agent-venv/bin/python')), log=ROOT / 'app/.cache/jp01-sim-agent.log', cwd=ROOT)
-        device = Device(controller, host, speaker=speaker, session='jp01-sim', show=show, on_event=on_event)
-        panel = Panel(controller, face=manifest['face'])
+        host = AgentHost(log=ROOT / 'app/.cache/jp01-sim-agent.log', cwd=ROOT)
+        device = Device(host, bundle, speaker=speaker, session='jp01-sim', show=show, on_event=on_event)
+        if device.body is None: raise SystemExit('Nothing fills the animation slot in this Python: install jaeger-animation (requirements-agent.txt).')
+        manifest, controller = device.body.manifest, device.body.controller
+        panel = device.body.panel()                                         # the bundle's face program, fed this body's state
         talking = {'frames': 0, 'changed': 0}                               # the face panel while she speaks: it must be moving
 
         def draw():
@@ -161,7 +159,7 @@ def main():
                   'head': {'moves': head.moves, 'reach_deg': [PAN_DEG, TILT_DEG]}}
         print(json.dumps(report, indent=1, default=str), flush=True)
         if args.out: (args.out / 'report.json').write_text(json.dumps(report, indent=1, default=str) + '\n')
-        device.close(); panel.close()
+        device.close()                                                      # the body goes with it, its panel too
         if log: log.close()
 
 

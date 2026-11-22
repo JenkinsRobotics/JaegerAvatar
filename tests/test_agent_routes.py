@@ -81,14 +81,10 @@ class AgentRoutesTest(unittest.TestCase):
         self.assertEqual(text, {'op': 'text', 'text': 'hi'})
         self.assertEqual(persona['op'], 'persona')
         self.assertTrue(persona['session'].startswith('s1:'))
-        said = persona['persona']
-        last = said.strip().splitlines()[-1]       # the body and its rule come last, and the call comes before the words:
-        self.assertIn('call the scene tool instead', last)   # asked to act something out, the model writes a scene
-        for part in ('Vita, full body', 'joy, sad', 'nod, wave', 'begin every reply with one avatar tool call'):   # measured 2026-11-11,
-            self.assertIn(part, last)              # the model then moved the body on 42 of 42 turns (old wording: 1 to 3 of 7)
-        self.assertNotIn('<|', said)               # no model's own syntax in the app: the loop worker adds the example
-        self.assertNotIn('not a name', said)       # only plain names reach the prompt
-        self.assertNotIn('[joy]', said)            # no inline tags: the agent moves the body with its tool
+        self.assertNotIn('persona', persona)       # the app says who and in which body; the rules for replying are the agent's to write
+        self.assertTrue(persona['who'].startswith('You are '))
+        self.assertEqual(persona['body'], WHO['body'])
+        self.assertEqual(persona['offers'], WHO['controls'])   # as the page declared them; the agent keeps only plain names
         self.post('/agent/text', {**WHO, 'text': 'again'})
         self.assertEqual([s['op'] for s in self.host.sent], ['persona', 'text', 'text'])   # same character: not told twice
         self.post('/agent/text', {**WHO, 'controls': {'emotions': ['joy'], 'reactions': [], 'actions': []}, 'text': 'new body'})
@@ -142,17 +138,12 @@ class AgentRoutesTest(unittest.TestCase):
         self.assertEqual(self.call('POST', '/hardware/frame/t9?w=1&h=1', bytes(4))[0], 404)
         self.assertEqual(self.call('GET', '/hardware/stream/t9')[0], 404)
 
-    def test_the_persona_asks_for_a_story_whole_in_the_one_reply(self):
-        # Gemma 4 E4B, 2026-11-21: with "more when asked to ... tell a story" 4 of 12 stories were told (the rest announced or begun, then stopped); with this, 15 of 15.
-        text = server.loop_persona({'pack': 'vita', 'body': 'Vita', 'controls': {}})
-        self.assertIn('tell the whole story in this reply', text)
-        self.assertIn('Never only announce a story', text)
-
-    def test_the_persona_lists_the_bodys_feelings_and_moves_one_name_at_a_time(self):
-        # Space-separated, Gemma read "neutral joy" off the list as one feeling and asked the body for it (2026-11-21).
-        text = server.loop_persona({'pack': 'vita', 'body': 'Vita', 'controls': {'emotions': ['neutral', 'joy', 'sad'], 'reactions': ['wink'], 'actions': ['spin', 'bow']}})
-        self.assertIn('It can show these feelings: neutral, joy, sad. ', text)
-        self.assertIn('It can make these moves: wink, spin, bow. ', text)
+    def test_the_worker_is_started_as_a_character_in_a_body_with_the_pages_open_mic(self):
+        first = server.loop_start()
+        self.assertEqual((first['op'], first['session'], first['open_mic']), ('start', 'avatar', True))   # the browser has an echo canceller
+        self.assertTrue(first['who'].startswith('You are ')); self.assertEqual(first['offers'], {})
+        for mine in ('persona', 'audio_mode', 'half_duplex'):    # the agent's own to decide
+            self.assertNotIn(mine, first)
 
     def test_a_loop_that_is_still_loading_says_so(self):
         self.host.ready = False

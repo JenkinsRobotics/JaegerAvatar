@@ -80,3 +80,17 @@ class ControlLink:
     def audio(self, clip):
         with self.lock:
             return self.clips.get(clip)
+
+
+def link_transport(link, token):
+    """send(op, value, ttl_ms) over a ControlLink in this process."""
+    def send(op, value, ttl_ms):
+        body = link.controller
+        if op == 'offers':   # not a move: what the body on stage can be told, so a scene's moves are checked before it starts
+            return {'ok': True, 'offers': body.manifest['capabilities']} if body else {'ok': False, 'error': 'No avatar attached'}
+        try:
+            link.command({'op': op, 'value': value, 'ttl_ms': ttl_ms}, token)
+            return {'ok': True}
+        except ControlError as e:
+            return {'ok': False, 'error': str(e), 'offers': body.manifest['capabilities'] if body else {}}
+    return send

@@ -73,11 +73,12 @@ class RunScriptTest(unittest.TestCase):
 
 
 class PinsTest(unittest.TestCase):
-    def test_the_agent_and_its_voice_and_hearing_are_pinned_to_commits(self):
+    def test_the_agent_and_its_voice_hearing_and_body_are_pinned_to_commits(self):
         pins = dict(re.findall(r'^([\w-]+) @ git\+https://github\.com/JenkinsRobotics/([\w-]+)\.git@[0-9a-f]{40}$',
                                (ROOT / 'requirements-agent.txt').read_text(), re.M))
         self.assertEqual(pins, {'jaeger-os': 'JaegerOS', 'jaeger-agent': 'jaeger-module-agent',
-                                'jaeger-kokoro-tts': 'jaeger-module-kokoro', 'jaeger-whisper-stt': 'jaeger-module-whisper'})
+                                'jaeger-kokoro-tts': 'jaeger-module-kokoro', 'jaeger-whisper-stt': 'jaeger-module-whisper',
+                                'jaeger-animation': 'jaeger-module-animation'})
 
 
 class WhyScriptedTest(unittest.TestCase):

@@ -4,7 +4,7 @@ from urllib.parse import quote
 
 import yaml
 
-from .embedded.persona import profile as profile_words
+from .character import profile as profile_words
 from .packs import SCREEN_LOOK, PackError, load_pack, local_path, screen_look
 
 ROOT = Path(__file__).resolve().parents[1] / 'avatar-packs'

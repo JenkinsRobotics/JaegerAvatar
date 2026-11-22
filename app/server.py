@@ -18,9 +18,7 @@ from urllib.parse import parse_qs, urlparse, unquote
 from jaeger_avatar.catalog import catalog, persona, ROOT as PACKS
 from jaeger_avatar.packs import local_path, PackError
 from jaeger_avatar.embedded.control import ControlError
-from jaeger_avatar.embedded.link import ControlLink
-from jaeger_avatar.embedded.agent_tools import link_transport
-from jaeger_avatar.embedded.persona import persona as embedded_persona
+from jaeger_avatar.embedded.link import ControlLink, link_transport
 from kin_lipsync import analyze as analyze_kin
 
 from agent_bridge import agent_host
@@ -44,7 +42,7 @@ VOICES = {VOICE, "en_US-kristin-medium", "en_US-joe-medium", "en_US-bryce-medium
 MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-opus-5-5")
 HAS_CLAUDE = bool(os.environ.get("ANTHROPIC_API_KEY"))
 import models as model_files
-# Jaeger Agent's voice loop does the hearing, the thinking with its tools, and the voice (jaeger_avatar/embedded/agent_loop.py).
+# Jaeger Agent's voice loop does the hearing, the thinking with its tools, and the voice (the agent's own worker, jaeger_agent/body/loop.py).
 # JAEGER_AVATAR_LOOP=0 keeps the older path: this app's own /hear and /say around a text-only agent.
 LOOP = os.environ.get('JAEGER_AVATAR_LOOP', '1') != '0' and os.environ.get('NORI_BRAIN') != 'scripted'
 # With the voice loop the model is Jaeger Agent's own choice (its table and default, reported by the worker). Only the older path scans this machine for model files.
@@ -126,14 +124,16 @@ def chat_system(body):
 loop_key, loop_lock = None, threading.Lock()   # the character the loop was last told to be
 
 
-def loop_persona(body):
-    """Who the voice loop is: the character, the body on stage and what it can do. The agent moves it with its avatar tool, not inline tags."""
+def loop_who(body):
+    """Who the voice loop is: the character, the body on stage and what it offers. What a character in a body is told
+    about replying and moving is the agent's to write (its persona rules); it moves the body with its avatar tool."""
     try:
         name, profile = persona(body.get('pack', body.get('character', 'vita')), body.get('profile'))
         who = f"You are {name}, an AI character. {profile}"
     except (OSError, ValueError):
         who = PERSONAS.get(body.get('character'), PERSONAS['nori'])
-    return embedded_persona(who, body.get('body', ''), body.get('controls'))   # the rules and the body's offers: the same text for every host
+    controls = body.get('controls')
+    return {'who': who, 'body': str(body.get('body', ''))[:60], 'offers': controls if isinstance(controls, dict) else {}}
 
 
 def loop_voice(body):
@@ -145,11 +145,11 @@ def loop_voice(body):
 def loop_as(body):
     """Tell the loop which character, body and voice it is, once per change. Each character and body has its own conversation."""
     global loop_key
-    text, voice = loop_persona(body), loop_voice(body)
-    key = f"{str(body.get('session', ''))[:40]}:{hashlib.sha1(text.encode()).hexdigest()[:10]}"
+    told, voice = loop_who(body), loop_voice(body)
+    key = f"{str(body.get('session', ''))[:40]}:{hashlib.sha1(json.dumps(told, sort_keys=True, default=str).encode()).hexdigest()[:10]}"
     with loop_lock:
         if (key, voice) != loop_key:
-            agent_host.send({'op': 'persona', 'session': key, 'persona': text, **({'voice': voice} if voice else {})})
+            agent_host.send({'op': 'persona', 'session': key, **told, **({'voice': voice} if voice else {})})
             loop_key = (key, voice)
 
 
@@ -158,7 +158,7 @@ def loop_start():
     browser's echo canceller, so the agent keeps hearing while she speaks. The rest of turn-taking is the agent's own."""
     a = config['agent']
     return {'op': 'start', 'model': a['model'], **{k: a[k] for k in ('temperature', 'max_tokens', 'timeout_s') if k in a},
-            'hearing': config['hearing']['model'], 'persona': loop_persona({'pack': 'vita'}), 'session': 'avatar', 'open_mic': True}
+            'hearing': config['hearing']['model'], **loop_who({'pack': 'vita'}), 'session': 'avatar', 'open_mic': True}
 
 
 def system_for(character):

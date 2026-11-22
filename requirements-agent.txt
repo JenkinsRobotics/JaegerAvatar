@@ -2,10 +2,12 @@
 # Each line is one Jaeger repo at one commit. The framework comes first: the others ask for it by version only.
 jaeger-os @ git+https://github.com/JenkinsRobotics/JaegerOS.git@949edcd828e998ca912d4933f6e8666632140130
 # The model runs inside the agent: llama-cpp-python is one of jaeger-agent's own dependencies. No model server.
-jaeger-agent @ git+https://github.com/JenkinsRobotics/jaeger-module-agent.git@33fd94ed9522c0b9513ec47c6841220791ee01ad
-# Voice and hearing are the Jaeger modules, used through the agent's voice loop (jaeger_avatar/embedded/agent_loop.py).
+jaeger-agent @ git+https://github.com/JenkinsRobotics/jaeger-module-agent.git@b7e5a508080bbc500908180762de673d159b8d44
+# Voice and hearing are the Jaeger modules, opened by the agent itself through their slots (its voice loop for a body: jaeger_agent/body/loop.py).
 jaeger-kokoro-tts @ git+https://github.com/JenkinsRobotics/jaeger-module-kokoro.git@ba4085ee3c35bcfd8d0fe3398d44e375be542032
 jaeger-whisper-stt @ git+https://github.com/JenkinsRobotics/jaeger-module-whisper.git@a46e903058549d24cc85c0d80d5dd551a6eb962c
+# The body: the animation module fills the `animation` slot. The agent opens a character's bundle through it (the JP01 stand-in; Mochi does the same).
+jaeger-animation @ git+https://github.com/JenkinsRobotics/jaeger-module-animation.git@53ebe950b43f7d1c481f6d7df11eccbb78a4aa48
 scipy>=1.11
 soundfile>=0.12
 onnxruntime>=1.17

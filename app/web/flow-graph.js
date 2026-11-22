@@ -193,7 +193,7 @@ export const LOOP = {
         part('send', 'Frame sender', false, 'one request at a time', 'Frames go to the server as 16 kHz 16-bit mono (/agent/audio), one request at a time; what arrives meanwhile goes in the next. The server hands them to the agent as they are.'),
       ],
       does: 'Sends the microphone sound to the agent, which does the hearing. Also tells the rig she is being talked to, and turns her voice down while you talk over her.' }),
-    agent: { name: 'Agent', owner: 'framework', where: 'server · worker process jaeger_avatar/embedded/agent_loop.py · Jaeger Agent voice loop', at: [1, 0],
+    agent: { name: 'Agent', owner: 'framework', where: 'server · worker process jaeger_agent/body/loop.py · Jaeger Agent voice loop', at: [1, 0],
       in: [p('audio', 'audio', 'microphone sound'), p('typed', 'text', 'typed text'), p('persona', 'text', 'persona · voice'), p('offers', 'commands', 'body\'s moves'),
         p('results', 'commands', 'tool results'), p('interrupt', 'commands'), p('say', 'text', 'one line to voice'), p('scene', 'text', 'scene script'), p('cue', 'commands', 'cue is due'), off('image', 'video', 'camera image')],
       out: [p('speech', 'audio', 'speech clips'), p('heard', 'text', 'what it heard'), p('reply', 'text', 'reply text'), p('calls', 'commands', 'tool calls'),
