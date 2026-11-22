@@ -626,6 +626,345 @@ the mouth's opening (`jaw`) only, so the voice line's pitch does not follow
 vowels as it does in the page. Mochi's export is unchanged
 (`scripts/build_embedded_mochi.py`).
 
+## Gemma as the agent's model: what it does, and what was changed — November 21, 2026
+
+Gemma 4 E4B (Q4_K_M), in-process through llama.cpp, on this M1 Max. The
+machine was busy all day: load 5 to 10, swap 95% full, another job at 100%
+of a core. Sound was never played through the speakers and no real
+microphone was used; the voice was not judged by ear.
+
+What it did before any change (the app's worker alone, a stand-in body that
+answers as Vita's does):
+
+- The first turn of a fresh conversation called the avatar tool in 4 of 12.
+  In the other 8 it wrote the call as words ("emotion:joy,action:clap,look:
+  center."), which were spoken aloud, and whatever it did first it went on
+  doing for that conversation. One pass over 39 kinds of request: the body
+  moved in 16, with junk spoken in at least 14.
+- It read the feelings list "neutral joy excited" as "neutral joy", one
+  feeling; asked for names the body does not have (happy, joyful, curious,
+  loving); wrote `*stage directions*` into its words; wrote bare moves in a
+  scene (`hop`), which the scene reader refused; and once filled a scene call
+  with one emoji to the length limit, which took 68 s and was read aloud.
+- Asked for a story it told one in 4 of 12; in the rest it announced the story
+  or began it and stopped after two or three sentences.
+
+What was changed:
+
+- Each conversation opens with two example exchanges (`EXAMPLES` in
+  `jaeger_avatar/embedded/agent_loop.py`, the agent's `engine.prime`): a greeting answered with
+  an avatar call and then words, and a scene request answered with one scene
+  call. The in-prompt example call is gone.
+- The feelings and moves are listed with commas. Near-miss names are taken for
+  the body's own (`MEANT` in `jaeger_avatar/embedded/agent_tools.py`: happy is
+  joy, curious is thinking), and a feeling or a look written as an action
+  goes to its own slot.
+- In the agent: stage directions are not spoken; a bare word in a scene is a
+  move; a reply that repeats itself is stopped; a tool call left unclosed is
+  cut from the words and the turn asked again once.
+- The length rule says it outright: a sentence or two for small talk, three
+  or four to explain, a whole story in the one reply.
+
+After, the worker alone:
+
+| | Before | After |
+| --- | --- | --- |
+| First turn of a fresh conversation calls the avatar tool | 4 of 12 | 36 of 36 |
+| Every kind of request, body moved | 16 of 39 | 215 of 215 |
+| Scene asked for in words, scene played | 8 of 8 (one pass) | 31 of 32 |
+| Story asked for, story told | 4 of 12 | 15 of 15, 110 to 154 words, about 41 s of speech |
+| Runaway or cut-off replies | 1 in 78 turns (68 s, read aloud) | 0 in 227 turns |
+| Thinking text in a reply | 0 | 0 |
+
+Scenes were less sure than that row's first number says: with the first
+example alone, 25 of 32 were played (a bare `hop` refused, a show answered
+with a wave and words). The second example and reading bare moves brought
+that to 31 of 32.
+
+First sound, median by kind of request: 0.8 to 1.8 s after (the slowest is a
+question that needs the clock tool). Before, the turns that spoke junk began
+at 0.3 to 0.5 s, from one model call; a working turn is two calls (the avatar
+call, then the words), and those took 0.9 to 4.2 s before.
+
+In the running app (port 8792, a muted headless Chrome, the page's own Vita
+body, three passes of up to 18 turns):
+
+- 43 turns answered by the model: all finished and played, no page errors,
+  no junk spoken. The body moved in 40; the 3 without a move were the clock
+  question each time (answered right, no feeling shown).
+- A scene asked for in words was played 12 of 12 times, and all 63 moves in
+  those scenes and the Scene box's were made by the body; the timed ones
+  landed 22 ms early to 34 ms late, one 350 ms late.
+- The Scene box: a script played 3 of 3; a script with a move the body lacks
+  was refused 3 of 3, saying which moves it has.
+- After a switch to another character (the Cat) the reply named the new
+  character 3 of 3, and its face showed the feeling asked for.
+- A typed line during a story: the story stopped at once and the new reply
+  began 0.8 to 1.0 s later, 3 of 3.
+- A recorded line played in as the microphone, five turns: heard word for
+  word and answered with the spin asked for, 5 of 5. First sound came 1.7 to
+  about 16 s after the line ended. The swing is the hearing model (0.24 to 7.6 s
+  for the same two seconds of speech) and the voice's first clip, on a
+  machine that was swapping; the model's first token came 0.3 to 1.0 s after
+  the transcript in the four turns timed step by step.
+- First sound on the page, typed turns: median 1.5 s. The first reply after
+  the server starts or after a switch to another character took 8 to 11 s
+  when it was asked within a few seconds: the model was still reading that
+  character's instructions and tool list.
+
+Open:
+
+- That 8 to 11 s wait. The page warms the character as soon as it is chosen;
+  nothing shows that it is still getting ready.
+- The clock question shows no feeling in the app.
+- A story is about 40 s of speech; nothing caps it but the rule.
+- A feeling used as an action when the feeling slot is already taken
+  (`action excited`) is still refused; the rest of that call is made.
+- About one small-talk turn in five gets a move nobody asked for (a heart, a
+  hop).
+- The runaway guard reads streamed replies only.
+- Not run: the larger Gemma (26B A4B QAT in LM Studio) against this one; a
+  real microphone and speaker in a room; any character's body other than
+  Vita's and the Cat's.
+
+## The model is Jaeger Agent's, and scenes for two — November 21, 2026
+
+**The model.** The app no longer picks the model file. With the voice loop
+(the default, and the path typed and spoken turns both take) it passes no
+model path: Jaeger Agent loads its own default (`jaeger_agent/core/policy.py`,
+`LLMS`: Gemma 4 E4B), and Settings lists the agent's own models whose files
+are here (E4B and 26B on this Mac) and remembers which was chosen. Checked in
+the running app: `/settings` shows the agent's two models and the file the
+agent loaded, with 22 tools on. The file loaded is the same one as before, so
+the earlier measurements stand. The install command now puts the file where
+the agent looks; a missing file is named in the header. Left as it was: the
+older path (`JAEGER_AVATAR_LOOP=0`, off by default) still scans for files
+itself and runs with the agent's tools and skills off.
+
+Old against new, alternated on the same machine in one sitting (the worker
+alone, 23 talk, move and feeling turns an arm, two arms each): the app
+handing over the model file, first token 233 and 234 ms, first sound 2137 and
+2141 ms; the agent loading its own, 224 and 242 ms, 2131 and 2138 ms. The
+body moved in 92 of 92. Those times are about twice the afternoon's (first
+token 0.12 s, first sound 0.9 to 1.2 s) in both arms: by evening another
+session was running voice research jobs at 95 to 173% of a core and swap had
+grown to 20 GB, 96% used. In the app that evening a typed turn's first sound
+was about 2 s (1.5 s in the afternoon) and the first reply after a start or
+a character switch 19 to 22 s (8 to 11 s). Not re-measured on a quiet
+machine.
+
+**Scenes for two.** A scene can hold the other person's lines: `listen` and
+the line they are expected to say. She plays her part up to it, the stage
+shows the person their line, and the scene waits. Whatever they then say or
+type moves it on (the words are a prompt, not a test), and what is heard
+while her own line is still playing is set aside. Stop ends it. The model's
+scene tool takes the same step, so she can be asked to write one.
+
+Measured in the app on port 8792 (a muted headless Chrome, Vita, machine load
+3 to 10), a shop scene of four beats, each with her line, its moves and the
+person's line. The person's three lines were one word for word ("My name is
+Sam."), one rough ("Um, could I get some bread, please?" for "I would like a
+loaf of bread") and one ad-lib ("Thanks a lot!" for "Thank you"):
+
+| | Runs | Beats passed |
+| --- | --- | --- |
+| The person's lines typed | 4 | 16 of 16 |
+| The person's lines spoken (a second voice, played in as the microphone) | 4 | 16 of 16 |
+
+A beat passes when her line was voiced and shown on stage, both of its moves
+were made by the body, the person's line was prompted, and their words were
+taken. No model call was made in any run; no page errors. A spoken run took
+44 to 47 s, a typed one 14 to 22 s. The first spoken line took up to 10 s to
+be heard (the hearing model on a swapping machine); later ones about 2 s.
+
+Asked in words for a scene for two ("Let's act out a scene together… wait for
+me after each of yours"), Gemma 4 E4B wrote one with `listen` that waited for
+the person: 16 of 16 fresh conversations in the worker, 4 of 4 in the app,
+where the customer's typed line was taken and the scene went on. In a fifth
+app run, before these, it apologised for "the parameters" and performed
+nothing; that was not seen again and its cause is not known.
+
+Limits: most scenes the model writes give the person one turn; 2 of 9 of
+their lines were left blank (the stage then says "Your turn"). The other side
+can only be a person, not a second voice. An ad-lib moves the scene on; she
+does not answer it. Talking over her line does not stop her. No real
+microphone, speaker or room was used, and the sound was not judged by ear.
+
+## One connection for every host: the virtual Mochi and a simulated JP01 — November 21, 2026
+
+**What moved.** The parts a host needs to connect a body to Jaeger Agent were in
+this app (`app/agent_loop.py`, `app/agent_bridge.py`, the rules in
+`app/server.py`). They are now in `jaeger_avatar/embedded/`, which every
+exported bundle carries as `avatar_runtime/`:
+
+- `agent_loop.py`: the worker (the agent's voice loop, the `avatar` and
+  `scene` tools, the example exchanges), run with `python -m`.
+- `agent_host.py`: the host's side: start the worker, talk to it, close it.
+- `persona.py`: who the character is and the rules for replying.
+- `device.py` (new): a body with a speaker and a microphone and no browser.
+  It plays the agent's voice, opens the mouth with the sound, makes each
+  scene move when its moment comes on the clip's clock, and shuts the
+  microphone while she speaks.
+
+This app uses the same files (its bridge is a 40-line subclass). The recipe a
+host follows is `dev/docs/runtime/DEVICE.md`. A bundle's `manifest.json` now
+says who the character is, its voice, its face style and the feeling it shows
+while the agent thinks or hears someone.
+
+**The Mochi bundle, 0.3.2.** Built from the current renderer, not the frozen
+0.2.1 look, with the face the pack now names: Mochi's eyes with a voice line
+under them (`face: mochi_wave`), so speech shows. The eyes-only look moved its
+eyes by 8% with the voice and nothing else. The voice line was drawn for
+JP01's square screen and fell off Mochi's wide one; it is now placed by the
+screen's height (`kin/jp01.js`, JP01 unchanged). The voice is the one this
+look names (`af_heart`).
+
+**The virtual Mochi** (`~/GITHUB/Mochi/mochi_live.py`, a new file; nothing of
+Mochi's own was changed but the bundle pin): one command,
+`venv/bin/python mochi_live.py`. The face opens in a browser tab, the agent
+loads in Mochi's own environment, and it is talked to through this Mac's
+microphone and speaker or typed to. Measured with the speaker muted and no
+real microphone, the face watched in a headless Chrome:
+
+| | Result |
+| --- | --- |
+| Conversation, 14 typed turns, two passes | 28 of 28 answered in character as Mochi; the body moved in 28; the mouth moved on every spoken turn; no junk spoken; no page errors but the missing favicon |
+| First sound | median 1.9 s (1.2 to 3.1 s; 5.8 to 6.0 s for the turn that writes a scene for two) |
+| Scene for two, four beats, the person's lines typed | 24 of 24 beats, six runs |
+| The same, the person's lines spoken (a second voice, fed in as the microphone) | 24 of 24 beats, six runs |
+| A scene for two written by the model when asked | played, with two turns for the person, in both passes |
+
+A beat passes when her line was voiced, the mouth moved on it, both of its
+moves were made, their feelings showed on the face, the person's line was
+prompted and their words were taken. Pictures of the face talking, angry,
+looking left, sparkling and listening were looked at: a clean 3D shell,
+glowing eyes, a voice line that waves with speech and rests flat.
+
+**A simulated JP01** (`scripts/jp01_sim.py`): JP01's bundle as the robot gets
+it, the same `Device`, and a stand-in for each thing the robot has. One run of
+six steps, with a scene for two: it answered as JP01; the 64 x 64 face got
+1840 frames at 29.1 a second, and all 702 frames drawn while it spoke differed
+from the one before; the ring got the same count; the speaker was handed 13
+clips, 25.3 s; the head turned to pan -45 for "look left" and tilt 25 for
+"look up", and left and back in the scene. `DEVICE.md` lists what the real
+robot has to decide (orientation, brightness, the speaker's delay, the head's
+limits).
+
+**Timings, and why the evening's were slow.** Every stage of a turn took
+about twice as long from about 16:50: first token 123 ms before, 224 to 243 ms
+after; the second model call 0.6 to 1.0 s after the first before, 1.5 to 1.7 s
+after; the voice's first clip 0.2 s before, 0.4 s after. It was not this
+change (old and new timed alike, alternated) and not processor load: with the
+load at 1 to 2 the first reply after a start still took 18.8 s and after a
+character switch 16.6 s (8 to 11 s in the afternoon). Another session's
+PyTorch job had held the GPU at 99% since about then (`ioreg`, Device
+Utilization). Not re-measured with the GPU free.
+
+Limits: sound was not judged by ear and no real microphone, speaker or room
+was used. In one app pass of seven the headless page stopped drawing for
+three turns and then recovered; not seen again. Mochi's replies sometimes
+start with a stage direction (`*Wink*!`), which is not spoken but is shown.
+The virtual Mochi has no window of its own (a browser tab and the terminal),
+and its microphone cannot be talked over. Mochi's own app (its React window
+and its older agent wiring) is untouched and does not use this connection.
+
+## Sentences are no longer cut in half — November 22, 2026
+
+In a real room the virtual Mochi answered half sentences: a pause in the
+middle of a sentence was taken for its end ("Let me tell you a long story",
+then "came out.").
+
+**Measured.** A recording of one person saying six long sentences, each with
+a pause of 0.5 to 1 s inside it (a second voice, played in as the
+microphone; no sound through the speaker), run against the virtual Mochi:
+
+| What ran | Sentences answered once and whole |
+| --- | --- |
+| Before (bundle 0.3.2, the agent as it was) | 0 of 12 (two runs) |
+| The agent's own audio mode and half duplex, nothing else | 2 of 12 (two runs) |
+| With the fix in Jaeger Agent, first words kept, final code | 12 of 12 (two runs) |
+| Same fix, earlier builds of it | 24 of 24 (four runs) |
+
+With the final code every word was heard and each sentence came through as
+one clean line ("Let me tell you a long story about the time I got lost at
+the market."). Three more runs were lost to the machine, not to the code:
+the GPU was at 90 to 99% from another job all morning, and in them the
+model or the hearing stopped working after the first sentence
+(`llama_decode returned -3`, or every phrase heard as no words).
+
+**What it was.** Using the agent's own turn-taking, as planned, did not fix
+it: its wait for an unfinished thought (HOLDING) only waits when the words
+end on "and", "the" and the like, and Whisper ends nearly every phrase with
+a full stop. Worse, with its half duplex the second half was never heard at
+all. The causes were in Jaeger Agent itself, and are fixed there:
+
+- **A pause is not the end.** Until her first sound, a person who goes on
+  talking was not finished: the answer being thought out is dropped, the
+  sound of what they said is kept, and it is heard as one with what they say
+  next. (A phrase still ends on half a second of quiet; nothing waits
+  longer.)
+- **First words were lost.** The speech detector opens a moment into the
+  first word, and nothing before that was kept: "I saw a dog" was heard as
+  "a dog". The sound from just before now comes with the phrase.
+- **Made-up "Thank you."** A click too short to be a phrase was left open
+  and took in all the quiet up to the next thing said; Whisper makes words
+  up out of a long quiet. Such a sound is now let go.
+
+**What changed around it.** The worker no longer sets the agent's audio
+mode (it is the agent's default, `structured`), and hosts with no echo
+canceller (Mochi, JP01) get the agent's own half duplex: the microphone is
+shut from her first word until the device says its speaker has played her
+last (`voiced` out, `played` back). `Device` no longer gates the microphone.
+The browser page still asks for the agent's open mic. Mochi's bundle is
+0.3.3, pinned in Mochi.
+
+**Nothing else regressed, as far as the machine allowed.** On bundle 0.3.3,
+sound muted: a scene for two, 12 of 12 beats typed and 12 of 12 spoken
+(three runs each). A typed conversation of 14 turns, four passes: 14 of 14
+answered with the body and mouth moving in one; 13 of 14 in one (one turn
+lost to a GPU error from macOS, "Command buffer execution failed: Impacting
+Interactivity"); and two that stopped at turn 8 when the model failed the
+same way. The old bundle, run between them, answered 14 of 14 three times,
+once with the same GPU error logged. So the conversation comparison is not
+settled: it needs a quiet machine. The simulated JP01 ran as on November 21
+(64 x 64 at 28.9 frames a second, 734 of 734 frames changing while it
+spoke, head to pan -45 and tilt 25, "My name is Sam." heard).
+
+**The engine is moving to the animation module.** The agent's own code for
+a body (its tools, persona, voice-loop worker and `Device`) is now also in
+jaeger-module-agent (`jaeger_agent/body`), and the engine's (controller,
+face server, panel, player) in jaeger-module-animation
+(`jaeger_animation/avatar`), opened by the agent through the `animation`
+slot. Mochi's `mochi_live.py` runs that way since today: a scene for two 12
+of 12 beats typed and 12 of 12 spoken, one conversation 14 of 14. The copy
+in `jaeger_avatar/embedded` is still what the JP01 stand-in and this app
+use. Plan and state: jaeger-module-animation
+`dev/docs/20261122_avatar_engine_move.md`.
+
+**Wait before she answers.** From the last word to her first sound: a median
+of 1.7 to 4.6 s across runs, with the machine loaded as above. The parts:
+about 1.3 s to make the sentence out (the half-second end of phrase, then
+one pass of hearing), 0.7 s to the first word written, 1.6 s to the first
+sound. Not measured on a quiet machine.
+
+Not done or not known:
+
+- **A fresh install needs a push first.** `requirements-agent.txt` pins the
+  agent commit with these changes (`39b0f6e`), which is committed on the
+  agent's `dev` but not pushed, so `./run.sh` on a fresh checkout cannot
+  fetch it yet. This machine runs the agent from its local checkout.
+- Sound was not judged by ear, and the recording is a synthetic voice.
+- She waits for a pause of up to about her thinking time. A person who
+  stops for longer than that gets an answer to the first part, as before.
+- The agent's `structured` mode tells the model how each line was spoken
+  (one bracketed line before the words) and drops a slow "thanks", "okay"
+  or "bye" as a silence artifact. What that does to Gemma on spoken turns,
+  and to the wait, is not measured apart.
+- After the model fails once (`llama_decode returned -3`) every later turn
+  fails too, until a restart.
+- While a sentence is being joined the terminal can show its first part as
+  a line of its own before the whole.
+
 ## Still planned / limited
 
 - GUI pack authoring, packaged desktop installers, persistent agent memory.

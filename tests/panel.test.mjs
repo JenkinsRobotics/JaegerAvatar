@@ -40,3 +40,17 @@ test('a face with no look made for the panel is refused when the program starts'
   assert.throws(() => new PanelFace({ face: 'mochi_lips' }), /no look made for the panel/);
   assert.ok(lit(run(new PanelFace({ face: 'matrix' }), null, 0, 3).face).length > 100, 'the firmware\'s own matrix face runs too');
 });
+
+test('a mouth is placed by the height of the screen it is on, so it shows on a wide screen as on a square one', async () => {
+  const { mochiWave } = await import('../app/web/kin/jp01.js');
+  const drawn = (width, height) => {
+    const ys = [], none = () => {};
+    const ctx = { canvas: { width, height }, save: none, restore: none, beginPath: none, stroke: none, moveTo: (x, y) => ys.push(y), lineTo: (x, y) => ys.push(y) };
+    mochiWave(ctx, { width: 100, x: 0, y: 0, red: 185, green: 255, blue: 225 }, {}, 0.8, { t: 1 });
+    return [Math.min(...ys), Math.max(...ys)];
+  };
+  const [top, bottom] = drawn(1024, 1024);
+  assert.ok(top > 640 && bottom < 860, `JP01's square screen: the voice line stays where it was (${top}..${bottom})`);
+  const [wideTop, wideBottom] = drawn(1024, 640);
+  assert.ok(wideTop > 380 && wideBottom < 600, `Mochi's wide screen: the line is on the screen, under the eyes (${wideTop}..${wideBottom})`);
+});

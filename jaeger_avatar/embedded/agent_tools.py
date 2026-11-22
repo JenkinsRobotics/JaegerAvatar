@@ -1,8 +1,10 @@
 """The agent's hands on the avatar: one tool, any transport.
 
-The tool keeps no list of its own. It passes what the agent asked for to the
-body's control link (avatar-control/v1) and hands a refusal back with what
-this body offers, so the agent can pick again. In the app the transport is
+The tool keeps no list of a body's moves. It passes what the agent asked for
+to the body's control link (avatar-control/v1) and hands a refusal back with
+what this body offers, so the agent can pick again. The one list it has is
+MEANT: words a small model says for a feeling, tried only after the body has
+refused the word, and only as names the body itself offers. In the app the transport is
 the control link in the same process; on a robot it is whatever reaches the
 body. Register it with the agent's own tool registry:
 
@@ -12,6 +14,16 @@ from .control import ControlError
 
 HOLD_MS = 10000   # ponytail: one hold time for a feeling, a move or a look; per call when a body needs it
 LOOK = {'left': (-1, 0), 'right': (1, 0), 'up': (0, 1), 'down': (0, -1), 'center': (0, 0)}
+# Feelings Gemma 4 E4B asked for that no body has, and the name it meant (4 of 39 turns, 2026-11-21).
+MEANT = {'happy': 'joy', 'joyful': 'joy', 'cheerful': 'joy', 'glad': 'joy', 'loving': 'love', 'curious': 'thinking', 'thoughtful': 'thinking',
+         'afraid': 'scared', 'mad': 'angry', 'tired': 'sleepy', 'embarrassed': 'shy', 'proud': 'smug', 'shocked': 'surprised', 'calm': 'neutral'}
+
+
+def meant(emotion):
+    """Other names to try for a feeling the body refused: the word it stands for, then each word of a run-together
+    pair ("neutral joy", read off a list as one name), the last first."""
+    word = emotion.strip().lower()
+    return [n for n in dict.fromkeys([MEANT.get(word), *reversed(word.split())]) if n and n != word]
 
 
 def link_transport(link, token):
@@ -28,21 +40,43 @@ def link_transport(link, token):
     return send
 
 
+def controller_transport(controller):
+    """send(op, value, ttl_ms) straight to a body's Controller in this process: for a host that holds the body itself
+    (Mochi, a robot) rather than a page behind a control link."""
+    def offers():
+        return {k: list(controller.manifest['capabilities'].get(k, [])) for k in ('emotions', 'reactions', 'actions')}
+    def send(op, value, ttl_ms):
+        if op == 'offers': return {'ok': True, 'offers': offers()}
+        try:
+            controller.send(op, value, ttl_ms or 5000)
+            return {'ok': True}
+        except ControlError as e:
+            return {'ok': False, 'error': str(e), 'offers': offers()}
+    return send
+
+
 def fitted(call, offers):
     """A scene's call (the avatar tool's emotion, action, look, hold) as this body can make it, and what was left out,
     each with what the body does offer, in words for whoever wrote the scene."""
     left = []
-    emotion, action, look = (str(call.get(k, '')).strip() for k in ('emotion', 'action', 'look'))
     moves = [*offers.get('actions', []), *offers.get('reactions', [])]
+    named = str(call.get('action', '')).strip()
+    for slot, known in (('emotion', offers.get('emotions', [])), ('look', LOOK)):   # a move a scene named bare ("joy", "left") arrives as an action
+        if named and named not in moves and named.lower() in known and slot not in call:
+            call = {slot if k == 'action' else k: v for k, v in call.items()}
+    emotion, action, look = (str(call.get(k, '')).strip() for k in ('emotion', 'action', 'look'))
+    swap = {}
     if emotion and emotion not in offers.get('emotions', []):
-        left.append(('emotion', f"emotion {emotion} (it shows: {', '.join(offers.get('emotions', []))})"))
+        near = next((n for n in meant(emotion) if n in offers.get('emotions', [])), None)
+        if near: swap['emotion'] = near
+        else: left.append(('emotion', f"emotion {emotion} (it shows: {', '.join(offers.get('emotions', []))})"))
     if action and action not in moves:
         left.append(('action', f"action {action} (it does: {', '.join(moves)})"))
     if look and not all(w in LOOK for w in look.lower().replace('-', ' ').split()):
         left.append(('look', f"look {look} (left, right, up, down or center)"))
     left += [(name, f'{name} (a move is an emotion, an action or a look)') for name in call if name not in ('emotion', 'action', 'look', 'hold')]
     gone = {name for name, _ in left}
-    return {k: v for k, v in call.items() if k not in gone}, [why for _, why in left]
+    return {k: swap.get(k, v) for k, v in call.items() if k not in gone}, [why for _, why in left]
 
 
 def avatar_tool(send):
@@ -63,14 +97,14 @@ def avatar_tool(send):
             for op, value in tries:
                 answer = send(op, value, HOLD_MS)
                 if answer.get('ok'):
-                    did.append(label)
+                    did.append(label if first is None or op != 'emotion' else f'emotion {value} (for {emotion})')   # the body's own word, said back
                     return
                 first = first or answer
             errors.append(f"{label}: {first.get('error', 'refused')}")
             offers.update(first.get('offers') or {})
 
         if emotion:
-            tell(f'emotion {emotion}', ('emotion', emotion))
+            tell(f'emotion {emotion}', ('emotion', emotion), *(('emotion', near) for near in meant(emotion)))
         if action:
             tell(f'action {action}', ('act', action), ('reaction', action))
         if look:
@@ -107,7 +141,9 @@ def scene_tool(stage):
         emotion <name>, action <name>, look <left, right, up, down or center>: a move; it happens as the next line or wait starts.
         hold <seconds>: keep the moves before it that long before going on.
         on <word>: put the moves before it on that word of the line just said.
+        listen <their line>: the other person's turn in a scene for two. Write the actual words they could say, to be shown to them; the scene waits there until they have spoken, then goes on. Give them a turn after each of your lines.
         Example: "look left | hold 3 | look center | emotion joy | say So, what did you do today? | action bow | on today"
+        Example for two: "emotion joy | say Welcome to my shop! What would you like? | emotion listening | listen I would like some bread | emotion excited | say Fresh bread, coming right up!"
         """
         try:
             left = stage(script)

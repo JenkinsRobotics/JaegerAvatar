@@ -20,6 +20,7 @@ from jaeger_avatar.packs import local_path, PackError
 from jaeger_avatar.embedded.control import ControlError
 from jaeger_avatar.embedded.link import ControlLink
 from jaeger_avatar.embedded.agent_tools import link_transport
+from jaeger_avatar.embedded.persona import persona as embedded_persona
 from kin_lipsync import analyze as analyze_kin
 
 from agent_bridge import agent_host
@@ -43,15 +44,16 @@ VOICES = {VOICE, "en_US-kristin-medium", "en_US-joe-medium", "en_US-bryce-medium
 MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-opus-5-5")
 HAS_CLAUDE = bool(os.environ.get("ANTHROPIC_API_KEY"))
 import models as model_files
-MODELS = model_files.found()   # the model files on this machine; the agent loads one in its own process
-# Jaeger Agent's voice loop does the hearing, the thinking with its tools, and the voice (app/agent_loop.py).
+# Jaeger Agent's voice loop does the hearing, the thinking with its tools, and the voice (jaeger_avatar/embedded/agent_loop.py).
 # JAEGER_AVATAR_LOOP=0 keeps the older path: this app's own /hear and /say around a text-only agent.
 LOOP = os.environ.get('JAEGER_AVATAR_LOOP', '1') != '0' and os.environ.get('NORI_BRAIN') != 'scripted'
+# With the voice loop the model is Jaeger Agent's own choice (its table and default, reported by the worker). Only the older path scans this machine for model files.
+MODELS = {} if LOOP else model_files.found()
 STT = os.environ.get("NORI_STT", "large-v3-turbo" if LOOP else "base.en")  # a Whisper model name: see settings.WHISPER
 import settings as app_settings
 SETTINGS_FILE = CACHE / "settings.json"
-config = app_settings.load(SETTINGS_FILE, app_settings.defaults(model_files.DEFAULT, STT))   # what Settings saved wins over the environment
-config["agent"]["model"] = model_files.pick(config["agent"]["model"], MODELS) or config["agent"]["model"]   # a saved name with no file falls back
+config = app_settings.load(SETTINGS_FILE, app_settings.defaults('' if LOOP else model_files.DEFAULT, STT))   # what Settings saved wins over the environment; '' is the agent's default
+if not LOOP: config["agent"]["model"] = model_files.pick(config["agent"]["model"], MODELS) or config["agent"]["model"]   # a saved name with no file falls back
 STT = config["hearing"]["model"]
 settings_lock = threading.Lock()   # two saves at once must not undo each other
 HEAR_LIMIT = 16000 * 2 * 30  # 30 s of 16 kHz 16-bit audio; the page sends at most 20 s
@@ -121,16 +123,6 @@ def chat_system(body):
         return system_for(body.get("character"))
 
 
-LOOP_RULES = ("You know a lot: answer general questions from your own knowledge, right away. Do not search the web unless the user asks you "
-    "to search or look something up. Use get_time for the time or date.\n"
-    "If asked who you are, answer as this AI character by name, and never call yourself Gemma or mention Google. "
-    "Match the length to the question: a sentence or two for small talk, more when asked to explain or tell a story.")
-# Measured 2026-11-11 on gemma-4-E4B: told to call first, and shown one call (the loop worker adds it), the model moved the body on
-# 42 of 42 turns; told to call "together with your words" it did on 1 to 3 of 7; told to say the words first and call last, on 4 to 6
-# of 7 (first sound about 0.4 s sooner, one turn ran a web search). Last in the prompt, where the small model heeds it.
-BODY_RULE = ("Show how you feel with this body: begin every reply with one avatar tool call (an emotion; add an action only when the user "
-    "asks you to move or a big moment calls for one), then say your words. Never write the moves as words. "
-    "When asked to act something out, put on a show, or do things in a set order or for a set time, call the scene tool instead: the scene is your whole reply.")
 loop_key, loop_lock = None, threading.Lock()   # the character the loop was last told to be
 
 
@@ -141,12 +133,7 @@ def loop_persona(body):
         who = f"You are {name}, an AI character. {profile}"
     except (OSError, ValueError):
         who = PERSONAS.get(body.get('character'), PERSONAS['nori'])
-    controls = body.get('controls') if isinstance(body.get('controls'), dict) else {}
-    def names(*keys):
-        return ' '.join([n for k in keys for n in (controls.get(k) if isinstance(controls.get(k), list) else []) if isinstance(n, str) and n.isidentifier()][:16])
-    feelings, moves, shell = names('emotions'), names('reactions', 'actions'), str(body.get('body', ''))[:60]
-    return (f"{who}\n{LOOP_RULES}\n" + (f"Your body right now: {shell}. " if shell else "You have a body. ")
-            + (f"It can show these feelings: {feelings}. " if feelings else '') + (f"It can make these moves: {moves}. " if moves else '') + BODY_RULE)
+    return embedded_persona(who, body.get('body', ''), body.get('controls'))   # the rules and the body's offers: the same text for every host
 
 
 def loop_voice(body):
@@ -167,10 +154,11 @@ def loop_as(body):
 
 
 def loop_start():
-    """The first line the loop worker reads: which model, which ears, who it is."""
+    """The first line the loop worker reads: which model, which ears, who it is. open_mic: the page's microphone has the
+    browser's echo canceller, so the agent keeps hearing while she speaks. The rest of turn-taking is the agent's own."""
     a = config['agent']
     return {'op': 'start', 'model': a['model'], **{k: a[k] for k in ('temperature', 'max_tokens', 'timeout_s') if k in a},
-            'hearing': config['hearing']['model'], 'persona': loop_persona({'pack': 'vita'}), 'session': 'avatar'}
+            'hearing': config['hearing']['model'], 'persona': loop_persona({'pack': 'vita'}), 'session': 'avatar', 'open_mic': True}
 
 
 def system_for(character):
@@ -281,6 +269,11 @@ def hear(pcm, name=""):
     return " ".join(s.text.strip() for s in segments if s.no_speech_prob < 0.6).strip()
 
 
+def model_choices():
+    """{name: file} of the models that can be chosen: Jaeger Agent's own, as its voice loop reports them; with the older path, the files found here."""
+    return dict((agent_host.report or {}).get('models') or {}) if LOOP else MODELS
+
+
 def brain():
     """What answers: JaegerAgent with its in-process model, or the page's scripted replies when there is no agent or no model file."""
     if os.environ.get('NORI_BRAIN')=='scripted':return 'scripted'
@@ -292,8 +285,8 @@ def why_scripted():
     """Why the page's scripted replies answer and not the agent; '' while the agent runs or is still loading."""
     if os.environ.get('NORI_BRAIN') == 'scripted': return 'started with --scripted'
     if not agent_host.process: return 'the agent is not installed'   # run.sh said why, in the terminal
-    if not MODELS: return 'no model file in ~/models'   # dev/docs/runtime/SETUP.md has the download command
-    if agent_host.process.poll() is not None: return 'the agent stopped, see app/.cache/agent.log'
+    if not LOOP and not MODELS: return 'no model file in ~/models'   # dev/docs/runtime/SETUP.md has the download command
+    if agent_host.process.poll() is not None: return agent_host.why or 'the agent stopped, see app/.cache/agent.log'
     return ''
 
 
@@ -472,13 +465,15 @@ class Handler(SimpleHTTPRequestHandler):
                 return self.reply(404,b'{"error":"Unknown pack asset"}')
 
         if self.path == "/settings":
-            MODELS.clear(); MODELS.update(model_files.found())   # a model file added since the app started shows up here
+            if not LOOP: MODELS.clear(); MODELS.update(model_files.found())   # a model file added since the app started shows up here
             report = (agent_host.report or {}) if LOOP else {}   # what the voice loop says it runs on, per part
-            return self.reply(200, json.dumps({**config, "parts": report, "brain": brain(), "model_dirs": [str(p) for p in model_files.ROOTS], "hearing_ready": bool(stt), "hearing_where": stt_where,
-                "jaeger_agent": {**(agent_host.schema or {}), "in_app": {"provider": "llama_cpp", "base_url": "", "model_path": str(MODELS.get(config["agent"]["model"], "")), "api_key_env": "",
+            files = model_choices()
+            shown = {**config, "agent": {**config["agent"], "model": agent_host.model or config["agent"]["model"]}} if LOOP else config   # the loop: the model the agent loaded
+            return self.reply(200, json.dumps({**shown, "parts": report, "brain": brain(), "model_dirs": sorted({str(Path(f).parent) for f in files.values()}) if LOOP else [str(p) for p in model_files.ROOTS], "hearing_ready": bool(stt), "hearing_where": stt_where,
+                "jaeger_agent": {**(agent_host.schema or {}), "in_app": {"provider": "llama_cpp", "base_url": "", "model_path": str(files.get(shown["agent"]["model"], "")), "api_key_env": "",
                     "system_prompt": "built for each character", "max_iterations": 1, "tools_enabled": False, "ctx": 8192, "gpu_layers": -1,
                     **{k: report[k] for k in ("max_iterations", "tools_enabled", "ctx") if k in report}}},
-                "options": {"models": list(MODELS), "whisper": app_settings.WHISPER, "languages": app_settings.LANGUAGES}}).encode())
+                "options": {"models": list(files), "whisper": app_settings.WHISPER, "languages": app_settings.LANGUAGES}}).encode())
         if self.path == "/health":
             ears, where = bool(stt) or stt is None, stt_where
             if LOOP:   # the loop's ears: the hearing module, and what it computes on
@@ -690,7 +685,7 @@ class Handler(SimpleHTTPRequestHandler):
             global config, STT, stt, loop_key
             with settings_lock:
                 try:
-                    new = app_settings.apply(config, body, list(MODELS))
+                    new = app_settings.apply(config, body, list(model_choices()))
                 except ValueError as e:
                     return self.reply(422, json.dumps({"error": str(e)}).encode())
                 app_settings.save(SETTINGS_FILE, new)

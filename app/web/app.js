@@ -539,6 +539,7 @@ async function run() {
       $('#chapterText').textContent = op.label; $('#chapterBar').value = op.at;
       continue;
     }
+    if (op.type === 'prompt') { sub(op.line); continue; }   // a scene for two: her part is played, and this is the other person's line
     if (op.type === 'emotion' || op.type === 'gesture') {
       // Hold the face until its line is ready, so expression and voice land together.
       await queue.find(o => o.ready)?.ready;
@@ -701,6 +702,10 @@ function onLoop(e) {
     if (kind === 'scene' && text === 'refused') $('#sceneNote').textContent = e.data;   // a script the agent could not read, in its words
     if (kind === 'scene' && text === 'begin' && !loopSkip) { const id = runId; loopChain = loopChain.then(() => { if (id === runId) sceneHold ??= []; }); }   // a scene's sound follows (yours, or one the model wrote): hold it, after the words already on their way
     if (kind === 'scene' && text === 'end' && !loopSkip) releaseScene();
+    if (kind === 'scene' && text === 'listen' && !loopSkip) {   // a scene for two: the other person's line comes next, shown once hers has played
+      const id = runId, line = e.data?.expect ? `Your line: “${e.data.expect}”` : 'Your turn';
+      loopChain = loopChain.then(() => { if (id !== runId) return; $('#sceneNote').textContent = `${line}. Say it or type it, in your own words if you like. Stop ends the scene.`; enqueue([{ type: 'prompt', line }]); });   // 'line', not 'text': text is what she herself said, kept to know her echo by
+    }
     if (kind === 'tool' && text === 'avatar cue') {             // a scene's move this body would not make: the director is told what it does offer
       const r = e.data?.result ?? {}, why = `Refused: ${(r.errors ?? []).join('; ')}. This body offers ${Object.entries(r.offers ?? {}).filter(([, v]) => v.length).map(([k, v]) => `${k}: ${v.join(', ')}`).join(' · ') || 'nothing by that name'}.`;
       $('#sceneNote').textContent = why; logInput('cue refused', why);

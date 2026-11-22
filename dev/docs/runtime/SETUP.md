@@ -29,7 +29,7 @@ read from a checkout beside the app.
 The language model is one GGUF file, downloaded once (5.3 GB):
 
 ```sh
-curl -L --create-dirs -o ~/models/gemma-4-E4B-it-Q4_K_M.gguf https://huggingface.co/lmstudio-community/gemma-4-E4B-it-GGUF/resolve/main/gemma-4-E4B-it-Q4_K_M.gguf
+curl -L --create-dirs -o ~/.lmstudio/models/lmstudio-community/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-Q4_K_M.gguf https://huggingface.co/lmstudio-community/gemma-4-E4B-it-GGUF/resolve/main/gemma-4-E4B-it-Q4_K_M.gguf
 ```
 
 When only scripted replies answer, the header, the terminal and `/health`
@@ -39,20 +39,27 @@ or the agent stopped (`app/.cache/agent.log`).
 Override `JAEGER_AGENT_PYTHON` for another supported environment. The model
 runs inside the agent worker: JaegerAgent's llama.cpp adapter loads a GGUF file
 itself, with every layer on the GPU. There is no model server and no other
-option. Model files are found in `~/.lmstudio/models` and `~/models`
-(`JAEGER_MODEL_DIRS` overrides the list); the default is
-`gemma-4-E4B-it-Q4_K_M` (`GEMMA_MODEL`), and Settings lists every chat model
-found. The worker loads the model at startup and runs the character's
+option. Which model is Jaeger Agent's own setup, not the app's: the agent's
+table of models (`jaeger_agent/core/policy.py`, `LLMS`: Gemma 4 E4B, the
+default, and Gemma 4 26B) and the place it keeps them, which is where the
+command above puts the file. The app passes no model file; it only remembers
+which of the agent's models was chosen in Settings, and Settings lists the
+ones whose files are here. If the file is missing the header says which file
+the agent wants. (The older path, `JAEGER_AVATAR_LOOP=0`, still scans
+`~/.lmstudio/models` and `~/models` itself.) The worker loads the model at startup and runs the character's
 instructions through it once (about 12 s the first time), so the first reply is
 as fast as the rest. The app header reports **JaegerAgent · model file** while
 the worker is up and the file is on disk; otherwise it reports scripted mode.
 
-By default the worker is Jaeger Agent's voice loop (`app/agent_loop.py`): hearing
+By default the worker is Jaeger Agent's voice loop (`jaeger_avatar/embedded/agent_loop.py`): hearing
 (Jaeger Whisper), the model with its tools, and the voice (Jaeger Kokoro) run in
 one process, and the app copies none of it. The page sends typed text and
 microphone sound in, plays the voice sound it gets back and moves the mouth
-itself. The microphone stays open while she talks (the agent's open mic,
-`half_duplex=False`). The page holds her own voice back: the browser's echo
+itself. Turn-taking is the agent's own (its audio mode, which waits when you
+seem mid-thought). The page asks for one thing, the agent's open mic
+(`open_mic` in the start line, `half_duplex=False`), because the browser has
+an echo canceller: the microphone stays open while she talks. The page holds
+her own voice back: the browser's echo
 canceller, then a gate that passes only a clearly louder voice. What a person
 says over her goes straight to the agent. Her voice drops the moment they
 start, and if they keep talking (`?hold=250`, in ms; `0` turns it off) she
@@ -64,9 +71,12 @@ with its own `avatar` tool (`jaeger_avatar/embedded/agent_tools.py`), which
 goes over the same control link a robot body uses; the app has no list of
 moves of its own. The character's prompt ends with the body it is in, the
 feelings and moves that body offers, and one rule: begin every reply with one
-avatar tool call, then the words. The worker adds one example call, which the
-agent's model adapter writes in the loaded model's own call form
-(`tool_call_example`), so the app holds no model syntax. Install the two voice modules beside the agent (see
+avatar tool call, then the words. Each conversation opens with two example
+exchanges the worker hands the agent (`EXAMPLES` in `jaeger_avatar/embedded/agent_loop.py`, through
+the engine's `prime`): a greeting answered with an avatar call and then words,
+and a scene request answered with one scene call. Gemma follows what is already
+in the conversation far more surely than a rule in its prompt. They are stored
+as ordinary tool calls, so the app holds no model syntax. Install the two voice modules beside the agent (see
 `requirements-agent.txt`); without them the app reports scripted mode.
 
 `JAEGER_AVATAR_LOOP=0 ./run.sh` starts the earlier path instead: the app's own

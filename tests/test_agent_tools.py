@@ -58,6 +58,15 @@ class AvatarToolTest(unittest.TestCase):
         self.assertEqual(out['did'], ['emotion joy'])
         self.assertIn('Unknown action', out['errors'][0])
 
+    def test_a_near_miss_feeling_is_shown_as_the_one_it_means(self):
+        # Gemma reaches for "happy", "joyful", "curious", and reads "neutral joy" off the list as one name (2026-11-21).
+        self.attach()
+        self.assertEqual(self.avatar(emotion='happy'), {'ok': True, 'did': ['emotion joy (for happy)']})   # said back, so it learns the body's word
+        self.assertEqual(self.link.state(self.session)['emotion'], 'joy')
+        self.assertEqual(self.avatar(emotion='neutral joy')['did'], ['emotion joy (for neutral joy)'])
+        refused = self.avatar(emotion='loving')                                # this body has no "love": still a refusal, with what it offers
+        self.assertEqual((refused['ok'], refused['offers']['emotions']), (False, ['neutral', 'joy']))
+
     def test_none_means_no_move_not_a_move_to_refuse(self):
         self.attach()    # seen 2026-11-11: the small model fills the slot it does not want with "none"
         self.assertEqual(self.avatar(emotion='joy', action='none', look='None'), {'ok': True, 'did': ['emotion joy']})
@@ -82,11 +91,18 @@ class SceneCheckTest(unittest.TestCase):
         offers = TRUTH['capabilities']
         for call in ({'emotion': 'joy'}, {'action': 'clap', 'hold': 2.0}, {'action': 'wink'}, {'look': 'up left'}, {'emotion': 'joy', 'look': 'center'}):
             self.assertEqual(fitted(call, offers), (call, []), call)           # an action may be one of the body's reactions
-        kept, left = fitted({'emotion': 'happy', 'action': 'wave', 'look': 'sideways', 'spin': 'fast', 'hold': 2}, offers)
+        kept, left = fitted({'emotion': 'wobbly', 'action': 'wave', 'look': 'sideways', 'spin': 'fast', 'hold': 2}, offers)
         self.assertEqual(kept, {'hold': 2})
-        self.assertEqual(left, ['emotion happy (it shows: neutral, joy)', 'action wave (it does: clap, wink)',
+        self.assertEqual(left, ['emotion wobbly (it shows: neutral, joy)', 'action wave (it does: clap, wink)',
                                 'look sideways (left, right, up, down or center)', 'spin (a move is an emotion, an action or a look)'])
         self.assertEqual(fitted({'emotion': 'joy', 'action': 'wave'}, offers)[0], {'emotion': 'joy'})   # what it can do is kept
+        for said in ('happy', 'joyful', 'neutral joy'):                        # a near miss is shown as the feeling it means, not left out
+            self.assertEqual(fitted({'emotion': said, 'hold': 1}, offers), ({'emotion': 'joy', 'hold': 1}, []), said)
+        self.assertEqual(fitted({'emotion': 'loving'}, offers)[1], ['emotion loving (it shows: neutral, joy)'])   # this body has no love to mean
+        # a move named bare in a scene arrives as an action; the body knows when it is a feeling or a look
+        self.assertEqual(fitted({'action': 'joy'}, offers), ({'emotion': 'joy'}, []))
+        self.assertEqual(fitted({'action': 'left', 'hold': 2}, offers), ({'look': 'left', 'hold': 2}, []))
+        self.assertEqual(fitted({'action': 'joy', 'emotion': 'neutral'}, offers)[1], ['action joy (it does: clap, wink)'])   # it already has a feeling: not guessed
 
 
 class SceneToolTest(unittest.TestCase):

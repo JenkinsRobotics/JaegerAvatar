@@ -3,6 +3,9 @@ from pathlib import Path
 import argparse,hashlib,json,re,shutil,tempfile
 import yaml
 ROOT=Path(__file__).resolve().parents[1]
+import sys
+sys.path.insert(0,str(ROOT))
+from jaeger_avatar.embedded.persona import who
 WEB=ROOT/'app/web'
 
 def _build(output, visual_baseline=None):
@@ -36,7 +39,7 @@ def _build(output, visual_baseline=None):
     pack=yaml.safe_load((ROOT/'avatar-packs/mochi/avatar.yaml').read_text())
     # A single selected appearance, no other identities or prerecorded libraries.
     profile=pack['profiles'][pack['default_profile']]['character']
-    manifest={'schema':'avatar-runtime-bundle/v1','version':'0.3.0','pack_version':pack['version'],'avatar':'mochi','name':'Mochi',
+    manifest={'schema':'avatar-runtime-bundle/v1','version':pack['version'],'pack_version':pack['version'],'avatar':'mochi','name':'Mochi',
         'representation':'procedural_3d','renderer':'kin-momo','control_schema':'avatar-control/v1',
         'capabilities':{'emotions':['neutral','joy','excited','love','sad','angry','surprised','scared','thinking','confused','shy','smug','sleepy','laughing','singing','listening'],
         'reactions':['blink','wink','sideeye','sparkle','heart','roll','peek','doze','groove','wake']},
@@ -52,7 +55,10 @@ def _build(output, visual_baseline=None):
     shutil.copy2(WEB/'embedded/performance-audio.js',public/'performance-audio.js')
     manifest['performance_audio']={'schema':'mochi-performance-audio/v1','manifest':'audio/manifest.json','player':'performance-audio.js'}
     if visual_baseline:manifest['provenance']['visual_baseline_sha256']=hashlib.sha256((Path(visual_baseline)/'SHA256SUMS.json').read_bytes()).hexdigest()
-    manifest['activity']={'thinking':'thinking','error':'confused','failed':'confused'}
+    manifest['activity']={'thinking':'thinking','listening':'listening','error':'confused','failed':'confused'}
+    look=pack['representations']['procedural_3d']['presentation']['defaults']
+    manifest['face']=look.get('face','')   # which of the renderer's faces this look uses ('' = eyes only)
+    manifest['character']={'who':who(profile,'Mochi'),'voice':look.get('kokoro') or profile.get('identity',{}).get('voice_id','')}   # who the agent is told it is, ready for a host that reads only JSON
     (runtime/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
     # Existing Mochi chat/persona adapter reads this projection; original character
     # metadata is retained and no tools, credentials or conversation are exported.

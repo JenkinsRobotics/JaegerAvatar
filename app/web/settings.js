@@ -26,7 +26,8 @@ const LOOP_WHY = {
   max_iterations: 'The most model calls one turn may take: a tool call, then the answer. A plain question takes one.',
 };
 const LOOP_AUDIO = 'In use. The agent hears and speaks through the Jaeger modules (named above under "Brain now"); this page sends it the microphone and plays the sound it voices, ' +
-  'reading the mouth shapes from that sound. Half duplex (plain), speech out, no wake word. The page holds the microphone back while she talks, unless a clearly louder voice starts.';
+  'reading the mouth shapes from that sound. The agent\'s own audio mode (it waits when you seem mid-thought), speech out, no wake word. ' +
+  'Its microphone stays open here, because the browser has an echo canceller: the page holds the microphone back while she talks, unless a clearly louder voice starts.';
 const part = i => i ? `${i.module} ${i.version} on ${i.compute} (${i.model})` : 'not reported';
 export const partsLine = p => !p?.voice ? '' : ` Voice loop: voice ${part(p.voice)}; hearing ${part(p.hearing)}; ${p.ctx} tokens of context; ` +
   `tools ${p.tools_enabled ? `on (${p.tool_list}, up to ${p.max_iterations} model calls a turn)` : 'off'}; loaded in ${p.load_s} s.`;
@@ -36,7 +37,7 @@ function allSettings(ja, agent, parts) {
   const value = k => k in agent ? agent[k] : ja.in_app[k];
   const table = (props, valueOf, why) => `<table><tr><th>Setting</th><th>In this app</th><th>JaegerAgent default</th><th>What it is</th></tr>${Object.entries(props).map(([k, p]) =>
     `<tr><td><code>${k}</code></td><td>${esc(show(valueOf(k)))}</td><td>${esc(show(p.default ?? ''))}${p.enum ? '<br>' + esc(p.enum.join(' · ')) : ''}${p.minimum != null ? `<br>${p.minimum}–${p.maximum ?? '∞'}` : ''}</td><td>${esc(p.description ?? '')}${why(k) ? `<br><b>Here:</b> ${esc(why(k))}` : ''}</td></tr>`).join('')}</table>`;
-  const loop = !!parts?.voice, used = { audio_mode: 'plain', output_mode: 'speech', wake_required: false, stt_model: parts?.hearing?.model };
+  const loop = !!parts?.voice, used = { output_mode: 'speech', wake_required: false, stt_model: parts?.hearing?.model };
   return `JaegerAgent ${esc(ja.version)}. The brain settings come from its <code>AgentConfig</code>, the audio pipeline from <code>MultimodalConfig</code>.` +
     `<h3>Brain</h3>${table(ja.agent, value, k => (loop && LOOP_WHY[k]) || WHY[k])}<h3>Its own audio pipeline (half and full duplex)</h3><p>${esc(loop ? LOOP_AUDIO : AUDIO)}</p>` +
     table(ja.multimodal, loop ? k => used[k] ?? ja.multimodal[k].default ?? '' : () => 'not used', () => '');
@@ -59,7 +60,7 @@ export function startSettings({ speed, setSpeed }) {
     fill($('#setStt'), Object.entries(s.options.whisper).map(([m, size]) => [m, `${m} · ${size}`]), s.hearing.model);
     fill($('#setLang'), Object.entries(s.options.languages), s.hearing.language);
     $('#setLang').disabled = s.hearing.model.endsWith('.en');
-    $('#agentNow').textContent = `Brain now: ${s.brain}. The model runs inside the agent (llama.cpp, on the GPU). Model files are read from ${s.model_dirs.join(' and ')}` + (models.length ? '.' : ': none found there.') + partsLine(s.parts);
+    $('#agentNow').textContent = `Brain now: ${s.brain}. The model runs inside the agent (llama.cpp, on the GPU). ${s.parts?.models ? "The choices are Jaeger Agent's own models, in" : 'Model files are read from'} ${s.model_dirs.join(' and ')}` + (models.length ? '.' : ': none found there.') + partsLine(s.parts);
     $('#hearingNow').textContent = s.parts?.hearing ? `Hearing now: ${part(s.parts.hearing)}, inside Jaeger Agent's voice loop.` : s.hearing_ready ? `Hearing now: ${s.hearing_where}. It runs on the GPU when this machine has one.` : `Whisper ${s.hearing.model}: loading.`;
   }
   async function save(patch) {

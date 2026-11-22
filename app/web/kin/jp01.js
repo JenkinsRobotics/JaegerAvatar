@@ -235,7 +235,8 @@ export function mochiMouth(ctx, p, v, jaw, { scale = 1.45 } = {}) {
   ctx.restore();
 }
 const rgb = (p, k = 1) => `rgb(${[p.red, p.green, p.blue].map(c => Math.round(clamp(c, 0, 255) * k)).join(',')})`;
-const mouthAt = (ctx, p, scale) => { const k = ctx.canvas.width / 1024; return { k, cx: (512 + (p.x || 0) * scale * .5) * k, cy: (750 + (p.y || 0) * .4) * k }; };
+// Where a mouth sits: 750 of a 1024-high screen, by the screen's own height, so it is on a wide screen (Mochi's) as on JP01's square one.
+const mouthAt = (ctx, p, scale) => { const k = ctx.canvas.width / 1024; return { k, cx: (512 + (p.x || 0) * scale * .5) * k, cy: 750 * ctx.canvas.height / 1024 + (p.y || 0) * .4 * k }; };
 
 // Lips: a cupid's-bow upper lip and a fuller lower lip, tinted toward pink, parting with each vowel.
 export function mochiLips(ctx, p, v, jaw, { scale = 1.45 } = {}) {

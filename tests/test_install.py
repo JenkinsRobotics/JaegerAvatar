@@ -88,8 +88,8 @@ class WhyScriptedTest(unittest.TestCase):
         import server
         cls.server = server
 
-    def why(self, process=None, models=('m',), env=None):
-        host = mock.Mock(process=process)
+    def why(self, process=None, models=('m',), env=None, why=''):
+        host = mock.Mock(process=process, why=why)
         with mock.patch.object(self.server, 'agent_host', host), mock.patch.dict(self.server.MODELS, {m: m for m in models}, clear=True), \
                 mock.patch.dict(os.environ, env or {}):
             return self.server.why_scripted()
@@ -104,7 +104,12 @@ class WhyScriptedTest(unittest.TestCase):
         self.assertIn('not installed', self.why(process=None))
 
     def test_no_model_file(self):
-        self.assertIn('no model file', self.why(process=mock.Mock(poll=lambda: None), models=()))
+        with mock.patch.object(self.server, 'LOOP', False):   # the older path: this app looks for the file itself
+            self.assertIn('no model file', self.why(process=mock.Mock(poll=lambda: None), models=()))
+        with mock.patch.object(self.server, 'LOOP', True):    # the voice loop: the model is Jaeger Agent's to find, and its worker stops if it cannot
+            self.assertEqual(self.why(process=mock.Mock(poll=lambda: None), models=()), '')
+            self.assertIn('the agent stopped', self.why(process=mock.Mock(poll=lambda: 1), models=()))
+            self.assertEqual(self.why(process=mock.Mock(poll=lambda: 1), models=(), why='the file it wants is not here: /x/y.gguf'), 'the file it wants is not here: /x/y.gguf')   # the worker's own reason, when it gave one
 
     def test_the_agent_stopped(self):
         self.assertIn('agent.log', self.why(process=mock.Mock(poll=lambda: 1)))

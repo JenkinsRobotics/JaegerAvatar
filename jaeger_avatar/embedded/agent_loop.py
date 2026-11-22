@@ -1,4 +1,10 @@
-"""Jaeger Agent's voice loop as this app's talker: hearing, the model with its tools, and the voice, in one process.
+"""Jaeger Agent's voice loop as a body's talker: hearing, the model with its tools, and the voice, in one process.
+
+Run it with the Python that has Jaeger Agent and its voice and hearing modules (agent_host.AgentHost does):
+
+    python -m jaeger_avatar.embedded.agent_loop      (python -m avatar_runtime.agent_loop from an exported bundle)
+
+The same worker serves every host: Jaeger Avatar's app, Mochi, a robot. "The app" below is whichever host started it.
 
 The agent takes its hearing and voice from the Jaeger modules; this app copies none of it. The app sends typed
 text and microphone sound in, and gets words and voice sound out (it plays them and moves the mouth itself).
@@ -9,12 +15,20 @@ each line's moves with its sound as cues. The app plays the sound and, when a cu
 says so; the move is then made by the same `avatar` tool the model calls. The model can write a scene itself with its
 `scene` tool; the agent performs it once that reply's words are spoken.
 
-The microphone stays open while she answers (the engine's open mic): sound goes straight to the engine, never behind a turn,
-so a person can talk over her. The engine cuts the reply on its way and says when each turn is over; that is this worker's 'done'.
+Turn-taking is the agent's own, with its own settings (its audio mode, its half duplex): when a phrase has ended, whether
+the thought is finished or she should wait for the rest (HOLDING), and when the microphone is shut. This worker sets none of it.
+The start line says only what the agent cannot know, {open_mic: true}: this host's microphone has an echo canceller (the
+browser page), so sound goes straight to the engine, never behind a turn, and a person can talk over her. Every other host
+(Mochi, a robot: a bare speaker and microphone) gets the agent's half duplex: the microphone is shut from her first word
+until the body's speaker has played her last. The body plays the sound, so it says when: the worker sends {event: voiced, n}
+when a part is all voiced, and the host answers {op: played, n} when its speaker has finished it. Until her first word the
+agent goes on listening (listens_while_thinking), so a person who was only pausing can go on and is answered once, whole.
+The engine says when each turn is over; that is this worker's 'done'.
 
-In (one JSON line each): {op: start, ...} first, then {op: text | audio | persona | interrupt | control_result | say | scene | cue}.
+In (one JSON line each): {op: start, ...} first, then {op: text | audio | persona | interrupt | control_result | say | scene | cue | played}.
 Out: {ready, schema, model, report}, {event, text, data}, {event: audio, text, rate, pcm, marks, cues}, {event: done}, {control, id},
-{id, rate, pcm, marks, ms} (the answer to say), {report} (after a voice change), {event: scene, text: begin | end} (around a scene's sound), {event: scene, text: refused, data} (a script it could not read).
+{id, rate, pcm, marks, ms} (the answer to say), {report} (after a voice change), {event: scene, text: begin | end} (around a scene's sound), {event: scene, text: refused, data} (a script it could not read),
+{event: voiced, n} (half duplex only).
 """
 import base64
 import json
@@ -28,19 +42,55 @@ from pathlib import Path
 
 import numpy as np
 
-ROOT = Path(__file__).resolve().parents[1]
 CONTROL_WAIT = 3                          # seconds the avatar tool waits for the app to answer
+PLAYED_WAIT = 3                           # seconds past a part's own length the engine waits to hear the body has played it
+# How a turn goes, shown to the model at the start of every conversation (engine.prime): a plain reply is a feeling
+# through the avatar tool and then the words; asked to act something out, the scene tool is the whole reply.
+# A small model follows what is already in the conversation far more surely than an instruction: told only in the
+# persona, Gemma 4 E4B called the avatar tool in 4 of 12 fresh conversations and wrote the call out as words in the other
+# 8, which were then spoken; with the first exchange shown it called the tool in 24 of 24. The scene uses no named
+# action, so every body can play it.
+EXAMPLES = [
+    ('Hello!', "Hi! It's so good to see you!", [('avatar', {'emotion': 'joy'}, {'ok': True, 'did': ['emotion joy']})]),
+    ('Act out a tiny scene: look up, wait a second, then tell me what you saw.', '',
+     [('scene', {'script': 'look up | hold 1 | look center | emotion surprised | say I just saw a shooting star!'}, {'ok': True, 'note': 'The scene plays now.'})]),
+]
+
+
+class Body:
+    """The host's speaker, as one of the engine's outputs (jaeger_agent/core/audio.py: play, wait, stop). The sound itself
+    goes to the host in the 'audio' events. This is how the engine's half duplex learns that the body has played it:
+    the engine waits here with the microphone shut."""
+
+    def __init__(self, emit):
+        self.emit, self.done, self.n, self.given = emit, threading.Event(), 0, 0.0
+
+    def play(self, chunk, rate):
+        self.given += len(chunk) / rate
+
+    def wait(self):
+        """Everything given is voiced: tell the host, and return when it says its speaker has played it."""
+        self.n += 1; self.done.clear()
+        given, self.given = self.given, 0.0
+        self.emit({'event': 'voiced', 'n': self.n})
+        self.done.wait(given + PLAYED_WAIT)   # ponytail: a host that never says is taken to have played it by then
+
+    def stop(self):                           # cut off: nothing more of it will be played
+        self.done.set()
+
+    def played(self, n):
+        if n == self.n: self.done.set()       # an answer to an earlier part, come late, opens nothing
 
 
 class Loop:
     """One engine. Typed lines, scenes and the rest arrive in order on one thread; microphone sound, an interrupt and a
-    cue go in at once from the reader's thread."""
+    cue go in at once from the reader's thread (the engine gives each heard turn a thread of its own)."""
 
     def __init__(self, emit):
         self.emit, self.engine = emit, None
         self.work, self.busy, self.waiting = queue.Queue(), threading.Event(), {}
+        self.body = None                      # half duplex: the host's speaker as the engine's output
         self.worker = self.ended = None       # the thread that runs the work in order; whether the engine ended a turn on it
-        self.hint = ''                        # one avatar call in the loaded model's own form, added to every persona
         self.extra = {}                       # what this worker adds to the engine's report: which tool list, the load time
 
     def report(self):
@@ -79,8 +129,11 @@ class Loop:
             box = self.waiting.get(r.get('id'))
             if box: box.put(r.get('result') or {})
         elif op == 'interrupt':
+            self.engine.end_scene()           # Stop also ends a scene that is waiting for the other person's line
             self.engine.force_listen()
-        elif op == 'audio':                   # heard now, not after the reply on its way: this is how a person cuts in
+        elif op == 'played':                  # the body's speaker has finished what was voiced: the engine opens the microphone
+            if self.body: self.body.played(r.get('n'))
+        elif op == 'audio':                   # heard now, not after the reply on its way: this is how a person goes on, or cuts in
             if r.get('pcm'): self.engine.push_audio(np.frombuffer(base64.b64decode(r['pcm']), '<i2').astype(np.float32) / 32768)
             if r.get('end'): self.engine.end_phrase()   # the page's mic went quiet or was gated: the phrase ends here
         elif op == 'cue':                     # its moment has come: it cannot wait behind the lines still being voiced
@@ -94,7 +147,7 @@ class Loop:
         it fills with what it left out. The body is asked once what it offers; with nobody on stage, calls pass as
         written. strict (your own scene): a call the body cannot make in full refuses the scene, so you fix the script.
         Not strict (a scene the model wrote): the scene plays without those parts, and the model is told which."""
-        from jaeger_avatar.embedded.agent_tools import fitted
+        from .agent_tools import fitted
         answer = self.control('offers', None, 0)
         offers, left = answer.get('offers') if answer.get('ok') else None, []
         def fit(call):
@@ -119,7 +172,7 @@ class Loop:
 
     def cue(self, call):
         """A scene's move: the avatar tool's own call, held for as long as the scene says (or as long as a call from the model)."""
-        from jaeger_avatar.embedded.agent_tools import avatar_tool
+        from .agent_tools import avatar_tool
         call = dict(call or {})
         hold = call.pop('hold', None)
         try:
@@ -154,7 +207,8 @@ class Loop:
                 if op == 'text': self.engine.send_text(str(r.get('text', '')))
                 elif op == 'persona':   # who it is now, and (when the app names one) the character's voice in the same voice module
                     voice = r.get('voice')
-                    self.engine.switch_session(r['session'], r.get('persona', '') + self.hint, **({'voice': voice} if voice else {}))
+                    self.engine.switch_session(r['session'], r.get('persona', ''), **({'voice': voice} if voice else {}))
+                    self.engine.prime(EXAMPLES)
                     if voice: self.emit({'report': self.report()})
                 elif op == 'say': self.say(r)
                 elif op == 'scene': self.engine.perform(r.get('script'), fit=self.fitter(strict=True)[0])
@@ -166,10 +220,11 @@ class Loop:
                 if op in ('text', 'scene') and not self.ended: self.emit({'event': 'done'})   # it never began, and the page is waiting
 
 
-def call_hint(engine):
-    """One avatar call the way the loaded model writes its calls: with it the small model moved the body on every turn, without it on few."""
-    example = engine.call_example('avatar', {'emotion': 'joy'})
-    return f' The call looks like this: {example}' if example else ''
+def model_choice(name, llms, default):
+    """Which of Jaeger Agent's own models to run (its table, core/policy.py): the one named, by the agent's key or by its file's
+    name as Settings shows it, when that file is on this machine; else the agent's default; None when that file is missing too."""
+    key = name if name in llms else next((k for k, c in llms.items() if c.path.stem == name), default)
+    return key if llms[key].present else default if llms[default].present else None
 
 
 def schema():
@@ -195,35 +250,42 @@ def main():
             wire.write(json.dumps(data, default=str) + '\n'); wire.flush()
 
     start = json.loads(sys.stdin.readline() or '{}')
-    sys.path.insert(0, str(ROOT))
     from jaeger_agent import register_tool_from_function
     from jaeger_agent.core.config import MultimodalConfig
     from jaeger_agent.core.engine import GemmaMultimodal
+    from jaeger_agent.core.policy import DEFAULT_LLM, LLMS
     from jaeger_agent.core.workspace import ensure_bound
-    from jaeger_avatar.embedded.agent_tools import avatar_tool, scene_tool
-    import models
+    from .agent_tools import avatar_tool, scene_tool
 
-    ensure_bound(ROOT / '.jaeger_os/avatar')
-    found = models.found()
-    name = models.pick(start.get('model'), found)
-    if not name: raise SystemExit('No model file (GGUF) was found on this machine')
+    ensure_bound(Path(start.get('workspace') or Path.cwd() / '.jaeger_os/avatar'))   # the agent's own folder for this host
+    # The model is Jaeger Agent's: its own table of models and its own default. The app only remembers which one was chosen.
+    key = model_choice(start.get('model'), LLMS, DEFAULT_LLM)
+    if not key:
+        why = f"Jaeger Agent's model file is not on this machine: {LLMS[DEFAULT_LLM].path}"
+        emit({'why': why})                                   # the app shows it; the download command is in dev/docs/runtime/SETUP.md
+        raise SystemExit(why)
+    name = LLMS[key].path.stem
     loop = Loop(emit)
     register_tool_from_function(avatar_tool(loop.control), name='avatar', side_effect='gesture')   # the agent ends the turn on words + a gesture
     register_tool_from_function(scene_tool(loop.stage), name='scene', side_effect='performance')   # the scene is the reply: no second model call to narrate it
     began = time.time()
-    # Speech only, no wake word, no speaker of its own: the page plays the sound and moves the mouth.
-    # The mic is open (half_duplex=False): the page's microphone has the browser's echo canceller, and it holds her own voice back.
+    # Speech only, no wake word. The audio mode is the agent's own (its default), and so is its half duplex: the host's
+    # speaker is the engine's output (Body), so the microphone is shut until the body has played her words. Only a host
+    # whose microphone has an echo canceller (the browser page) asks for the agent's open mic, and then plays with no word back.
+    open_mic = bool(start.get('open_mic'))
+    if not open_mic: loop.body = Body(emit)
     engine = loop.engine = GemmaMultimodal(
-        on_event=loop.on_event, play=False, half_duplex=False, audio_mode='plain', output_mode='speech', extra_prompt=start.get('persona', ''),
-        config=MultimodalConfig(audio_mode='plain', output_mode='speech', wake_required=False,
-                                stt_model=start.get('hearing', 'large-v3-turbo'), session_key=start.get('session', 'avatar')),
-        runtime_config={'model_path': str(found[name]), 'model': name,
+        on_event=loop.on_event, play=not open_mic, half_duplex=not open_mic, listens_while_thinking=True, outputs=[] if open_mic else [loop.body],
+        output_mode='speech', extra_prompt=start.get('persona', ''),
+        config=MultimodalConfig(output_mode='speech', wake_required=False,
+                                stt_model=start.get('hearing', 'large-v3-turbo'), session_key=start.get('session', 'avatar'),
+                                **({'kokoro_voice': start['voice']} if start.get('voice') else {})),   # the character's own voice, when the host names one
+        runtime_config={**({} if key == DEFAULT_LLM else {'model_path': str(LLMS[key].path)}),   # no path: the agent loads its default
                         **{k: start[k] for k in ('max_tokens', 'temperature', 'timeout_s') if k in start}})
     engine.load()                                            # on this, the main thread: the MLX voice crashes at exit otherwise
-    loop.hint = call_hint(engine)
-    print('avatar call shown to the model:', loop.hint.strip() or 'none (call form not known)', file=sys.stderr)
+    engine.prime(EXAMPLES)                                   # the conversation it starts in; each later one is shown them as it opens
     loop.extra = {'tool_list': 'every tool' if os.environ.get('JAEGER_FULL_TOOLS') == '1' or os.environ['JAEGER_TOOLSET_SCOPING'] != '1' else 'short list',
-                  'load_s': round(time.time() - began, 1)}
+                  'load_s': round(time.time() - began, 1), 'models': {c.path.stem: str(c.path) for c in LLMS.values() if c.present}}
     emit({'ready': True, 'schema': schema(), 'model': name, 'report': loop.report()})
 
     def read():

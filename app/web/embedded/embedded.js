@@ -2,7 +2,7 @@ import {AvatarStage} from './kin/renderer.js';
 import {CLIPS} from './performances/mochi-scenes.js';
 import {STANCE} from './kin/motion.js';
 import {FACE_MOODS,REACTIONS} from './kin/eyes.js';
-const stage=new AvatarStage(document.querySelector('#stage'),null,{label:'mochi'});stage.setCharacter('robot');stage.dust.visible=false;
+const stage=new AvatarStage(document.querySelector('#stage'),null,{label:'mochi',face:new URLSearchParams(location.search).get('face')||undefined});stage.setCharacter('robot');stage.dust.visible=false;
 const status=document.querySelector('#status'),token=new URLSearchParams(location.search).get('token');
 let state=null,last=performance.now(),lastReceived=0,mood='neutral',moodAt=0,reactionSeq=0,reactionAt=0,session='';
 async function poll(){try{const r=await fetch('/state?token='+encodeURIComponent(token),{cache:'no-store'});if(!r.ok)throw new Error('Host unavailable');const s=await r.json();if(s.schema!=='avatar-state/v1')throw new Error('Protocol mismatch');if(session!==s.session){session=s.session;reactionSeq=0;mood='neutral';}state=s;lastReceived=performance.now();status.textContent='Mochi · connected';}catch{status.textContent='Disconnected · resting';}finally{setTimeout(poll,50);}}poll();

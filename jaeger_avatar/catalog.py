@@ -4,6 +4,7 @@ from urllib.parse import quote
 
 import yaml
 
+from .embedded.persona import profile as profile_words
 from .packs import SCREEN_LOOK, PackError, load_pack, local_path, screen_look
 
 ROOT = Path(__file__).resolve().parents[1] / 'avatar-packs'
@@ -90,16 +91,4 @@ def persona(pack_id, profile_id=None):
     pack = load_pack(folder, verify_sources=False)
     profile = pack['profiles'].get(profile_id or pack['default_profile'], {})
     character = profile.get('character', {})
-    prompt = character.get('prompt', {})
-    identity, lore = character.get('identity', {}), character.get('lore', {})
-    lines = [str(prompt[k]) for k in ('custom_instructions', 'soul', 'backstory') if prompt.get(k)]
-    if identity.get('role'): lines.insert(0, f"You are {identity['role']}.")
-    if identity.get('voice_tone'): lines.append(f"Your voice: {identity['voice_tone']}.")
-    if prompt.get('speech_patterns'): lines.append('How you talk: ' + '; '.join(map(str, prompt['speech_patterns'])) + '.')
-    if lore.get('quotes'): lines.append('Things you have said: ' + ' / '.join(map(str, lore['quotes'][:4])))
-    # Only the traits far from the middle change how a reply sounds; the rest would be noise in the prompt.
-    style = character.get('traits', {}).get('expression', {})
-    high = [k for k, v in style.items() if isinstance(v, (int, float)) and v >= .7]
-    low = [k for k, v in style.items() if isinstance(v, (int, float)) and v <= .15]
-    if high or low: lines.append('Style: ' + ', '.join([f'very high {k}' for k in high] + [f'almost no {k}' for k in low]) + '.')
-    return character.get('name') or pack['name'], '\n'.join(lines)
+    return character.get('name') or pack['name'], profile_words(character)   # the words are built in one place, for every host

@@ -22,7 +22,7 @@ creates `.venv` and installs `requirements-app.txt`, then creates `.agent-venv`
 use. The language model is one file you download once:
 
 ```sh
-curl -L --create-dirs -o ~/models/gemma-4-E4B-it-Q4_K_M.gguf https://huggingface.co/lmstudio-community/gemma-4-E4B-it-GGUF/resolve/main/gemma-4-E4B-it-Q4_K_M.gguf
+curl -L --create-dirs -o ~/.lmstudio/models/lmstudio-community/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-Q4_K_M.gguf https://huggingface.co/lmstudio-community/gemma-4-E4B-it-GGUF/resolve/main/gemma-4-E4B-it-Q4_K_M.gguf
 ```
 
 It is 5.3 GB. Without it, or without the agent, the header says why and
@@ -36,8 +36,7 @@ for the new vector studies and their scope.
 Conversation is the [JaegerAgent host](dev/docs/runtime/SETUP.md).
 It runs the public JaegerAgent API in a separate Python 3.11/3.12 environment,
 with the language model loaded inside the agent (llama.cpp, on the GPU): no
-model server. Model files (GGUF) are read from `~/.lmstudio/models` and
-`~/models`. The header identifies the actual brain; without the agent or a
+model server. The model is Jaeger Agent's own choice (its default, Gemma 4 E4B, in the folder the command above uses). The header identifies the actual brain; without the agent or a
 model file, scripted replies and performances remain available. JaegerAI is not required. By default the agent is Jaeger Agent's voice loop: its tools are on, its voice and hearing come from the Jaeger Kokoro and Whisper modules, and it moves the avatar with its own `avatar` tool.
 
 ## Characters and packs

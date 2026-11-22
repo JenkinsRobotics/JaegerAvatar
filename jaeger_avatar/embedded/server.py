@@ -23,7 +23,9 @@ class RuntimeServer:
         self.http=ThreadingHTTPServer(('127.0.0.1',0),Handler)
         self.thread=threading.Thread(target=self.http.serve_forever,daemon=True)
     @property
-    def url(self):return f'http://127.0.0.1:{self.http.server_port}/index.html?token={self.token}'
+    def url(self):   # with the face the pack chose for this look, when it names one
+        face=self.controller.manifest.get('face')
+        return f'http://127.0.0.1:{self.http.server_port}/index.html?token={self.token}'+(f'&face={face}' if face else '')
     def start(self):self.thread.start();self.started=True;return self.url
     def close(self):
         self.controller.send('stop')

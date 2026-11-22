@@ -57,6 +57,8 @@ class PanelBundleTest(unittest.TestCase):
             self.assertEqual((manifest['avatar'], manifest['face'], manifest['control_schema']), ('jp01', 'mochi_wave', 'avatar-control/v1'))
             self.assertEqual(manifest['outputs'], [{'id': 'face', 'width': 64, 'height': 64, 'format': 'rgb8'}, {'id': 'ring', 'width': 24, 'height': 1, 'format': 'rgb8'}])
             self.assertEqual(len(manifest['capabilities']['emotions']), 16)
+            self.assertTrue(manifest['character']['who'].startswith('You are JP01, an AI character.'))   # who the agent is told it is, ready for any host
+            self.assertEqual(manifest['activity'], {'thinking': 'thinking', 'listening': 'listening'})    # the feeling shown while the agent thinks or hears
             self.assertIn('wake', manifest['capabilities']['reactions'])
             for name, digest in json.loads((bundle / 'SHA256SUMS.json').read_text()).items():   # every file is listed with its checksum
                 self.assertEqual(hashlib.sha256((bundle / name).read_bytes()).hexdigest(), digest, name)

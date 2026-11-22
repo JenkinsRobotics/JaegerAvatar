@@ -20,6 +20,9 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
+import sys
+sys.path.insert(0, str(ROOT))
+from jaeger_avatar.embedded.persona import who
 KIN = ROOT / 'app/web/kin'
 
 
@@ -50,9 +53,11 @@ def _build(output, avatar):
         'program': {'run': ['node', 'panel/kin/panel-run.mjs', '--face', face], 'needs': 'Node 18 or newer'},
         'provenance': {'character': f'avatar-packs/{avatar}/avatar.yaml', 'source_sha256': hashlib.sha256(pack_file.read_bytes()).hexdigest()},
     }
-    (runtime / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
-    # Who the character is, for the host's own agent and voice. No tools, credentials or conversation travel with it.
+    # Who the character is, for the host's agent and voice. No tools, credentials or conversation travel with it.
     sheet = {**pack['profiles'][pack['default_profile']]['character'], 'schema': 'character/v1', 'character': avatar, 'name': pack['name']}
+    manifest['character'] = {'who': who(sheet, pack['name']), 'voice': look['defaults'].get('kokoro') or sheet.get('identity', {}).get('voice_id', '')}   # ready for a host that reads only JSON
+    manifest['activity'] = {a: a for a in ('thinking', 'listening') if a in emotions}   # the feeling shown while the agent thinks or hears someone
+    (runtime / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     (runtime / 'character.yaml').write_text(yaml.safe_dump(sheet, sort_keys=False, allow_unicode=True))
     (runtime / 'licenses').mkdir()
     shutil.copy2(ROOT / 'LICENSE', runtime / 'licenses/JaegerAvatar-LICENSE')

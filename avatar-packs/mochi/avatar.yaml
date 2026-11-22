@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: mochi
 name: Mochi
-version: 0.3.1
+version: 0.3.3
 description: ''
 default_profile: jaeger_ai
 default_representation: mochi
@@ -400,6 +400,7 @@ representations:
         tag: fixed 3D shell · procedural eyes
         library: true
         shell_label: mochi
+        face: mochi_wave
         performance_audio: assets/performance-audio/manifest.json
         kokoro: af_heart
         led: true

@@ -139,3 +139,7 @@ Only a face with a look made for the panel can be exported (`native` in
 finished folder once and refuses otherwise. The mouth follows `jaw`; the host
 sends it while it plays speech, as Mochi's host does.
 
+## Connecting the bundle to Jaeger Agent
+
+A host that wants the character to talk, listen and act (Mochi, JP01) connects the bundle to Jaeger Agent with the
+bundle's own `Device`: see [DEVICE.md](DEVICE.md).

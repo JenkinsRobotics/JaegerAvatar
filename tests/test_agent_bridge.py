@@ -100,7 +100,7 @@ class BridgeTest(unittest.TestCase):
         agent_bridge.os.environ = {**agent_bridge.os.environ, 'JAEGER_AGENT_PYTHON': sys.executable}
         host = agent_bridge.AgentHost()
         host.start({'op': 'start', 'model': 'gemma'})
-        self.assertTrue(started[0][-1].endswith('agent_loop.py'))
+        self.assertEqual(started[0][-2:], ['-m', 'jaeger_avatar.embedded.agent_loop'])   # the shared worker, by its module name
         self.assertEqual(host.process.stdin.lines, [{'op': 'start', 'model': 'gemma'}])
         host.start()
         self.assertTrue(started[1][-1].endswith('agent_worker.py'))

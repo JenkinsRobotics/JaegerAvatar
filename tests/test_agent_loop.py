@@ -2,14 +2,15 @@
 import base64
 import sys
 import threading
+import time
 import unittest
 from pathlib import Path
 from types import SimpleNamespace as Event
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'app'))
-import agent_loop
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from jaeger_avatar.embedded import agent_loop
 
 
 class Marked(np.ndarray):
@@ -55,8 +56,14 @@ class Engine:
         self.calls.append(('persona', key, persona) + ((voice,) if voice else ()))
         self.voice = voice or self.voice
 
+    def prime(self, examples):
+        self.calls.append(('examples', list(examples)))
+
     def force_listen(self):
         self.calls.append(('stop',))
+
+    def end_scene(self):
+        self.calls.append(('scene over',))
 
 
 OVER = Event(kind='turn', text='end', data=None)   # the engine's word that a turn is over
@@ -113,19 +120,66 @@ class LoopTest(unittest.TestCase):
         self.loop.receive({'op': 'audio', 'pcm': '', 'end': True})         # the mic went quiet with nothing left to send
         self.assertEqual([c[0] for c in self.engine.calls], ['audio', 'end', 'end'])
 
+    def test_the_engine_waits_for_the_body_to_say_it_has_played_what_was_voiced(self):
+        body = self.loop.body = agent_loop.Body(self.out.append)
+        body.play(np.zeros(24000, dtype=np.float32), 24000)      # the sound itself goes out in the 'audio' events
+        waited = threading.Thread(target=body.wait)
+        waited.start()
+        self.wait_for(1)
+        self.assertEqual(self.out, [{'event': 'voiced', 'n': 1}])
+        self.loop.receive({'op': 'played', 'n': 0})              # an answer to an earlier part, come late
+        waited.join(0.1)
+        self.assertTrue(waited.is_alive())                       # the microphone stays shut
+        self.loop.receive({'op': 'played', 'n': 1})              # the speaker has finished: not queued behind a turn
+        waited.join(2)
+        self.assertFalse(waited.is_alive())
+
+    def test_a_reply_that_is_cut_does_not_wait_to_be_played(self):
+        body = agent_loop.Body(self.out.append)
+        waited = threading.Thread(target=body.wait)
+        waited.start()
+        self.wait_for(1)
+        body.stop()                                              # the engine's force_listen stops its outputs
+        waited.join(2)
+        self.assertFalse(waited.is_alive())
+
+    def test_a_host_that_never_says_played_is_not_waited_for_forever(self):
+        agent_loop.PLAYED_WAIT, before = 0.05, agent_loop.PLAYED_WAIT
+        self.addCleanup(setattr, agent_loop, 'PLAYED_WAIT', before)
+        body = agent_loop.Body(self.out.append)
+        body.play(np.zeros(240, dtype=np.float32), 24000)        # 10 ms of sound
+        began = time.time()
+        body.wait()
+        self.assertLess(time.time() - began, 1)
+
     def test_character_switch_and_interrupt(self):
         self.run_all({'op': 'persona', 'session': 's:mochi', 'persona': 'You are Mochi.'}, {'op': 'interrupt'})
-        self.assertEqual(self.engine.calls, [('stop',), ('persona', 's:mochi', 'You are Mochi.')])   # an interrupt does not wait its turn
+        self.assertEqual([c[:3] for c in self.engine.calls if c[0] != 'examples'], [('scene over',), ('stop',), ('persona', 's:mochi', 'You are Mochi.')])   # an interrupt does not wait its turn, and ends a scene that was waiting for the other person
         self.assertEqual(self.out, [])
 
-    def test_the_character_is_shown_one_avatar_call_in_the_loaded_models_own_form(self):
-        self.engine.call_example = lambda name, args: f'<call:{name}{args}>'
-        self.loop.hint = agent_loop.call_hint(self.engine)
-        self.assertEqual(self.loop.hint, " The call looks like this: <call:avatar{'emotion': 'joy'}>")
+    def test_the_model_is_one_of_jaeger_agents_own_and_its_default_unless_another_is_chosen(self):
+        llms = {'e4b': Event(path=Path('/m/small-Q4.gguf'), present=True), '26b': Event(path=Path('/m/big-Q4.gguf'), present=True)}   # stands in for the agent's own table
+        pick = lambda name: agent_loop.model_choice(name, llms, 'e4b')
+        self.assertEqual((pick('26b'), pick('big-Q4')), ('26b', '26b'))            # by the agent's key, or by the file's name as Settings shows it
+        self.assertEqual((pick(None), pick(''), pick('a-file-the-app-once-found')), ('e4b', 'e4b', 'e4b'))
+        llms['26b'].present = False
+        self.assertEqual(pick('26b'), 'e4b')                                       # its file is gone: the agent's default
+        llms['e4b'].present = False
+        self.assertIsNone(pick('26b'))
+
+    def test_each_conversation_opens_with_examples_of_a_reply_and_of_a_scene(self):
+        # Told only in its prompt, Gemma called the avatar tool in 4 of 12 fresh conversations; shown an exchange first, in 24 of 24.
         self.run_all({'op': 'persona', 'session': 's:vita', 'persona': 'You are Vita.'})
-        self.assertEqual(self.engine.calls, [('persona', 's:vita', 'You are Vita.' + self.loop.hint)])
-        self.engine.call_example = lambda name, args: ''
-        self.assertEqual(agent_loop.call_hint(self.engine), '')   # a model whose call form the agent does not know: no example
+        persona, (kind, examples) = self.engine.calls
+        self.assertEqual(persona, ('persona', 's:vita', 'You are Vita.'))        # the persona goes in as the app wrote it: no model syntax added
+        self.assertEqual(kind, 'examples')
+        (said, reply, calls), (asked, quiet, show) = examples
+        self.assertEqual([(n, a) for n, a, _ in calls], [('avatar', {'emotion': 'joy'})])   # a plain reply: one feeling, no move, then words
+        self.assertTrue(said and reply)
+        self.assertEqual((show[0][0], quiet), ('scene', ''))                     # asked to act something out: the scene is the whole reply
+        steps = [step.split()[0] for step in show[0][1]['script'].split(' | ')]
+        self.assertIn('say', steps)                                              # its script speaks,
+        self.assertLessEqual(set(steps), {'say', 'wait', 'hold', 'look', 'emotion'})   # and names no action: every body can play it
 
     def test_typing_over_a_reply_stops_it_first(self):
         self.loop.busy.set()
@@ -220,20 +274,20 @@ class LoopTest(unittest.TestCase):
             asked.append(op)
             return {'ok': True, 'offers': OFFERS}
         def engine_reads(script, fit=None):                       # the engine asks about each call the scene will make
-            made.extend(fit(call) for call in ({'emotion': 'joy'}, {'emotion': 'happy', 'action': 'wave'}, {'emotion': 'joy', 'action': 'wave'}))
+            made.extend(fit(call) for call in ({'emotion': 'joy'}, {'emotion': 'wobbly', 'action': 'wave'}, {'emotion': 'joy', 'action': 'wave'}))
             return 1
         self.loop.control = control
         self.engine.stage = self.engine.perform = engine_reads
         # the model's scene still plays, less what the body lacks, and the model is told what that was
-        self.assertEqual(self.loop.stage('...'), ['emotion happy (it shows: neutral, joy)', 'action wave (it does: spin)', 'action wave (it does: spin)'])
+        self.assertEqual(self.loop.stage('...'), ['emotion wobbly (it shows: neutral, joy)', 'action wave (it does: spin)', 'action wave (it does: spin)'])
         self.assertEqual(made, [{'emotion': 'joy'}, {}, {'emotion': 'joy'}])
         self.assertEqual(asked, ['offers'])                       # the body is asked once a scene, not once a move
-        self.assertEqual(self.out[-1]['data']['result']['left_out'][0], 'emotion happy (it shows: neutral, joy)')
+        self.assertEqual(self.out[-1]['data']['result']['left_out'][0], 'emotion wobbly (it shows: neutral, joy)')
         self.out.clear()
-        self.run_all({'op': 'scene', 'script': 'emotion happy | say Hi.'})   # the director's scene is refused, to be fixed before it starts
+        self.run_all({'op': 'scene', 'script': 'emotion wobbly | say Hi.'})   # the director's scene is refused, to be fixed before it starts
         self.assertEqual([o.get('event') for o in self.out], ['scene', 'done'])
         self.assertEqual(self.out[0]['text'], 'refused')
-        self.assertIn('This body cannot do emotion happy (it shows: neutral, joy)', self.out[0]['data'])
+        self.assertIn('This body cannot do emotion wobbly (it shows: neutral, joy)', self.out[0]['data'])
 
     def test_with_no_body_to_ask_a_scene_is_not_held_back(self):
         self.loop.control = NOBODY
@@ -284,7 +338,7 @@ class LoopTest(unittest.TestCase):
         self.loop.extra = {'load_s': 16.9}
         self.run_all({'op': 'persona', 'session': 's:mochi', 'persona': 'You are Mochi.', 'voice': 'af_bella'},
                      {'op': 'persona', 'session': 's:vita', 'persona': 'You are Vita.'})
-        self.assertEqual(self.engine.calls, [('persona', 's:mochi', 'You are Mochi.', 'af_bella'), ('persona', 's:vita', 'You are Vita.')])
+        self.assertEqual([c for c in self.engine.calls if c[0] != 'examples'], [('persona', 's:mochi', 'You are Mochi.', 'af_bella'), ('persona', 's:vita', 'You are Vita.')])
         self.assertEqual(self.out, [{'report': {'voice': {'module': 'jaeger_kokoro_tts', 'model': 'af_bella'}, 'load_s': 16.9}}])   # the app is told what speaks now
 
     def test_the_worker_uses_only_the_engines_own_calls(self):
