@@ -267,7 +267,7 @@ if (!params.has('obs')) (window.requestIdleCallback ?? setTimeout)(() => audio()
 
 let serverVoice = null, serverBrain = 'scripted', serverWhy = '', serverEars = false, serverHearing = '', viewers = 0;
 // Jaeger Agent's voice loop (the server says so in /health): it hears, thinks and voices; this page plays the sound, moves the mouth and shows the words.
-let serverLoop = false, loopEvents = null, loopBusy = false, loopSkip = 0, loopBubble = null, loopChain = Promise.resolve();
+let serverLoop = false, loopEvents = null, loopBusy = false, loopSkip = 0, loopBubble = null, loopWhole = false, loopChain = Promise.resolve();   // loopWhole: this turn's whole reply is already shown
 const loopOn = () => serverLoop && serverBrain !== 'scripted';
 const peek = f => { try { return f(); } catch { return null; } };   // the snapshot can be asked for before the variables further down exist
 describeFlow(() => ({ character: current.name, body: current.rep?.name || current.name, pack: current.packId, brain: serverBrain, voice: chosenVoice() ?? 'Piper ' + current.voice,
@@ -643,7 +643,7 @@ const OOPS = "[confused] Oops, my brain link just dropped. [sigh] Can you try th
 // The voice loop's side of a turn. Typed words are sent to it; heard words it already has (it did the hearing) and is answering.
 async function askLoop(text, heard) {
   const id = runId;
-  loopBusy = true; loopBubble = null;
+  loopBusy = true; loopBubble = null; loopWhole = false;
   trace('agent', 'request', { text, brain: serverBrain, character: current.name, offered: controls(), how: heard ? 'heard by the loop' : 'typed' });
   if (heard) return;
   const ok = await fetch('/agent/text', { method: 'POST', body: JSON.stringify({ text, ...loopWho() }) }).then(r => r.ok, () => false);
@@ -670,7 +670,7 @@ async function performScene(script) {
   if (!loopOn()) return note('Scenes are performed by the agent, and its voice loop is off or still loading.');
   stopAll(); remember({ scene: script });
   const id = runId;
-  sentAt = performance.now(); firstSoundAt = 0; streamDone = false; loopBusy = true; loopBubble = null; sceneHold = [];
+  sentAt = performance.now(); firstSoundAt = 0; streamDone = false; loopBusy = true; loopBubble = null; loopWhole = false; sceneHold = [];
   note('Getting the lines ready…');
   trace('scene', 'request', { text: script.split('\n')[0], script, character: current.name, offered: controls(), how: 'performed by the agent: its voice, its avatar tool, no model' });
   const ok = await fetch('/agent/scene', { method: 'POST', body: JSON.stringify({ script, ...loopWho() }) }).then(r => r.ok, () => false);
@@ -730,14 +730,14 @@ function onLoop(e) {
       chat(current.name, text);
       $('#log').textContent = $('#log').textContent.split('   →   ')[0] + `   →   ${current.name}: ${text}`;
     }
-    loopBubble = null;
+    loopBubble = null; loopWhole = !!text;                    // lines voiced after the model has finished are already in the bubble: they open no second one
     trace('agent', 'done', { ms: Math.round(performance.now() - sentAt), chars: text.length, reply: text });
     return;
   }
   // 'audio': one spoken sentence, voiced by the agent's voice module. This page plays it and reads the mouth shapes from the sound.
   const id = runId, samples = fromPcm(e.pcm);
   if (rig.emotion === 'thinking') rig.setEmotion('neutral');
-  (loopBubble ??= bubble('assistant', '')).textContent += (loopBubble.textContent ? ' ' : '') + text;
+  if (!loopWhole) (loopBubble ??= bubble('assistant', '')).textContent += (loopBubble.textContent ? ' ' : '') + text;
   trace('voice', 'clip ready', { text, ms: Math.round(performance.now() - sentAt), seconds: +(samples.length / e.rate).toFixed(2), sampleRate: e.rate, lipMarks: (e.marks || []).length, cues: (e.cues || []).map(c => ({ at: c.at, ...c.call })), by: 'Jaeger Agent (voice module)' });
   loopChain = loopChain.then(async () => {
     const marks = e.marks || [], track = voice.markLips(await work('analyze', samples, e.rate), marks);   // lip closures timed by the voice module

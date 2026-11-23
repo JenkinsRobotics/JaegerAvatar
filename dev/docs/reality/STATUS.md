@@ -1063,6 +1063,13 @@ On `dev` in this repo and in jaeger-module-agent (`c6a750d`, pinned in
   14 s to her first word. The avatar tool was called on every turn (48 of 48,
   and 9 of 9 in the app). Time to the first token was the same with four rules
   and six (0.4 to 0.7 s).
+  Asked to act something out, she used the scene tool on 6 of 6 turns with
+  her manner said and 6 of 6 without, alternated, through the app's page.
+- **One bubble for each reply.** Lines voiced after the model had finished
+  used to open a second bubble repeating the end of the reply (the whole
+  reply arrives before its last lines are voiced, on 5 of 6 turns measured).
+  Checked through the page: a short ask, a long one, a story, a scene she
+  wrote, a scene of your own and an ask after it, one bubble each.
 - **Limits.** One step each side of a dial: 70% and 100% say the same rule.
   With six rules at once "at most ten words" gave two short sentences, not
   one. After dials go back to the middle the conversation's earlier replies
