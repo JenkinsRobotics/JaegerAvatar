@@ -27,7 +27,7 @@ KIN = ROOT / 'app/web/kin'
 
 
 def _build(output, avatar):
-    pack_file = ROOT / 'avatar-packs' / avatar / 'avatar.yaml'
+    pack_file = ROOT / 'avatars' / avatar / 'avatar.yaml'
     pack = yaml.safe_load(pack_file.read_text())
     look = pack['representations'][pack['default_representation']]['presentation']
     face = look['defaults'].get('face')
@@ -51,7 +51,7 @@ def _build(output, avatar):
         'capabilities': {'emotions': emotions, 'reactions': list(look.get('controls', {}).get('reactions', []))},
         'outputs': [{'id': 'face', 'width': 64, 'height': 64, 'format': 'rgb8'}, {'id': 'ring', 'width': 24, 'height': 1, 'format': 'rgb8'}],
         'program': {'run': ['node', 'panel/kin/panel-run.mjs', '--face', face], 'needs': 'Node 18 or newer'},
-        'provenance': {'character': f'avatar-packs/{avatar}/avatar.yaml', 'source_sha256': hashlib.sha256(pack_file.read_bytes()).hexdigest()},
+        'provenance': {'character': f'avatars/{avatar}/avatar.yaml', 'source_sha256': hashlib.sha256(pack_file.read_bytes()).hexdigest()},
     }
     # Who the character is, for the host's agent and voice. No tools, credentials or conversation travel with it.
     sheet = {**pack['profiles'][pack['default_profile']]['character'], 'schema': 'character/v1', 'character': avatar, 'name': pack['name']}

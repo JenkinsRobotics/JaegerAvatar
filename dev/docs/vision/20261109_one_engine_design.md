@@ -305,7 +305,7 @@ From a search of `~/GITHUB`:
    Before JaegerAnimation is removed, its renders of every pack representation
    are captured as reference images; each JS port is reviewed side by side
    against them, then its own output is frozen as the new fingerprint
-   baseline. Content in scope is Jaeger Avatar's `avatar-packs/` (Mochi's
+   baseline. Content in scope is Jaeger Avatar's `avatars/` (Mochi's
    characters are already imported there), including the imported MScripts.
 4. **Media outside packs is not the avatar's job** (Jonathan, November 9).
    A video file, a phone call or any other media plays through JaegerOS's own

@@ -124,7 +124,7 @@ def verify(root):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     sub=parser.add_subparsers(dest='command',required=True)
-    p=sub.add_parser('build');p.add_argument('--root',type=Path,default=Path('avatar-packs'));p.add_argument('--output',type=Path,required=True);p.add_argument('--avatar',action='append',dest='avatars')
+    p=sub.add_parser('build');p.add_argument('--root',type=Path,default=Path('avatars'));p.add_argument('--output',type=Path,required=True);p.add_argument('--avatar',action='append',dest='avatars')
     p=sub.add_parser('verify');p.add_argument('root',type=Path)
     args=parser.parse_args()
     try:

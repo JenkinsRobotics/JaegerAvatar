@@ -92,5 +92,5 @@ def import_demos(nori, kin, output):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--nori',type=Path,required=True);parser.add_argument('--kin',type=Path,required=True)
-    parser.add_argument('--output',type=Path,default=Path('avatar-packs'))
+    parser.add_argument('--output',type=Path,default=Path('avatars'))
     args=parser.parse_args();import_demos(args.nori,args.kin,args.output)

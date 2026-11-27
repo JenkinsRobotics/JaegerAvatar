@@ -2,7 +2,7 @@
 
 The user selected Nori's app, rig and presentation as the product foundation.
 The local app now lives under `app/`; portable identity and appearance data lives
-in `avatar-packs/`. Nori's body acting, camera, side-by-side conversation, reel,
+in `avatars/`. Nori's body acting, camera, side-by-side conversation, reel,
 tracking and recording are retained. KIN contributes Momo, the original soft
 Vita renderer, the archived Aster model, formant/vowel analysis and Singer A.
 

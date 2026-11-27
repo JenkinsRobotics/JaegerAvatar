@@ -3,7 +3,7 @@ from pathlib import Path
 import json, wave
 import numpy as np
 ROOT=Path(__file__).resolve().parents[1]
-OUT=ROOT/'avatar-packs/mochi/assets/performance-audio'
+OUT=ROOT/'avatars/mochi/assets/performance-audio'
 RATE=24000
 rng=np.random.default_rng(701)
 

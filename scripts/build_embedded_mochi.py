@@ -36,21 +36,21 @@ def _build(output, visual_baseline=None):
             elif spec=='@pixiv/three-vrm':target=WEB/'vendor/three-vrm.module.min.js'
             else:raise ValueError('Unknown runtime dependency '+spec)
             pending.append(target)
-    pack=yaml.safe_load((ROOT/'avatar-packs/mochi/avatar.yaml').read_text())
+    pack=yaml.safe_load((ROOT/'avatars/mochi/avatar.yaml').read_text())
     # A single selected appearance, no other identities or prerecorded libraries.
     profile=pack['profiles'][pack['default_profile']]['character']
     manifest={'schema':'avatar-runtime-bundle/v1','version':pack['version'],'pack_version':pack['version'],'avatar':'mochi','name':'Mochi',
         'representation':'procedural_3d','renderer':'kin-momo','control_schema':'avatar-control/v1',
         'capabilities':{'emotions':['neutral','joy','excited','love','sad','angry','surprised','scared','thinking','confused','shy','smug','sleepy','laughing','singing','listening'],
         'reactions':['blink','wink','sideeye','sparkle','heart','roll','peek','doze','groove','wake']},
-        'provenance':{'character':'avatar-packs/mochi/avatar.yaml','geometry':'KIN procedural shell shared with Momo; no external model',
+        'provenance':{'character':'avatars/mochi/avatar.yaml','geometry':'KIN procedural shell shared with Momo; no external model',
         'source_representation':'procedural_3d',
-        'source_sha256':hashlib.sha256((ROOT/'avatar-packs/mochi/avatar.yaml').read_bytes()).hexdigest()}}
+        'source_sha256':hashlib.sha256((ROOT/'avatars/mochi/avatar.yaml').read_bytes()).hexdigest()}}
     manifest['actions']={**{e:{'operation':'emotion','value':e} for e in manifest['capabilities']['emotions']},**{e:{'operation':'reaction','value':e} for e in manifest['capabilities']['reactions']},'look_left':{'operation':'gaze','value':[-1,0]},'look_right':{'operation':'gaze','value':[1,0]},'look_center':{'operation':'gaze','value':[0,0]},'rest':{'operation':'stop','value':None}}
     names=['squint_wink','pong','sleep_bubble','tongue','anger','speedometer','scare','tired','hearts_kiss','yawn']
     manifest['capabilities']['clips']={name:{'id':f'cell_{i//2}_{i%2}','duration_ms':16709} for i,name in enumerate(names)}
     manifest['actions'].update({name:{'operation':'clip','value':name,'ttl_ms':17000} for name in names})
-    audio_source=ROOT/'avatar-packs/mochi/assets/performance-audio'
+    audio_source=ROOT/'avatars/mochi/assets/performance-audio'
     shutil.copytree(audio_source,public/'audio')
     shutil.copy2(WEB/'embedded/performance-audio.js',public/'performance-audio.js')
     manifest['performance_audio']={'schema':'mochi-performance-audio/v1','manifest':'audio/manifest.json','player':'performance-audio.js'}

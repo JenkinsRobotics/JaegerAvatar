@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class RecoveredLibraryTests(unittest.TestCase):
     def test_sculpted_avatar_has_artwork_and_six_clips_and_a_marked_draft_persona(self):
-        folder = ROOT / "avatar-packs/jaeger_sculpted"
+        folder = ROOT / "avatars/jaeger_sculpted"
         pack = load_pack(folder, verify_sources=True)
         # Personas for the design studies were written in Jaeger Avatar and say so.
         self.assertEqual(list(pack["profiles"]), ["jaeger_avatar"])
@@ -30,13 +30,13 @@ class RecoveredLibraryTests(unittest.TestCase):
         })
         self.assertFalse(presentation["expressions"]["milestone_level_up"]["loop"])
         for name in ("atlas", "nova", "relay", "jaeger_bronze"):
-            profiles = load_pack(ROOT / "avatar-packs" / name)["profiles"]
+            profiles = load_pack(ROOT / "avatars" / name)["profiles"]
             self.assertIn("draft", profiles["jaeger_avatar"]["character"]["author"])
         # Mochi's unrelated Jaeger identity must not be replaced by the new art.
-        self.assertEqual(load_pack(ROOT / "avatar-packs/jaeger")["default_representation"], "mochi")
+        self.assertEqual(load_pack(ROOT / "avatars/jaeger")["default_representation"], "mochi")
 
     def test_archived_prototypes_are_not_registered_as_working_representations(self):
-        packs = validate_catalog(ROOT / "avatar-packs")
+        packs = validate_catalog(ROOT / "avatars")
         self.assertEqual(len(packs), 57)
         self.assertEqual(sum(len(p["profiles"]) for p in packs), 64)
         self.assertEqual(sum(len(p["representations"]) for p in packs), 109)  # +3: omni_core (Jaeger: screen body wearing its own look, the locked screen look, card)
@@ -49,7 +49,7 @@ class RecoveredLibraryTests(unittest.TestCase):
                     self.assertTrue(source["notes"])
                     self.assertNotIn(key, {r.get("source") for r in pack["representations"].values()})
         self.assertEqual(archived, 5)
-        assistant = load_pack(ROOT / "avatar-packs/assistant")
+        assistant = load_pack(ROOT / "avatars/assistant")
         self.assertEqual(assistant["default_profile"], "jaeger_agent")
         self.assertEqual(assistant["default_representation"], "jaeger_ai")
 
@@ -59,7 +59,7 @@ class RecoveredLibraryTests(unittest.TestCase):
         self.assertEqual(len(duplicates), 20)
         for candidate in duplicates:
             for relative in candidate["existing_files"]:
-                content = (ROOT / "avatar-packs" / relative).read_bytes()
+                content = (ROOT / "avatars" / relative).read_bytes()
                 digest = hashlib.sha1(b"blob " + str(len(content)).encode() + b"\0" + content).hexdigest()
                 self.assertEqual(digest, candidate["sha"])
         self.assertEqual(report["external_model"]["status"], "unavailable")

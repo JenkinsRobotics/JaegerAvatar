@@ -9,7 +9,7 @@ import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { faceTarget, FACE_MOODS, REACTIONS } from '../app/web/kin/eyes.js';
 import { RENDERER, fromPack, styledFace } from '../app/web/kin/styles.js';
 
-const PACKS = new URL('../avatar-packs/', import.meta.url);
+const PACKS = new URL('../avatars/', import.meta.url);
 const DISPLAYS = { square: [1024, 1024, { scale: 1.55, spread: .8 }], wide: [1024, 640, {}] };
 const R = Object.keys(REACTIONS), mood = m => FACE_MOODS.indexOf(m) / (FACE_MOODS.length - 1);
 const FRAMES = {

@@ -68,7 +68,7 @@
 - Modify: `jaeger_avatar/catalog.py` (pass `controls` through on each representation entry)
 - Create: `app/web/controls.js`
 - Modify: `app/web/app.js` (agent actions, `/chat` actions and the Agent controls tab use `controlsOf`)
-- Modify: `avatar-packs/jp01/avatar.yaml`, `avatar-packs/truth/avatar.yaml` (explicit controls, version bump)
+- Modify: `avatars/jp01/avatar.yaml`, `avatars/truth/avatar.yaml` (explicit controls, version bump)
 - Test: `tests/test_runtime_catalog.py` (add), `tests/controls.test.mjs` (new)
 
 **Interfaces:**

@@ -272,7 +272,7 @@ def validate_catalog(root: Path, *, verify_sources: bool = True) -> list[dict]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("validate", "list"))
-    parser.add_argument("root", type=Path, nargs="?", default=Path("avatar-packs"))
+    parser.add_argument("root", type=Path, nargs="?", default=Path("avatars"))
     args = parser.parse_args()
     try:
         packs = validate_catalog(args.root)

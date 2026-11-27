@@ -11,8 +11,8 @@ from jaeger_avatar.deploy import build,verify,digest
 from jaeger_avatar.packs import load_pack
 ROOT=Path(__file__).resolve().parents[1]
 p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
-build(ROOT/'avatar-packs',a.output,avatars=['mochi','momo'])
-pack=load_pack(ROOT/'avatar-packs/mochi')
+build(ROOT/'avatars',a.output,avatars=['mochi','momo'])
+pack=load_pack(ROOT/'avatars/mochi')
 def page(prefix):
     variants=[]
     for key in ['classic','mochi']:

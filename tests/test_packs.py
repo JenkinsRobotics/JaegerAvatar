@@ -13,7 +13,7 @@ import yaml
 from jaeger_avatar.packs import PackError, load_pack, resolve_reference, validate_catalog
 from scripts.import_avatar_packs import import_catalog
 
-CATALOG = Path(__file__).resolve().parents[1] / "avatar-packs"
+CATALOG = Path(__file__).resolve().parents[1] / "avatars"
 
 
 class ImportedCatalogTests(unittest.TestCase):

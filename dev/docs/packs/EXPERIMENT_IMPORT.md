@@ -9,11 +9,11 @@ The library now has **39 avatars, 39 persona profiles and 45 representations**.
 
 | Pack | Included | Status |
 | --- | --- | --- |
-| [Jaeger (Sculpted)](../../../avatar-packs/jaeger_sculpted/README.md) | The white grinning artwork shown in the reference screenshot; portrait and six silent MP4 clips. | Image/clip resources available; application playback remains planned. |
-| [Atlas](../../../avatar-packs/atlas/avatar.yaml) | White robot portrait. | Source UI placeholder; no animated model or persona supplied. |
-| [Nova](../../../avatar-packs/nova/avatar.yaml) | Illustrated human portrait. | Source UI placeholder; no animated model or persona supplied. |
-| [Relay](../../../avatar-packs/relay/avatar.yaml) | Blue/bronze robot portrait. | Source UI placeholder; no animated model or persona supplied. |
-| [Jaeger (Bronze)](../../../avatar-packs/jaeger_bronze/avatar.yaml) | Face/full crops and original sizes from the design-tokens branch. | Static design study; two selectable representations. |
+| [Jaeger (Sculpted)](../../../avatars/jaeger_sculpted/README.md) | The white grinning artwork shown in the reference screenshot; portrait and six silent MP4 clips. | Image/clip resources available; application playback remains planned. |
+| [Atlas](../../../avatars/atlas/avatar.yaml) | White robot portrait. | Source UI placeholder; no animated model or persona supplied. |
+| [Nova](../../../avatars/nova/avatar.yaml) | Illustrated human portrait. | Source UI placeholder; no animated model or persona supplied. |
+| [Relay](../../../avatars/relay/avatar.yaml) | Blue/bronze robot portrait. | Source UI placeholder; no animated model or persona supplied. |
+| [Jaeger (Bronze)](../../../avatars/jaeger_bronze/avatar.yaml) | Face/full crops and original sizes from the design-tokens branch. | Static design study; two selectable representations. |
 
 Sculpted Jaeger is a separate `jaeger_sculpted` pack because Mochi's existing
 `jaeger` pack describes different artwork and a persona. No God/Truth fictional
@@ -46,7 +46,7 @@ adapter and its attribution document are preserved; the model is not included.
 
 ## Clanker and duplicates
 
-[Clanker](../../../avatar-packs/clanker/README.md) was already included in the
+[Clanker](../../../avatars/clanker/README.md) was already included in the
 first import, with its personality, voice preference, SOUL, backstory, lore and
 card. Its UI image is byte-identical to that card. Three manifest variants across
 the inspected branches have identical persona fields; no additional Clanker rig
@@ -79,7 +79,7 @@ git -C ../JaegerAI fetch origin
 git worktree add --detach /tmp/jaeger-avatar-seed d510be2
 python3 scripts/import_avatar_experiments.py \
   --repo ../JaegerAI \
-  --base /tmp/jaeger-avatar-seed/avatar-packs \
+  --base /tmp/jaeger-avatar-seed/avatars \
   --plan dev/imports/jaeger-ai-experiments.json \
   --output /tmp/jaeger-avatar-recovered
 python3 -m jaeger_avatar.packs validate /tmp/jaeger-avatar-recovered

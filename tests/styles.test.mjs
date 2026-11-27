@@ -4,7 +4,7 @@ import { faceTarget, FACE_MOODS } from '../app/web/kin/eyes.js';
 import { FACES } from '../app/web/kin/jp01.js';
 import { readFileSync } from 'node:fs';
 import { STYLES, tint, fromPack } from '../app/web/kin/styles.js';
-const BENDER = fromPack(JSON.parse(readFileSync(new URL('../avatar-packs/bender/looks/screen.json', import.meta.url))).style);
+const BENDER = fromPack(JSON.parse(readFileSync(new URL('../avatars/bender/looks/screen.json', import.meta.url))).style);
 
 // A canvas stand-in that fails on any non-finite number.
 const fakeCtx = (width, height) => new Proxy({ canvas: { width, height } }, {

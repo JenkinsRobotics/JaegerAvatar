@@ -30,6 +30,9 @@ Release 0.2.0, on master. Verified today, in the running app unless noted:
   tkinter only; `--probe` is the runnable check. Verified end to end today:
   JP01 face 64 x 64 and ring 24 x 1 frames read from `/hardware/stream/`.
   `main.py` at the root launches the app the way Mochi's did (it is `./run.sh`).
+- **November 27**: the packs live in **`avatars/`** (renamed from `avatar-packs/`,
+  every reference updated). All 57 packs, 64 profiles and 109 representations
+  validate; this folder is the import source for JP01 and any other device.
 - A fresh install has not been tried since these changes.
 
 ---
@@ -40,7 +43,7 @@ Release 0.2.0, on master. Verified today, in the running app unless noted:
 
 - A runnable local application at `./run.sh` / http://127.0.0.1:8790/, using
   Nori's app, rig, camera and presentation as the foundation.
-- 56 avatar packs, 62 profiles and 104 representations (JP01 added Nov 9, with face packs JP01 Matrix / T-Face / Ring Eyes / Neon (mood-driven emotes) painted by `app/web/kin/jp01.js`, which also holds the firmware wake-up and the 24-LED side rings: Jenkins Robotics' pan-tilt display head, `kin-momo` preset `jp01` in `app/web/kin/renderer.js`, loading the real Onshape assembly (`avatar-packs/jp01/model/jp01.glb`: hardware removed, decimated to 300k triangles, head posed forward; pan at the neck bearing, tilt at the NeoPixel hub; a Face menu switches faces live, including Mochi eyes + mouth lip synced with Vita's vowels) with a procedural fallback, and Momo's eyes laid out for its square screen. Truth added Nov 8: fan persona on its own 3D body, `nori-3d` preset `truth` in `app/web/render-truth.js`; personal fan study, rights not cleared). The prior 39-pack library
+- 56 avatar packs, 62 profiles and 104 representations (JP01 added Nov 9, with face packs JP01 Matrix / T-Face / Ring Eyes / Neon (mood-driven emotes) painted by `app/web/kin/jp01.js`, which also holds the firmware wake-up and the 24-LED side rings: Jenkins Robotics' pan-tilt display head, `kin-momo` preset `jp01` in `app/web/kin/renderer.js`, loading the real Onshape assembly (`avatars/jp01/model/jp01.glb`: hardware removed, decimated to 300k triangles, head posed forward; pan at the neck bearing, tilt at the NeoPixel hub; a Face menu switches faces live, including Mochi eyes + mouth lip synced with Vita's vowels) with a procedural fallback, and Momo's eyes laid out for its square screen. Truth added Nov 8: fan persona on its own 3D body, `nori-3d` preset `truth` in `app/web/render-truth.js`; personal fan study, rights not cleared). The prior 39-pack library
   is preserved; the demo import adds 13 live representations across 12 identities,
   including both Vita looks, Momo, all ten Nori characters and archived Aster.
 - Every pack has a live rig. The other 38 packs got a built-in rig restyled with
