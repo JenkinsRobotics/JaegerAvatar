@@ -8,10 +8,12 @@ from pathlib import Path
 # Whisper model names (the same in whisper.cpp and faster-whisper), with roughly what the first use downloads.
 WHISPER = {'tiny.en': '75 MB', 'base.en': '140 MB', 'small.en': '470 MB', 'medium.en': '1.5 GB', 'large-v3-turbo': '1.6 GB'}
 LANGUAGES = {'en': 'English', 'auto': 'Detect automatically'}
+# Jaeger Agent's two ways of taking turns with a body: quasi (open mic, echo cancelled, you can cut in) or half (mic shut while she speaks).
+DUPLEX = {'quasi': 'Quasi full duplex: talk over her', 'half': 'Half duplex: the mic shuts while she speaks'}
 
 
 def defaults(model, stt):
-    return {'agent': {'model': model, 'temperature': 0.7, 'max_tokens': 700, 'timeout_s': 60, 'skip_thinking': True}, 'hearing': {'model': stt, 'language': 'en'}}
+    return {'agent': {'model': model, 'temperature': 0.7, 'max_tokens': 700, 'timeout_s': 60, 'skip_thinking': True, 'duplex': 'quasi'}, 'hearing': {'model': stt, 'language': 'en'}}
 
 
 def _number(v, lo, hi, kind):
@@ -35,6 +37,8 @@ def apply(current, patch, models):
         raise ValueError('Timeout is 5 to 600 seconds')
     if 'skip_thinking' in a and not isinstance(a['skip_thinking'], bool):
         raise ValueError('Skip thinking is on or off')
+    if 'duplex' in a and a['duplex'] not in DUPLEX:
+        raise ValueError('Duplex is half or quasi')
     if 'model' in h and h['model'] not in WHISPER:
         raise ValueError('Unknown speech model')
     if 'language' in h and h['language'] not in LANGUAGES:
@@ -67,10 +71,11 @@ if __name__ == '__main__':   # python app/settings.py: fails if the checks stop 
     assert apply(base, {'hearing': {'model': 'large-v3-turbo', 'language': 'auto'}}, [])['hearing']['language'] == 'auto'
     assert apply(base, {'hearing': {'language': 'auto'}}, [])['hearing']['language'] == 'en'
     assert apply(base, {'agent': {'skip_thinking': False}}, [])['agent']['skip_thinking'] is False
+    assert apply(base, {'agent': {'duplex': 'half'}}, [])['agent']['duplex'] == 'half'
     assert load(Path('/nonexistent'), base) == base
     for bad in ({'agent': {'model': 'nope'}}, {'agent': {'temperature': 2}}, {'agent': {'temperature': True}},
                 {'agent': {'max_tokens': 99}}, {'agent': {'max_tokens': 700.5}}, {'agent': {'tools': 1}},
-                {'hearing': {'model': '../x'}}, {'voice': {}}, [], {'agent': []}, {'agent': {'skip_thinking': 1}}, {'agent': {'timeout_s': 1}}):
+                {'hearing': {'model': '../x'}}, {'voice': {}}, [], {'agent': []}, {'agent': {'skip_thinking': 1}}, {'agent': {'timeout_s': 1}}, {'agent': {'duplex': 'full'}}):
         try:
             apply(base, bad, ['big'])
         except ValueError:

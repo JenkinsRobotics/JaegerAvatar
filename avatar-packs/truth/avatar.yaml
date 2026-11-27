@@ -1,7 +1,7 @@
 schema: avatar/v1
 avatar: truth
 name: Truth
-version: 0.2.1
+version: 0.2.2
 description: Fan persona of Truth, the being behind the Gate in Fullmetal Alchemist, as a seated white
   3D figure with a wide grin. Personal fan study; rights not cleared.
 default_profile: fan_persona
@@ -172,5 +172,5 @@ representations:
         kokoro: am_echo
         library: true
         pack: truth
-        intro: '[smile] You came all this way to ask me something. Go on. I will answer. I always do.'
+        intro: '[smug] You came all this way to ask me something. Go on. I will answer. I always do.'
 sources: {}

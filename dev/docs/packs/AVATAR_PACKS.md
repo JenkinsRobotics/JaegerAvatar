@@ -144,7 +144,7 @@ python3 -m pip install -r requirements-packs.txt
 python3 scripts/import_avatar_packs.py \
   --mochi ../Mochi \
   --jaeger-ai ../JaegerAI \
-  --jaeger-agent ../jaeger-agent \
+  --jaeger-agent ../jaeger-module-agent \
   --output /tmp/jaeger-avatar-import
 python3 -m jaeger_avatar.packs validate /tmp/jaeger-avatar-import
 python3 -m unittest discover -s tests -v

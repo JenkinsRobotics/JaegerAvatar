@@ -130,20 +130,37 @@ def loop_who(body):
     is told about replying and moving is the agent's to write (its persona rules); it moves the body with its avatar tool.
     Her manner is her pack's expression dials as rules, with any the person at the controls has turned (`dials`); the
     agent says it with each turn (loop_as)."""
+    pack_id = str(body.get('pack', body.get('character', 'vita')) or 'vita')
+    profile_id = body.get('profile')
     try:
-        sheet, name = character(body.get('pack', body.get('character', 'vita')), body.get('profile'))
+        sheet, name = character(pack_id, profile_id)
         sheet = turned(sheet, body.get('dials'))
         who, how = f"You are {name}, an AI character. {profile_words(sheet)}", manner(sheet)
     except (OSError, ValueError):
         who, how = PERSONAS.get(body.get('character'), PERSONAS['nori']), ''
     controls = body.get('controls')
-    return {'who': who, 'body': str(body.get('body', ''))[:60], 'offers': controls if isinstance(controls, dict) else {}, 'manner': how}
+    return {
+        'who': who,
+        'pack': pack_id,
+        **({'profile': str(profile_id)} if profile_id else {}),
+        'body': str(body.get('body', ''))[:60],
+        'offers': controls if isinstance(controls, dict) else {},
+        'manner': how,
+    }
 
 
 def loop_voice(body):
-    """The Kokoro voice the page chose, if the loop's voice module has it; None leaves the loop's voice as it is."""
-    voice = str(body.get('voice', '')).removeprefix('kokoro:')
-    return voice if voice in KOKORO_VOICES else None
+    """The Kokoro voice (or weighted blend like `af_heart:0.65+af_sky:0.35`) the page chose; None leaves the loop's voice as it is."""
+    voice = str(body.get('voice', '')).removeprefix('kokoro:').strip()
+    if not voice:
+        return None
+    if voice in KOKORO_VOICES:
+        return voice
+    if '+' in voice:
+        parts = [p.strip() for p in voice.split('+') if p.strip()]
+        if parts and all(p.split(':', 1)[0].strip() in KOKORO_VOICES for p in parts):
+            return voice
+    return None
 
 
 def loop_as(body):
@@ -164,11 +181,12 @@ def loop_as(body):
 
 
 def loop_start():
-    """The first line the loop worker reads: which model, which ears, who it is. open_mic: the page's microphone has the
-    browser's echo canceller, so the agent keeps hearing while she speaks. The rest of turn-taking is the agent's own."""
+    """The first line the loop worker reads: which model, which ears, who it is. Duplex (Settings): quasi = open_mic, the
+    page's microphone has the browser's echo canceller, so the agent keeps hearing while she speaks and you can cut in;
+    half = the agent's own half duplex, its ears shut until the page says it has played her words. The rest is the agent's."""
     a = config['agent']
     return {'op': 'start', 'model': a['model'], **{k: a[k] for k in ('temperature', 'max_tokens', 'timeout_s') if k in a},
-            'hearing': config['hearing']['model'], **loop_who({'pack': 'vita'}), 'session': 'avatar', 'open_mic': True}
+            'hearing': config['hearing']['model'], **loop_who({'pack': 'vita'}), 'session': 'avatar', 'open_mic': a.get('duplex', 'quasi') != 'half'}
 
 
 def system_for(character):
@@ -285,9 +303,12 @@ def model_choices():
 
 
 def brain():
-    """What answers: JaegerAgent with its in-process model, or the page's scripted replies when there is no agent or no model file."""
+    """What answers: Jaeger Agent Omni V2 / JaegerAgent with its in-process model, or the page's scripted replies."""
     if os.environ.get('NORI_BRAIN')=='scripted':return 'scripted'
-    if LOOP:return 'JaegerAgent voice loop · '+str(agent_host.model) if agent_host.ready else 'scripted'
+    if LOOP:
+        if not agent_host.ready: return 'scripted'
+        prefix = 'Jaeger Agent Omni V2 · ' if (agent_host.report or {}).get('engine') == 'jaeger_omni_v2' else 'JaegerAgent voice loop · '
+        return prefix + str(agent_host.model)
     return 'JaegerAgent · '+(agent_host.model or config["agent"]["model"]) if agent_host.ready and config["agent"]["model"] in MODELS else 'scripted'
 
 
@@ -483,7 +504,7 @@ class Handler(SimpleHTTPRequestHandler):
                 "jaeger_agent": {**(agent_host.schema or {}), "in_app": {"provider": "llama_cpp", "base_url": "", "model_path": str(files.get(shown["agent"]["model"], "")), "api_key_env": "",
                     "system_prompt": "built for each character", "max_iterations": 1, "tools_enabled": False, "ctx": 8192, "gpu_layers": -1,
                     **{k: report[k] for k in ("max_iterations", "tools_enabled", "ctx") if k in report}}},
-                "options": {"models": list(files), "whisper": app_settings.WHISPER, "languages": app_settings.LANGUAGES}}).encode())
+                "options": {"models": list(files), "whisper": app_settings.WHISPER, "languages": app_settings.LANGUAGES, "duplex": app_settings.DUPLEX}}).encode())
         if self.path == "/health":
             ears, where = bool(stt) or stt is None, stt_where
             if LOOP:   # the loop's ears: the hearing module, and what it computes on
@@ -769,11 +790,35 @@ class Handler(SimpleHTTPRequestHandler):
             except RuntimeError:
                 return self.reply(503, b'{"error":"The agent is still loading"}')
             return self.reply(200, b'{}')
+        if LOOP and self.path == '/agent/played':  # half duplex: the page has played the agent's part n, so its ears open again
+            try: agent_host.send({'op': 'played', 'n': int(body.get('n', 0))})
+            except (RuntimeError, TypeError, ValueError): pass
+            return self.reply(200, b'{}')
         if LOOP and self.path == '/agent/cue':     # the page's clip clock has reached a scene's cue: the agent's avatar tool makes the move
             if not isinstance(body.get('call'), dict): return self.reply(400, b'{"error":"A cue is a call"}')
             try: agent_host.send({'op': 'cue', 'call': body['call']})
             except RuntimeError: pass
             return self.reply(200, b'{}')
+        if LOOP and self.path == '/agent/sing':    # native Omni V2 MLX neural singing with VocalSet vibrato + 40 Hz visemes
+            lyrics = str(body.get('lyrics', '')).strip()[:400]
+            if not lyrics: return self.reply(400, b'{"error":"Type a line or two first."}')
+            melody = str(body.get('melody', 'glow')).strip().lower()
+            if melody not in ('glow', 'lullaby', 'upbeat', 'ballad', 'minor', 'anthem', 'pentatonic'):
+                melody = 'glow'
+            tempo = int(body.get('tempo', 104)) if isinstance(body.get('tempo'), (int, float)) else 104
+            try:
+                clip = agent_host.say(f"[sing:{melody}] {lyrics} [/sing]", loop_voice(body))
+            except RuntimeError as e:
+                return self.reply(503, json.dumps({"error": str(e)}).encode())
+            out = io.BytesIO()
+            with wave.open(out, "wb") as w:
+                w.setnchannels(1); w.setsampwidth(2); w.setframerate(clip["rate"]); w.writeframes(base64.b64decode(clip["pcm"]))
+            return self.reply(200, out.getvalue(), "audio/wav", {
+                "X-Lips": json.dumps(clip.get("marks", [])),
+                "X-Visemes": json.dumps(clip.get("visemes", [])),
+                "X-Song": json.dumps({"bpm": tempo, "melody": melody}),
+                "X-Render-Ms": str(round(clip.get("ms", 0))),
+            })
         if self.path == "/chat":
             current = brain()
             if current == "scripted":
@@ -809,7 +854,7 @@ if __name__ == "__main__":
     def shutdown(*_):raise KeyboardInterrupt
     signal.signal(signal.SIGTERM,shutdown)
     if os.environ.get('NORI_BRAIN')!='scripted':agent_host.start(loop_start() if LOOP else None)
-    print(f"Jaeger Avatar: http://localhost:{PORT}  brain={brain()}  voice={VOICE if voices.get(VOICE) else 'built-in synth'}")
+    print(f"Jaeger Avatar: http://localhost:{PORT}  brain={'agent loading' if LOOP and os.environ.get('NORI_BRAIN')!='scripted' and not agent_host.ready else brain()}  voice={VOICE if voices.get(VOICE) else 'built-in synth'}")
     if why_scripted(): print(f"Scripted replies only: {why_scripted()}")
     print(f"Control token: {CONTROL_TOKEN}", flush=True)
     def warm():  # so nobody waits on a cold model: the agent loads its model and reads the instructions, then the voices and ears

@@ -142,12 +142,53 @@ export function markLips(tr, marks) {
   return tr;
 }
 
+// Fuse Omni V2's 40 Hz neural IPA viseme/prosody track (jaw, aa/ee/ih/oh/ou, mbp, fv, th, brow, nod)
+// directly onto the 100 Hz playback track so all rigs (VRM, anime, 3D, LED, JP01) get exact phoneme lip-sync
+// without a separate /lip-sync round trip.
+export function applyVisemes(tr, visemes) {
+  if (!tr || !Array.isArray(visemes) || !visemes.length) return tr;
+  const n = tr.open.length;
+  const vowels = { aa: new Float32Array(n), ee: new Float32Array(n), ih: new Float32Array(n), oh: new Float32Array(n), ou: new Float32Array(n) };
+  const brow = new Float32Array(n), nod = new Float32Array(n);
+  tr.shut ??= new Float32Array(n);
+  tr.tuck ??= new Float32Array(n);
+  let vi = 0;
+  for (let f = 0; f < n; f++) {
+    const t = f * tr.hop;
+    while (vi + 1 < visemes.length && (visemes[vi + 1].t ?? (vi + 1) * 0.025) <= t) vi++;
+    const a = visemes[vi], b = visemes[Math.min(visemes.length - 1, vi + 1)];
+    const ta = a.t ?? vi * 0.025, tb = b.t ?? (vi + 1) * 0.025;
+    const u = tb > ta ? sat((t - ta) / (tb - ta)) : 0;
+    const lerp = k => (a[k] || 0) + ((b[k] || 0) - (a[k] || 0)) * u;
+    const jaw = sat(lerp('jaw'));
+    const aa = sat(lerp('aa')), ee = sat(lerp('ee')), ih = sat(lerp('ih')), oh = sat(lerp('oh')), ou = sat(lerp('ou'));
+    const mbp = sat(lerp('mbp')), fv = sat(lerp('fv')), th = sat(lerp('th'));
+    vowels.aa[f] = aa; vowels.ee[f] = ee; vowels.ih[f] = ih; vowels.oh[f] = oh; vowels.ou[f] = ou;
+    brow[f] = sat(lerp('brow')); nod[f] = sat(lerp('nod'));
+    tr.open[f] = tr.open[f] * 0.35 + jaw * 0.65;
+    tr.wide[f] = Math.max(tr.wide[f] * 0.35, sat(ee + ih * 0.75));
+    tr.round[f] = Math.max(tr.round[f] * 0.35, sat(oh + ou));
+    tr.teeth[f] = Math.max(tr.teeth[f], sat(fv + th * 0.8));
+    tr.shut[f] = Math.max(tr.shut[f], mbp);
+    tr.tuck[f] = Math.max(tr.tuck[f], fv);
+  }
+  tr.vowels = vowels;
+  tr.brow = brow;
+  tr.nod = nod;
+  return tr;
+}
+
 export function sampleTrack(tr, t) {
   const n = tr.open.length;
   const fp = Math.max(0, Math.min(n - 1.001, t / tr.hop)), i = Math.floor(fp), u = fp - i;
   const at = a => a[i] + (a[i + 1] - a[i]) * (u || 0);
-  return n < 2 ? null : { open: at(tr.open), wide: at(tr.wide), round: at(tr.round), teeth: at(tr.teeth), energy: at(tr.energy), pitch: at(tr.pitch),
+  if (n < 2) return null;
+  const out = { open: at(tr.open), wide: at(tr.wide), round: at(tr.round), teeth: at(tr.teeth), energy: at(tr.energy), pitch: at(tr.pitch),
     shut: tr.shut ? at(tr.shut) : 0, tuck: tr.tuck ? at(tr.tuck) : 0 };
+  if (tr.vowels) out.vowels = { aa: at(tr.vowels.aa), ee: at(tr.vowels.ee), ih: at(tr.vowels.ih), oh: at(tr.vowels.oh), ou: at(tr.vowels.ou) };
+  if (tr.brow) out.brow = at(tr.brow);
+  if (tr.nod) out.nod = at(tr.nod);
+  return out;
 }
 
 // A clip as the server sends it: a WAV of 16-bit sound. Two channels are a song as heard, then the voice alone.

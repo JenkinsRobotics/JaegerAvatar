@@ -184,8 +184,8 @@ export class Rig {
       tg.jaw = tg.jaw * 0.25 + v.open * 1.3; tg.wide += v.wide; tg.round = tg.round * 0.25 + v.round; tg.teeth = v.teeth;
       tg.smile *= 1 - 0.5 * v.round;
       const lift = v.pitch * v.energy;
-      tg.browL += lift * 0.22; tg.browR += lift * 0.22;
-      tg.pitch += lift * 0.07; tg.lift += v.energy * 0.03; tg.glow += v.energy * 0.22;
+      tg.browL += lift * 0.22 + (v.brow || 0) * 0.24; tg.browR += lift * 0.22 + (v.brow || 0) * 0.24;
+      tg.pitch += lift * 0.07 - (v.nod || 0) * 0.10; tg.lift += v.energy * 0.03 + (v.nod || 0) * 0.04; tg.glow += v.energy * 0.22;
       if (this.emotion === 'laughing') {
         tg.squeeze = clamp((v.energy - 0.6) * 2.5, 0, 1) * 0.9;
         tg.tear = 0.3;

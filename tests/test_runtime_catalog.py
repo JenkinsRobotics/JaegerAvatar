@@ -19,13 +19,13 @@ class RuntimeCatalogTests(unittest.TestCase):
             self.assertTrue(rows[0]['error'])
             self.assertEqual(rows[0]['representations'],[])
     def test_live_characters_and_existing_library_coexist(self):
-        rows=catalog();self.assertEqual(len(rows),56)
+        rows=catalog();self.assertEqual(len(rows),57)
         live=[(p,r) for p in rows for r in p['representations'] if r['status']=='Live rig']
-        # Every pack has a rig; the original demo rigs are the featured tabs, the rest live in the library.
+        # Every pack has a rig; the original demo rigs plus omni_core (Jaeger) are featured, the rest live in the library.
         self.assertEqual({p['id'] for p,r in live},{p['id'] for p in rows})
         featured=[(p,r) for p,r in live if not r['defaults'].get('library')]
-        self.assertEqual(len(featured),14)
-        self.assertEqual({p['id'] for p,r in featured},{'vita','mochi','vee','nori','ace','sol','pip','bo','rook','maya','momo','aster','jp01'})
+        self.assertEqual(len(featured),15)
+        self.assertEqual({p['id'] for p,r in featured},{'vita','mochi','vee','nori','ace','sol','pip','bo','rook','maya','momo','aster','jp01','omni_core'})
         jp01=next(r for p,r in featured if p['id']=='jp01')
         self.assertEqual(jp01['defaults'].get('face'),'mochi_wave')   # JP01 wears Mochi's eyes over a voice waveform unless told otherwise
         mochi=next(p for p in rows if p['id']=='mochi')

@@ -27,7 +27,7 @@ const LOOP_WHY = {
 };
 const LOOP_AUDIO = 'In use. The agent hears and speaks through the Jaeger modules (named above under "Brain now"); this page sends it the microphone and plays the sound it voices, ' +
   'reading the mouth shapes from that sound. The agent\'s own audio mode (it waits when you seem mid-thought), speech out, no wake word. ' +
-  'Its microphone stays open here, because the browser has an echo canceller: the page holds the microphone back while she talks, unless a clearly louder voice starts.';
+  'Duplex (above): quasi keeps its microphone open, because the browser has an echo canceller, so a clearly louder voice cuts in; half shuts its ears from her first word until this page says it has played her last.';
 const part = i => i ? `${i.module} ${i.version} on ${i.compute} (${i.model})` : 'not reported';
 export const partsLine = p => !p?.voice ? '' : ` Voice loop: voice ${part(p.voice)}; hearing ${part(p.hearing)}; ${p.ctx} tokens of context; ` +
   `tools ${p.tools_enabled ? `on (${p.tool_list}, up to ${p.max_iterations} model calls a turn)` : 'off'}; loaded in ${p.load_s} s.`;
@@ -56,11 +56,13 @@ export function startSettings({ speed, setSpeed }) {
     $('#setTemp').value = $('#setTempOut').value = s.agent.temperature;
     $('#setTokens').value = s.agent.max_tokens;
     $('#setTimeout').value = s.agent.timeout_s; $('#setSkip').checked = s.agent.skip_thinking;
+    fill($('#setDuplex'), Object.entries(s.options.duplex ?? { quasi: 'Quasi full duplex' }), s.agent.duplex ?? 'quasi');
     $('#agentAllBody').innerHTML = allSettings(s.jaeger_agent, s.agent, s.parts);
     fill($('#setStt'), Object.entries(s.options.whisper).map(([m, size]) => [m, `${m} · ${size}`]), s.hearing.model);
     fill($('#setLang'), Object.entries(s.options.languages), s.hearing.language);
     $('#setLang').disabled = s.hearing.model.endsWith('.en');
-    $('#agentNow').textContent = `Brain now: ${s.brain}. The model runs inside the agent (llama.cpp, on the GPU). ${s.parts?.models ? "The choices are Jaeger Agent's own models, in" : 'Model files are read from'} ${s.model_dirs.join(' and ')}` + (models.length ? '.' : ': none found there.') + partsLine(s.parts);
+    const runtimeKind = s.parts?.engine === 'jaeger_omni_v2' ? 'MLX, on Apple GPU' : 'llama.cpp, on the GPU';
+    $('#agentNow').textContent = `Brain now: ${s.brain}. The model runs inside the agent (${runtimeKind}). ${s.parts?.models ? "The choices are Jaeger Agent's own models, in" : 'Model files are read from'} ${s.model_dirs.join(' and ')}` + (models.length ? '.' : ': none found there.') + partsLine(s.parts);
     $('#hearingNow').textContent = s.parts?.hearing ? `Hearing now: ${part(s.parts.hearing)}, inside Jaeger Agent's voice loop.` : s.hearing_ready ? `Hearing now: ${s.hearing_where}. It runs on the GPU when this machine has one.` : `Whisper ${s.hearing.model}: loading.`;
   }
   async function save(patch) {
@@ -75,6 +77,7 @@ export function startSettings({ speed, setSpeed }) {
   $('#setTemp').onchange = e => save({ agent: { temperature: +e.target.value } });
   $('#setTokens').onchange = e => save({ agent: { max_tokens: Math.round(+e.target.value) } });
   $('#setTimeout').onchange = e => save({ agent: { timeout_s: +e.target.value } });
+  $('#setDuplex').onchange = e => save({ agent: { duplex: e.target.value } });
   $('#setSkip').onchange = e => save({ agent: { skip_thinking: e.target.checked } });
   $('#setStt').onchange = e => save({ hearing: { model: e.target.value } });
   $('#setLang').onchange = e => save({ hearing: { language: e.target.value } });

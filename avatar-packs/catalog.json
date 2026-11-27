@@ -314,6 +314,12 @@
       ]
     },
     {
+      "avatar": "omni_core",
+      "name": "Jaeger",
+      "manifest": "omni_core/avatar.yaml",
+      "sources": []
+    },
+    {
       "avatar": "orbs",
       "name": "Orbs",
       "manifest": "orbs/avatar.yaml",

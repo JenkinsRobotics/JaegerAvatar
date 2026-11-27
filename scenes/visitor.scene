@@ -1,0 +1,10 @@
+# The visitor (moves fit Vita; Mochi's copy uses sparkle): she greets someone who has brought cookies, then they plan the day.
+# Steps: say, wait, hold, on, emotion, action, look, listen (see jaeger_agent/core/scene.py). Lines starting # are notes.
+# A listen line is the other person's turn: a prompt for them, not a test. Any words move the scene on.
+emotion surprised | say Oh! Hi! I didn't hear you come in.
+emotion thinking | say Wait. Is that a box of cookies?
+emotion listening | listen Yes, I brought you cookies.
+emotion excited | action celebrate | say Cookies! You are officially my favourite human.
+emotion joy | say So, what should we do today?
+emotion listening | listen Let's build a robot together.
+emotion love | action heart | say A robot friend for me? I love it. Let's start right now.

@@ -1,6 +1,6 @@
 // node test.mjs — fails loudly if the audio->mouth mapping, the parser or the rig break.
 import assert from 'node:assert';
-import { analyze, synthVowel, synthVocal, synthSing, synthSpeech, sampleTrack, syllabify, melody, singOver, readWav, clipFacts } from './web/voice.js';
+import { analyze, applyVisemes, synthVowel, synthVocal, synthSing, synthSpeech, sampleTrack, syllabify, melody, singOver, readWav, clipFacts } from './web/voice.js';
 import { parse, Parser, scriptedReply, isIntro, reelFor } from './web/brain.js';
 import { Rig, EMOTIONS } from './web/rig.js';
 import { faceShapes, humanBone, MORPHS, ACTING } from './web/model-map.js';
@@ -464,4 +464,24 @@ for (const led of [true, false]) {
   assert(Math.abs(f.rms - 0.5 * Math.sqrt(0.7)) < 1e-3, `loudness over the whole clip: ${f.rms}`);
   const none = clipFacts(new Float32Array(240), sr, []);
   assert.deepEqual([none.peak, none.leadMs, none.tailMs, none.marks], [0, 10, 0, 0], 'a silent clip is all lead, no marks');
+}
+
+// Omni V2 40 Hz neural IPA visemes fuse cleanly into JaegerAvatar's track & rig channels.
+{
+  const tr = applyVisemes(analyze(new Float32Array(22050)), [
+    { t: 0.0, jaw: 0.02, aa: 0, ee: 0, ih: 0, oh: 0, ou: 0, mbp: 1.0, fv: 0, th: 0, brow: 0.0, nod: 0.0 },
+    { t: 0.1, jaw: 0.9, aa: 0.9, ee: 0, ih: 0, oh: 0, ou: 0, mbp: 0, fv: 0, th: 0, brow: 0.8, nod: 0.6 },
+    { t: 0.2, jaw: 0.2, aa: 0, ee: 0, ih: 0, oh: 0, ou: 0, mbp: 0, fv: 0.9, th: 0, brow: 0.2, nod: 0.0 },
+    { t: 0.3, jaw: 0.6, aa: 0, ee: 0.7, ih: 0, oh: 0, ou: 0, mbp: 0, fv: 0, th: 0, brow: 0.4, nod: 0.0 },
+  ]);
+  const sMbp = sampleTrack(tr, 0.0), sAa = sampleTrack(tr, 0.1), sFv = sampleTrack(tr, 0.2), sEe = sampleTrack(tr, 0.3);
+  assert(sMbp.shut > 0.8, 'bilabial mbp closes lips');
+  assert(sAa.vowels.aa > 0.8 && sAa.open > 0.5 && sAa.brow > 0.7 && sAa.nod > 0.5, 'neural aa vowel, brow, nod carried');
+  assert(sFv.tuck > 0.8 && sFv.teeth > 0.8, 'labiodental fv tucks lip');
+  assert(sEe.vowels.ee > 0.6 && sEe.wide > 0.6, 'neural ee widens mouth');
+  const rig = new Rig();
+  rig.voice = sAa;
+  for (let i = 0; i < 60; i++) rig.tick(1 / 60);
+  assert.equal(rig.out.kinMouth, 1, 'neural vowels activate kinMouth blendshapes');
+  assert(rig.out.lipAA > 0.5 && rig.out.jaw > 0.4 && Number.isFinite(rig.out.browL), 'rig consumes neural visemes cleanly');
 }

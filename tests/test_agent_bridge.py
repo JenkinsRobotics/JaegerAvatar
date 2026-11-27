@@ -100,10 +100,24 @@ class BridgeTest(unittest.TestCase):
         agent_bridge.os.environ = {**agent_bridge.os.environ, 'JAEGER_AGENT_PYTHON': sys.executable}
         host = agent_bridge.AgentHost()
         host.start({'op': 'start', 'model': 'gemma'})
-        self.assertEqual(started[0][-2:], ['-m', 'jaeger_agent.body.loop'])   # Jaeger Agent's own worker, by its module name
+        self.assertEqual(started[0][-2:], ['-m', 'jaeger_agent.body.loop'])   # Jaeger Agent's voice loop is the default
         self.assertEqual(host.process.stdin.lines, [{'op': 'start', 'model': 'gemma'}])
+        agent_bridge.os.environ = {**agent_bridge.os.environ, 'JAEGER_AGENT_WORKER': 'jaeger_agent.body.loop'}
+        host.start({'op': 'start', 'model': 'gemma'})
+        self.assertEqual(started[1][-2:], ['-m', 'jaeger_agent.body.loop'])       # explicit override selects legacy worker
         host.start()
-        self.assertTrue(started[1][-1].endswith('agent_worker.py'))
+        self.assertTrue(started[2][-1].endswith('agent_worker.py'))
+
+    def test_server_loop_who_and_voice_blend_support(self):
+        import server
+        who = server.loop_who({'pack': 'omni_core', 'profile': 'companion', 'body': 'Jaeger', 'controls': {'emotions': ['joy']}})
+        self.assertEqual(who['pack'], 'omni_core')
+        self.assertEqual(who['profile'], 'companion')
+        self.assertIn('Jaeger', who['who'])
+        self.assertEqual(server.loop_voice({'voice': 'kokoro:af_heart'}), 'af_heart')
+        self.assertEqual(server.loop_voice({'voice': 'kokoro:af_heart:0.65+af_sky:0.35'}), 'af_heart:0.65+af_sky:0.35')
+        self.assertIsNone(server.loop_voice({'voice': 'kokoro:af_heart:0.5+not_a_voice:0.5'}))
+        self.assertIsNone(server.loop_voice({'voice': 'clone:abc'}))
 
 
 if __name__ == '__main__':

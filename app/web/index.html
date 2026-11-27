@@ -17,7 +17,9 @@
   kbd { font:11px ui-monospace,Menlo,monospace; color:var(--dim); border:1px solid var(--line); border-radius:4px; padding:0 4px; margin-left:auto; }
   .tiny { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
 
-  #app { display:grid; grid-template-columns:minmax(0,1fr) 352px; grid-template-rows:auto minmax(0,1fr) auto auto auto; gap:10px; height:100%; padding:0 12px 12px; }
+  #app { display:grid; grid-template-columns:minmax(340px,1.12fr) minmax(330px,.96fr) 348px; grid-template-rows:auto minmax(0,1fr) auto auto auto; gap:10px; height:100%; padding:0 12px 12px; transition:grid-template-columns .18s ease; }
+  body.sidebar-closed #app { grid-template-columns:minmax(360px,1.15fr) minmax(340px,1fr); }
+  body.sidebar-closed aside#studioSidebar { display:none; }
   header { grid-column:1/-1; display:flex; align-items:center; gap:14px; padding:10px 2px 0; min-width:0; }
   .brand { display:flex; align-items:center; gap:8px; font-size:17px; font-weight:700; letter-spacing:-.01em; }
   .brand svg { width:26px; height:26px; }
@@ -141,8 +143,8 @@
   #scene { width:100%; resize:vertical; font:12.5px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; padding:9px 12px; color:var(--ink); background:var(--panel); border:1px solid var(--line); border-radius:10px; white-space:pre; overflow-x:auto; }
   #lyrics { width:100%; resize:vertical; font:inherit; padding:9px 12px; color:var(--ink); background:var(--panel); border:1px solid var(--line); border-radius:10px; }
   #lyrics:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
-  #form { flex-shrink:0; display:flex; flex-direction:column; gap:6px; padding:9px 10px 8px; background:var(--panel2); border:1px solid var(--line); border-radius:14px; }
-  #form:focus-within { border-color:var(--accent); }
+  #form { flex-shrink:0; display:flex; flex-direction:column; gap:6px; padding:12px 12px 10px 16px; background:var(--aether-color-bg-inset); border:1px solid var(--aether-color-border-control); border-radius:20px; }
+  #form:focus-within { border-color:var(--aether-color-border-control-hover); }
   #input { width:100%; min-height:42px; max-height:140px; resize:none; font:inherit; font-size:14px; line-height:1.45; padding:2px 2px; color:var(--ink); background:transparent; border:0; outline:0; }
   #formRow { display:flex; align-items:center; gap:8px; }
   #formRow .note { flex:1; text-align:center; font-size:11.5px; }
@@ -153,7 +155,12 @@
   #mic[data-state=hearing] { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600; }
   #mic[data-state=working] { border-color:var(--accent); }
 
-  aside { grid-row:2/6; grid-column:2; min-height:0; display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+  #chatColumn { grid-row:2/6; grid-column:2; min-height:0; min-width:0; display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+  aside#studioSidebar { grid-row:2/6; grid-column:3; min-height:0; display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+  #sidebarToggle { white-space:nowrap; font-weight:600; }
+  #sidebarToggle[aria-expanded=true] { border-color:var(--accent); color:var(--accent); }
+  #assets summary { cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; }
+  #assets summary::-webkit-details-marker { display:none; }
   #panelTabs { display:flex; gap:4px; padding:6px; border-bottom:1px solid var(--line); flex-shrink:0; }
   #panelTabs button { flex:1; border:0; background:transparent; color:var(--dim); border-radius:9px; padding:7px; }
   #panelTabs button:hover { background:var(--panel2); color:var(--ink); }
@@ -179,16 +186,28 @@
   .chips { display:flex; flex-wrap:wrap; gap:4px; }
   .chips button { padding:3px 9px; font-size:12.5px; border-radius:8px; }
 
-  #talkPanel { padding-bottom:10px; overflow:hidden; gap:10px; }
-  #talkHead { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  #messages { flex:1; min-height:60px; overflow:auto; display:flex; flex-direction:column; gap:7px; scrollbar-width:thin; }
-  .msg { max-width:88%; padding:9px 13px 10px; border:1px solid var(--line); border-radius:14px; overflow-wrap:anywhere; font-size:14px; line-height:1.45; }
-  .msg small { display:block; font-size:10.5px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin-bottom:3px; }
-  .msg.user { align-self:flex-end; background:#22304a; }
-  .msg.assistant { align-self:flex-start; background:var(--panel2); }
-  #empty { color:var(--dim); margin:auto; text-align:center; max-width:250px; }
-  #suggest { display:flex; flex-wrap:wrap; gap:5px; }
-  #suggest button { font-size:13px; border-radius:18px; padding:4px 11px; }
+  #talkPanel { flex:1; min-height:0; padding:14px 14px 12px; overflow:hidden; display:flex; flex-direction:column; gap:10px; }
+  #talkHead { display:flex; align-items:center; justify-content:space-between; gap:8px; padding-bottom:8px; border-bottom:1px solid var(--line); }
+  #talkTitle { font-size:15px !important; color:var(--ink) !important; text-transform:none !important; letter-spacing:-.01em !important; font-weight:700 !important; }
+  #talkStatus { font-size:11.5px; color:var(--dim); margin-right:auto; padding-left:6px; }
+  /* The chat, copied from Jaeger Agent Omni's baseline UI (jaeger-module-omni web/src/app.css), November 24, 2026:
+     her replies as plain text on the page, the person's in a soft block, tool calls folded under a reply, Copy on hover. */
+  #messages { flex:1; min-height:60px; overflow:auto; display:flex; flex-direction:column; gap:20px; padding:12px 6px; scrollbar-width:thin; }
+  .msg { position:relative; overflow-wrap:anywhere; white-space:pre-wrap; font-size:15px; line-height:1.62; }
+  .msg small { display:block; font-size:11px; color:var(--dim); margin-bottom:2px; white-space:normal; }
+  .msg.user { align-self:flex-end; max-width:82%; padding:9px 15px; border-radius:18px; background:var(--aether-color-bg-inset); }
+  .msg.assistant { align-self:stretch; }
+  .msg .copy { display:block; opacity:0; margin-top:6px; padding:2px 0; border:0; background:transparent; color:var(--aether-color-text-faint); font-size:12px; transition:opacity .12s; }
+  .msg.assistant:hover .copy { opacity:1; }
+  .msg .tools { margin-bottom:6px; font-size:12px; color:var(--dim); white-space:normal; }
+  .msg .tools summary { cursor:pointer; display:inline-block; padding:3px 10px; border:1px solid var(--aether-color-border-subtle); border-radius:999px; list-style:none; }
+  .msg .tools summary::-webkit-details-marker { display:none; }
+  .msg .tools ul { margin:8px 0 0; padding:10px 12px; list-style:none; background:var(--aether-color-bg-rail); border-radius:8px; display:grid; gap:4px; }
+  .msg .tools code { margin-left:8px; font:11px var(--aether-font-mono); color:var(--aether-color-text-faint); }
+  #empty { color:var(--dim); margin:auto; text-align:center; max-width:300px; line-height:1.55; }
+  #suggest { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+  #suggest button { font-size:13px; border-radius:999px; padding:7px 14px; background:var(--aether-color-bg-control); border-color:var(--aether-color-border-subtle); }
+  #suggest button:hover { background:var(--aether-color-bg-hover); }
 
   .row { display:flex; align-items:center; justify-content:space-between; gap:9px; }
   .row > span { color:var(--dim); font-size:13px; white-space:nowrap; }
@@ -215,7 +234,7 @@
   #exit { position:absolute; right:12px; top:12px; display:none; z-index:4; background:rgba(8,9,12,.6); color:#fff; }
   #plate { position:absolute; left:14px; top:12px; display:none; z-index:3; padding:4px 11px; border-radius:8px; background:rgba(8,9,12,.6); color:#fff; font-weight:650; font-size:14px; }
   body.stream #app { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) auto; padding:0; gap:0; }
-  body.stream header, body.stream aside, body.stream #log, body.stream #bar, body.stream #streamBtn, body.stream #views, body.stream #assets, body.stream #exhibit { display:none; }
+  body.stream header, body.stream #chatColumn, body.stream aside#studioSidebar, body.stream #log, body.stream #bar, body.stream #streamBtn, body.stream #views, body.stream #assets, body.stream #exhibit { display:none; }
   body.stream main { border:0; border-radius:0; }
   body.stream #chat { display:flex; }
   body.stream #exit, body.stream #plate { display:block; }
@@ -238,7 +257,7 @@
     #mood { flex:1 1 40%; }
     #quick { order:3; width:100%; }
     #chapter { order:3; flex-basis:100%; }
-    aside { min-height:420px; }
+    #chatColumn, aside#studioSidebar { min-height:420px; }
     .panel { overflow:visible; }
     #messages { overflow:visible; }
     #mic { min-width:0; }
@@ -261,13 +280,14 @@
 <div id="app">
   <header>
     <div class="brand"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#1c2034"/><rect x="14" y="20" width="13" height="24" rx="6" fill="#5fe0d0"/><rect x="37" y="20" width="13" height="24" rx="6" fill="#5fe0d0"/></svg>Jaeger Avatar</div>
-    <a href="/demo-packs.html" style="white-space:nowrap">Demo packs</a><a href="/compare.html" style="white-space:nowrap">Compare voices</a><button id="libraryOpen">Avatar library · 50</button><div id="tabs" role="tablist" aria-label="Bodies and modes"></div>
+    <a href="/demo-packs.html" style="white-space:nowrap">Demo packs</a><a href="/compare.html" style="white-space:nowrap">Compare voices</a><button id="libraryOpen">Avatar library · 57</button><div id="tabs" role="tablist" aria-label="Bodies and modes"></div>
     <div class="conn"><i id="light"></i><span id="status" aria-live="polite"></span><span id="privacy">Mic off · Camera off</span></div>
     <button id="flowOpen" title="Watch every stage live: mic, hearing, agent, voice, animation">Data flow</button>
     <button id="settingsOpen" title="Agent, voice and hearing">Settings</button>
     <button id="abVoice" title="Switch between Kokoro and the original voice pipeline (V)">Voice: Kokoro</button>
     <span id="level" title="The sound leaving the app. If this moves and you hear nothing, check your output device and the browser tab." aria-hidden="true"><i></i></span>
     <button id="mute" aria-pressed="false" aria-label="Mute her voice" title="Mute her voice">Sound on</button>
+    <button id="sidebarToggle" aria-expanded="true" aria-controls="studioSidebar" title="Collapse or expand the far-right Agentic, Perform & Studio sidebar">Agentic &amp; Studio ▸</button>
   </header>
   <main id="stage" class="single">
     <div id="sub"></div>
@@ -297,37 +317,52 @@
     </div>
   </div>
   <div id="dock"><div id="log"></div></div>
-  <section id="assets" aria-label="Pack assets"><div class="tiny" id="assetsTitle">Pack assets</div><a id="toExhibit" href="#exhibit" class="tiny">How this is animated ↓</a><div id="assetGroups"></div></section>
-  <aside>
-    <div id="panelTabs" role="tablist" aria-label="Controls">
-      <button id="performTab" role="tab" aria-controls="performPanel" data-panel="perform" aria-selected="true">Perform</button>
-      <button id="talkTab" role="tab" aria-controls="talkPanel" data-panel="talk" aria-selected="false" tabindex="-1">Conversation</button>
-      <button id="studioTab" role="tab" aria-controls="studioPanel" data-panel="studio" aria-selected="false" tabindex="-1">Studio</button>
-    </div>
-    <section class="panel" id="performPanel" role="tabpanel" aria-labelledby="performTab">
-      <div id="energyRow"><label for="energy" class="tiny">Expression</label><input id="energy" type="range" min="0.5" max="1.5" step="0.05" value="1"><output id="energyVal" for="energy">100%</output></div>
-      <details id="dialsBox" open><summary class="tiny">Personality</summary><div id="dials"></div><p id="mannerSaid"></p></details>
-      <div><h2>Feelings</h2><div id="emo"></div></div>
-      <div id="movesBox" hidden><h2 id="movesTitle">Full-body moves</h2><div id="moves"></div></div>
-      <div><h2>Sounds and gestures</h2><div class="chips" id="act"></div></div>
-      <div class="stack"><h2>Scene</h2>
-        <textarea id="scene" rows="5" spellcheck="false" aria-label="Scene script"></textarea>
-        <button id="scenePlay">Perform scene</button><p class="note" id="sceneNote" role="status"></p>
-        <p class="note">Steps in order, split by <code>|</code> or a new line. <code>say</code> a line, <code>wait</code> seconds of quiet, and moves: <code>emotion</code>, <code>action</code>, <code>look</code>. A move happens as the next line or wait starts. <code>hold</code> keeps the moves before it that many seconds before going on; <code>on</code> a word puts the moves before it on that word of the line just said. <code>listen</code> and the other person's line makes it a scene for two: she stops there until they have spoken or typed, then goes on. The agent performs it in its own voice. You can also ask her for a scene in words.</p>
-      </div>
-    </section>
-    <section class="panel" id="talkPanel" role="tabpanel" aria-labelledby="talkTab" hidden>
-      <div id="talkHead"><h2 id="talkTitle" style="margin:0">Conversation</h2><button id="fresh" title="Start this conversation over">Start over</button></div>
+  <section id="assets" aria-label="Pack assets"><details id="assetsBox"><summary><span class="tiny" id="assetsTitle">Pack assets</span><a id="toExhibit" href="#exhibit" class="tiny">How this is animated ↓</a></summary><div id="assetGroups"></div></details></section>
+  <section id="chatColumn" aria-label="Avatar Conversation">
+    <section class="panel" id="talkPanel" aria-label="Conversation">
+      <div id="talkHead"><h2 id="talkTitle" style="margin:0">Conversation</h2><span id="talkStatus">Ready when you are</span><button id="fresh" title="Start this conversation over">New chat</button></div>
       <div id="messages" role="log" aria-label="Conversation"></div>
       <div id="suggest"></div>
       <form id="form">
         <textarea id="input" rows="2" aria-label="Message the character" autocomplete="off"></textarea>
         <div id="formRow">
           <button id="mic" type="button" aria-pressed="false" title="Talk to her hands-free (M)">Mic</button>
-          <span class="note">On this machine</span>
+          <span class="note">Full-duplex local voice</span>
           <button id="send" aria-label="Send" title="Send (Enter)">↑</button>
         </div>
       </form>
+    </section>
+  </section>
+  <aside id="studioSidebar" aria-label="Agentic, Perform and Studio controls">
+    <div id="panelTabs" role="tablist" aria-label="Controls">
+      <button id="agenticTab" role="tab" aria-controls="agenticPanel" data-panel="agentic" aria-selected="true">Agentic</button>
+      <button id="performTab" role="tab" aria-controls="performPanel" data-panel="perform" aria-selected="false" tabindex="-1">Perform</button>
+      <button id="studioTab" role="tab" aria-controls="studioPanel" data-panel="studio" aria-selected="false" tabindex="-1">Studio</button>
+    </div>
+    <section class="panel" id="agenticPanel" role="tabpanel" aria-labelledby="agenticTab">
+      <div class="stack">
+        <h2>Agentic Runtime &amp; Brain</h2>
+        <div class="note" id="sidebarAgentSummary">Connecting to Jaeger Agent Omni V2…</div>
+        <div class="row"><span>Brain &amp; Model</span><button type="button" id="openAgentSettingsBtn">Configure Agent…</button></div>
+        <div class="row"><span>Hearing &amp; Voice</span><button type="button" id="openHearingSettingsBtn">Audio &amp; STT…</button></div>
+        <div class="row"><span>Live Pipeline</span><button type="button" id="openFlowBtn">Open Data Flow ↗</button></div>
+      </div>
+      <div id="energyRow"><label for="energy" class="tiny">Expression</label><input id="energy" type="range" min="0.5" max="1.5" step="0.05" value="1"><output id="energyVal" for="energy">100%</output></div>
+      <details id="dialsBox" open><summary class="tiny">Personality Dials</summary><div id="dials"></div><p id="mannerSaid"></p></details>
+      <div class="stack">
+        <h2>Capabilities Offered to Agent</h2>
+        <div id="sidebarCapabilities" class="note">Loading active pack capabilities…</div>
+      </div>
+    </section>
+    <section class="panel" id="performPanel" role="tabpanel" aria-labelledby="performTab" hidden>
+      <div><h2>Feelings</h2><div id="emo"></div></div>
+      <div id="movesBox" hidden><h2 id="movesTitle">Full-body moves</h2><div id="moves"></div></div>
+      <div><h2>Sounds and gestures</h2><div class="chips" id="act"></div></div>
+      <div class="stack"><h2>Scene</h2>
+        <textarea id="scene" rows="5" spellcheck="false" aria-label="Scene script"></textarea>
+        <button id="scenePlay">Perform scene</button> <button id="sceneOpen">Open scene file…</button><input id="sceneFile" type="file" accept=".scene,.txt" hidden><p class="note" id="sceneNote" role="status"></p>
+        <p class="note">Steps in order, split by <code>|</code> or a new line. <code>say</code> a line, <code>wait</code> seconds of quiet, and moves: <code>emotion</code>, <code>action</code>, <code>look</code>. A move happens as the next line or wait starts. <code>hold</code> keeps the moves before it that many seconds before going on; <code>on</code> a word puts the moves before it on that word of the line just said. <code>listen</code> and the other person's line makes it a scene for two: she stops there until they have spoken or typed, then goes on. The agent performs it in its own voice. You can also ask her for a scene in words. A scene file is the same steps in a text file (<code>.scene</code>); lines starting <code>#</code> are notes.</p>
+      </div>
     </section>
     <section class="panel" id="studioPanel" role="tabpanel" aria-labelledby="studioTab" hidden>
       <div class="stack" id="voiceSection">
@@ -340,13 +375,11 @@
         <h2>Singing</h2><button id="singerSample">♪ Play Singer A · prepared sample</button>
         <textarea id="lyrics" rows="3" maxlength="180" aria-label="Lyrics">Little lights are shining
 Here with you tonight</textarea>
-        <div class="row"><span>Method</span><select id="singMethod" aria-label="Singing method"><option value="soulx">Experimental singer · SoulX</option><option value="spoken">Her voice, on the beat</option><option value="sung">Her voice, half-sung</option></select></div>
-        <div class="row soulx"><span>Reference</span><select id="singRef" aria-label="Voice reference"><option value="speech">Kokoro speaking</option><option value="sung">Kokoro singing</option></select></div>
-        <div class="row soulx"><span>Melody</span><select id="singMelody" aria-label="Melody"><option value="glow">Little glow</option><option value="lullaby">Lullaby</option></select></div>
-        <div class="row soulx"><span>Pitch</span><select id="singPitch" aria-label="Melody pitch"><option value="0">Original range</option><option value="5">Higher</option><option value="-5">Lower</option><option value="-12">An octave lower</option></select></div>
-        <div class="row soulx"><span>Tempo</span><select id="singTempo" aria-label="Tempo"><option value="88">Gentle · 88 BPM</option><option value="104" selected>Flowing · 104 BPM</option><option value="120">Bright · 120 BPM</option></select></div>
+        <div class="row"><span>Method</span><select id="singMethod" aria-label="Singing method"><option value="omni" selected>Omni V2 neural singing · Kokoro MLX</option><option value="spoken">Her voice, on the beat</option><option value="sung">Her voice, half-sung</option></select></div>
+        <div class="row soulx omni"><span>Melody</span><select id="singMelody" aria-label="Melody"><option value="glow">Little glow</option><option value="lullaby">Lullaby</option><option value="upbeat">Upbeat</option><option value="ballad">Ballad</option><option value="minor">Minor</option><option value="anthem">Anthem</option></select></div>
+        <div class="row soulx omni"><span>Tempo</span><select id="singTempo" aria-label="Tempo"><option value="88">Gentle · 88 BPM</option><option value="104" selected>Flowing · 104 BPM</option><option value="120">Bright · 120 BPM</option></select></div>
         <div class="row"><button id="singGo" style="flex:1">♪ Sing these lyrics</button><button id="singStop" style="flex:0 0 auto">Stop</button></div>
-        <div class="note" id="singInfo" aria-live="polite">The experimental singer sings in her Kokoro voice from a short reference. It takes about half a minute and plays when the whole song is ready. Likeness and clarity vary. One to four short English lines.</div>
+        <div class="note" id="singInfo" aria-live="polite">Omni V2 sings directly in the active character's Kokoro MLX voice with VocalSet vibrato, expressive LoRA timbre, and 40 Hz neural lip-sync. One to four short English lines.</div>
       </div>
       <div class="stack">
         <h2>Go live</h2>
@@ -420,8 +453,9 @@ Here with you tonight</textarea>
     <label class="row"><span>Creativity</span><input id="setTemp" type="range" min="0" max="1.5" step="0.05"><output id="setTempOut"></output></label>
     <label class="row"><span>Longest reply</span><input id="setTokens" type="number" min="100" max="4000" step="50"><span class="note">tokens</span></label>
     <label class="row"><span>Timeout</span><input id="setTimeout" type="number" min="5" max="600" step="5"><span class="note">seconds without a new word before a model call is stopped</span></label>
+    <label class="row"><span>Duplex</span><select id="setDuplex"></select><span class="note">quasi: talk over her (the browser cancels her echo); half: the mic shuts while she speaks. Jaeger Agent's own turn-taking either way; the agent restarts</span></label>
     <label class="row"><span>Skip hidden thinking</span><input id="setSkip" type="checkbox"><span class="note">the model answers straight away instead of planning first: seconds faster to the first word</span></label>
-    <div class="note">JaegerAgent with its model loaded in-process (llama.cpp). Changes keep the conversation; a new model, or the thinking switch, reloads the model (about 12 s).</div>
+    <div class="note">Jaeger Agent Omni V2 (MLX on Apple GPU) or JaegerAgent in-process runtime. Changes keep the conversation; switching models reloads the active brain.</div>
     <details id="agentAll"><summary>Every JaegerAgent setting</summary><div id="agentAllBody" class="note">The agent has not reported its settings yet.</div></details>
   </section>
   <section id="setVoice" class="stack" role="tabpanel" hidden>

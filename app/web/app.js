@@ -59,9 +59,12 @@ function setPersona(c, value) {
   const own = packId === c.packId;   // its own pack's profile keeps the body's tuned name and voice unless the profile says otherwise
   c.name = own ? c.ownName : p.character?.name || pack.name;
   c.kokoro = p.character?.identity?.voice_id || c.ownKokoro;
-  c.look = own ? undefined : wear(c, pack) ?? (FACES['style:' + packId] ? 'style:' + packId : undefined);   // a display body wears the character's look
+  c.look = own ? ownLook(c) : wear(c, pack) ?? (FACES['style:' + packId] ? 'style:' + packId : undefined);   // a display body wears the character's look
   return true;
 }
+// A screen body whose own pack has a locked screen look (Jaeger, omni_core) wears it from the start.
+const ownLook = c => c.rep.adapter === 'kin-momo' ? wear(c, c.pack) : undefined;
+for (const c of CHARACTERS) c.look ??= ownLook(c);
 // The character's own locked screen look, if its pack has one for this display and this host draws its renderer version.
 function wear(c, pack) {
   const look = pack.representations.find(r => r.format === 'avatar/screen-look-v1')?.screen, display = c.rep.preset === 'jp01' ? 'square' : 'wide';
@@ -173,6 +176,13 @@ function logInput(kind, text) {
 // The pack's declared controls; what it leaves out is what this body can do today.
 const controls = () => controlsOf(current.rep, { led: current.led, moves: current.moves ? Object.keys(MOVES) : [], poses: faces[current.id]?.poses ?? [] });
 const agentActions = () => { const c = controls(); return [...c.reactions, ...c.actions]; };
+let summaryPersona = null;
+function agentSummary() {                      // the Agentic panel's line, refreshed with every health check
+  const p = summaryPersona, el = $('#sidebarAgentSummary');
+  if (!p || !el) return;
+  const hearing = serverLoop ? (serverBrain === 'scripted' ? 'loading' : "the agent's own") : serverEars ? serverHearing || 'ready' : 'off';
+  el.textContent = `${p.name} (${current.profileId ?? p.defaultProfile}) · Brain: ${serverBrain ?? 'checking'} · Voice: ${chosenVoice() ?? current.kokoro} · Hearing: ${hearing}`;
+}
 function fillAgent(persona) {
   const card = (title, ...body) => { const c = tag('div', 'panel'); c.append(tag('h4', null, title), ...body); return c; };
   const list = items => { const p = tag('p'); p.append(...items.flatMap((x, i) => [...(i ? [', '] : []), tag('code', null, `[${x}]`)])); return p; };
@@ -186,6 +196,11 @@ function fillAgent(persona) {
     card('Voice sounds', list(voice.VOCAL_NAMES)),
     card('Its own lines', Object.keys(sounds).length ? tag('p', null, Object.entries(sounds).slice(0, 8).map(([k, v]) => `${k}: ${v}`).join(' · ')) : tag('p', null, 'None: the host\'s stand-in lines are used.')),
   );
+  summaryPersona = persona; agentSummary();
+  if ($('#sidebarCapabilities')) {
+    const c = controls();
+    $('#sidebarCapabilities').textContent = `Emotions (${c.emotions.length}): ${c.emotions.join(', ')}` + (c.reactions.length ? ` · Reactions: ${c.reactions.join(', ')}` : '') + (c.actions.length ? ` · Moves: ${c.actions.join(', ')}` : '');
+  }
 }
 // Below the app: how this render is animated, the pack's other styles, a face sheet and the pack's files.
 const tag = (t, cls, text) => { const e = document.createElement(t); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
@@ -281,7 +296,7 @@ const loopVoice = () => { const v = chosenVoice(); return v?.startsWith('kokoro:
 const loopWho = () => ({ ...who(), controls: controls(), session: sessionId(), voice: loopVoice(), dials: saved.dialsBy?.[current.id] ?? {} });   // the loop is also told what the body can do: it moves it with its avatar tool
 let warmed = '', warming = Promise.resolve();   // one at a time, in order: two dials turned together must not reach the agent the wrong way round
 const warmAgent = () => { if (!serverBrain || serverBrain === 'scripted') return; const w = JSON.stringify(serverLoop ? loopWho() : who()); if (w === warmed) return; warmed = w; warming = warming.then(() => fetch('/warm', { method: 'POST', body: w })).then(r => r.json()).then(j => { $('#mannerSaid').textContent = j.manner ? 'She is told with each turn: ' + j.manner : serverLoop ? 'No dial is near an end: she talks as she is written.' : ''; }).catch(() => { warmed = ''; }); };
-const checkHealth=()=>fetch('/health').then(r=>r.json()).then(h=>{serverVoice=h.voice;serverBrain=h.brain;serverWhy=h.why||'';serverEars=h.ears;serverHearing=h.hearing||'';serverLoop=!!h.loop;serverReads(h.hardware||[]);   // device outputs a robot is reading from the server
+const checkHealth=()=>fetch('/health').then(r=>r.json()).then(h=>{serverVoice=h.voice;serverBrain=h.brain;serverWhy=h.why||'';serverEars=h.ears;serverHearing=h.hearing||'';serverLoop=!!h.loop;agentSummary();serverReads(h.hardware||[]);   // device outputs a robot is reading from the server
   if(serverBrain==='scripted'&&(loopBusy||loopSkip)){loopBusy=false;loopSkip=0;streamDone=true;}   // the loop went away mid-turn: nothing more will come
   if(serverLoop&&!loopEvents&&!params.has('obs')){loopEvents=new EventSource('/agent/events');loopEvents.onmessage=m=>{try{onLoop(JSON.parse(m.data));}catch(e){console.warn('voice loop event',e);}};}
   hudStatic();resendFlow();warmAgent();}).catch(hudStatic);checkHealth();setInterval(checkHealth,5000);
@@ -429,7 +444,7 @@ async function startSound() {
 }
 async function playClip(c) {
   const generation=runId;
-  try{if(saved.lipSync==='kin'&&!c.kinFrames)c.kinFrames=await kinTrack(c.samples,c.sr||SR,sayAbort.signal);}
+  try{if(saved.lipSync==='kin'&&!c.kinFrames&&!c.track?.vowels)c.kinFrames=await kinTrack(c.samples,c.sr||SR,sayAbort.signal);}
   catch(e){if(generation!==runId)return;toast('Mouth analysis unavailable; using Nori for this line.');}
   while(reelPaused&&generation===runId)await wait(.05);
   if(generation!==runId)return;
@@ -451,12 +466,12 @@ async function playClip(c) {
       src.start(startAt);
       if(params.has("startup")){const first=c.samples.findIndex(x=>Math.abs(x)>.005);startupTrace("source-scheduled",{duration:buf.duration,delayMs:(startAt-ctx.currentTime+(ctx.outputLatency||0))*1000,signalLeadMs:Math.max(0,first)/(c.sr??SR)/p*1000,natural:!!c.natural});}
       clip = { ...c, now: () => (ctx.currentTime - startAt - (ctx.outputLatency || 0)) * p, iE: 0, iP: 0, iB: 0, iC: 0, src };
-      const owned=clip;src.onended = () => { if(clip===owned)clip = null; resolve(); };
+      const owned=clip;src.onended = () => { lateCues(owned); if(clip===owned)clip = null; resolve(); };
     } else {                                   // audio blocked until a user gesture: animate silently on a clock
       const t0 = performance.now(), p = current.pitch;
       clip = { ...c, now: () => (performance.now() - t0) / 1000 * p, iE: 0, iP: 0, iB: 0, iC: 0 };
       soundCheck();
-      const owned=clip;setTimeout(() => { if(clip===owned)clip = null; resolve(); }, c.track.dur / p * 1000);
+      const owned=clip;setTimeout(() => { lateCues(owned); if(clip===owned)clip = null; resolve(); }, c.track.dur / p * 1000);
     }
   });
 }
@@ -474,6 +489,8 @@ function driveClip() {
 }
 // A scene's move, when the sound it rides on reaches its moment. The agent's avatar tool makes it,
 // so it arrives over the control link like any move the agent asks for.
+// A clip that ends before a frame reaches its cue (a 0.2 s quiet one, with output latency) still makes the move, as it ends.
+const lateCues = c => { while (c.iC < (c.cues?.length ?? 0)) cue(c.cues[c.iC++], c.now()); };
 const cueTrips = [];                           // ms from each cue's moment to its move landing here; kept for the Data flow window and for tuning CUE_LEAD
 let lastCue = null;
 function cue(c, t) {
@@ -527,6 +544,7 @@ async function run() {
   running = true;
   while (queue.length && id === runId) {
     const op = queue.shift();
+    if (op.type === 'played') { played(op.n); continue; }   // half duplex: the clips before this are played, so the agent may listen again
     if (op.type !== 'chapter') logInput(op.type === 'say' ? (op.text ? 'speak' : 'pause') : op.type === 'emotion' ? 'feel' : op.type === 'gesture' ? 'act' : op.type, op.text ?? op.name ?? '');
     if (op.type === 'chapter') {
       if (op.at === 0) {                       // her first lines are short, so start only once the next ones are ready to follow straight on
@@ -583,6 +601,7 @@ async function run() {
   if (id === runId && streamDone) { rig.mode = 'idle'; rig.relaxIn(4); }
 }
 const wait = s => new Promise(r => setTimeout(r, s * 1000));
+const played = n => fetch('/agent/played', { method: 'POST', body: JSON.stringify({ n }) }).catch(() => {});
 // One set of tags, and each body does what it can with them: Vita moves her whole body, the display robots act with their eyes, the rest make a smaller gesture.
 const ON_DISPLAY = { spin: 'roll', dance: 'groove', hop: 'wake', celebrate: 'sparkle', clap: 'blink', bow: 'doze', point: 'sideeye' };
 const SMALLER = { spin: 'tilt', dance: 'bounce', hop: 'bounce', celebrate: 'bounce', clap: 'nod', bow: 'nod', heart: 'tilt', point: 'nod', sideeye: 'tilt', sparkle: 'bounce', roll: 'tilt', peek: 'tilt', doze: 'nod', groove: 'bounce', wake: 'bounce', blink: 'nod' };
@@ -612,12 +631,34 @@ const conversationIds={};
 const sessionId=()=>conversationIds[current.packId]??=crypto.randomUUID();
 const histories = {};                          // each character keeps their own conversation
 const IDLE_PROMPT = "(Nobody has said anything for a while. Say one short, fresh thing to your stream on your own: a thought, a question for chat, or a little tune. Don't mention the silence.)";
+// A message in the chat, in the manner of Omni's baseline UI: no name on ordinary lines (a label only when one is
+// given), a reply's tool calls folded above its words, Copy under a reply.
+let pendingTools = [];                         // tool calls and feelings of the reply now being written, before its words arrive
 function bubble(role, text, who) {
   $('#empty')?.remove();
-  const d = document.createElement('div'), n = document.createElement('small'), t = document.createElement('span');
-  d.className = 'msg ' + role; n.textContent = who ?? (role === 'user' ? 'You' : current.name); t.textContent = text;
-  d.append(n, t); $('#messages').append(d); $('#messages').scrollTop = 1e9; $('#suggest').hidden = true;
+  const d = document.createElement('div'), t = document.createElement('span');
+  d.className = 'msg ' + role; t.textContent = text;
+  if (who) { const n = document.createElement('small'); n.textContent = who; d.append(n); }
+  if (role === 'assistant') {
+    d.append(Object.assign(document.createElement('details'), { className: 'tools', hidden: true }), t);
+    const copy = Object.assign(document.createElement('button'), { className: 'copy', type: 'button', textContent: 'Copy' });
+    copy.onclick = () => navigator.clipboard?.writeText(t.textContent).then(() => { copy.textContent = 'Copied'; setTimeout(() => { copy.textContent = 'Copy'; }, 1200); });
+    d.append(copy);
+    for (const [name, detail] of pendingTools.splice(0)) noteTool(name, detail, d);
+  } else d.append(t);
+  $('#messages').append(d); $('#messages').scrollTop = 1e9; $('#suggest').hidden = true;
   return t;
+}
+function noteTool(name, detail, msg = loopBubble?.parentElement) {   // folded under the reply it belongs to
+  if (!msg) return void pendingTools.push([name, detail]);
+  const box = msg.querySelector('.tools'), li = document.createElement('li'), b = document.createElement('b');
+  b.textContent = name; li.append(b);
+  if (detail !== undefined && detail !== null && detail !== '') li.append(Object.assign(document.createElement('code'), { textContent: typeof detail === 'string' ? detail : JSON.stringify(detail) }));
+  (box.querySelector('ul') ?? box.appendChild(document.createElement('ul'))).append(li);
+  box.querySelector('summary')?.remove();
+  const n = box.querySelectorAll('li').length;
+  box.prepend(Object.assign(document.createElement('summary'), { textContent: n === 1 ? `Used ${name}` : `Used ${n} tools` }));
+  box.hidden = false;
 }
 function showHistory() {
   $('#messages').replaceChildren(); $('#talkTitle').textContent = `Talking with ${current.name}`;
@@ -643,7 +684,7 @@ const OOPS = "[confused] Oops, my brain link just dropped. [sigh] Can you try th
 // The voice loop's side of a turn. Typed words are sent to it; heard words it already has (it did the hearing) and is answering.
 async function askLoop(text, heard) {
   const id = runId;
-  loopBusy = true; loopBubble = null; loopWhole = false;
+  loopBusy = true; loopBubble = null; loopWhole = false; pendingTools = [];
   trace('agent', 'request', { text, brain: serverBrain, character: current.name, offered: controls(), how: heard ? 'heard by the loop' : 'typed' });
   if (heard) return;
   const ok = await fetch('/agent/text', { method: 'POST', body: JSON.stringify({ text, ...loopWho() }) }).then(r => r.ok, () => false);
@@ -670,7 +711,7 @@ async function performScene(script) {
   if (!loopOn()) return note('Scenes are performed by the agent, and its voice loop is off or still loading.');
   stopAll(); remember({ scene: script });
   const id = runId;
-  sentAt = performance.now(); firstSoundAt = 0; streamDone = false; loopBusy = true; loopBubble = null; loopWhole = false; sceneHold = [];
+  sentAt = performance.now(); firstSoundAt = 0; streamDone = false; loopBusy = true; loopBubble = null; loopWhole = false; pendingTools = []; sceneHold = [];
   note('Getting the lines ready…');
   trace('scene', 'request', { text: script.split('\n')[0], script, character: current.name, offered: controls(), how: 'performed by the agent: its voice, its avatar tool, no model' });
   const ok = await fetch('/agent/scene', { method: 'POST', body: JSON.stringify({ script, ...loopWho() }) }).then(r => r.ok, () => false);
@@ -694,11 +735,17 @@ function onLoop(e) {
     return;
   }
   if (!['user', 'assistant', 'audio'].includes(kind)) {       // what the loop is doing, not part of a reply: shown in the Data flow window
+    if (!loopSkip && kind === 'tool' && text !== 'avatar stop') noteTool(text, e.data?.value ?? e.data);   // and the reply's tool calls, folded under it
+    if (!loopSkip && kind === 'feeling') noteTool('feeling', text);
     trace(kind === 'live' || HEARS.has(text) ? 'stt' : kind === 'tool' ? 'tools' : kind === 'scene' ? 'scene' : kind === 'feeling' || SPEAKS.has(text) ? 'voice' : 'agent', kind, { text, data: e.data });   // which section of the agent it came from
     if (kind === 'state' && !['transcribing', 'hearing you'].includes(text)) micIdle();
     if (kind === 'state' && text === 'hearing you') loopHeard = true;
     if (kind === 'state' && /dropped|discarded|ignored|not addressed/.test(text)) unhold(text);   // the loop heard no one talking to her: she carries on
     if (kind === 'status' && text.startsWith('error')) { console.warn('voice loop', text); if (loopBusy && !loopSkip) enqueue(parse(OOPS)); }
+    if (kind === 'voiced') {                                  // half duplex: the agent's ears stay shut until this part has played here
+      const id = runId, op = { type: 'played', n: e.n };
+      if (loopSkip) played(e.n); else loopChain = loopChain.then(() => { if (id !== runId) return played(e.n); if (!sceneHold) return enqueue([op]); sceneHold.push(op); releaseScene(); });   // a scene's part is all voiced: play it now (the agent waits for this before it says 'end')
+    }
     if (kind === 'scene' && text === 'refused') $('#sceneNote').textContent = e.data;   // a script the agent could not read, in its words
     if (kind === 'scene' && text === 'begin' && !loopSkip) { const id = runId; loopChain = loopChain.then(() => { if (id === runId) sceneHold ??= []; }); }   // a scene's sound follows (yours, or one the model wrote): hold it, after the words already on their way
     if (kind === 'scene' && text === 'end' && !loopSkip) releaseScene();
@@ -734,15 +781,23 @@ function onLoop(e) {
     trace('agent', 'done', { ms: Math.round(performance.now() - sentAt), chars: text.length, reply: text });
     return;
   }
-  // 'audio': one spoken sentence, voiced by the agent's voice module. This page plays it and reads the mouth shapes from the sound.
+  // 'audio': one spoken or sung sentence, voiced by the agent's voice module with neural visemes & timed cues.
   const id = runId, samples = fromPcm(e.pcm);
   if (rig.emotion === 'thinking') rig.setEmotion('neutral');
   if (!loopWhole) (loopBubble ??= bubble('assistant', '')).textContent += (loopBubble.textContent ? ' ' : '') + text;
-  trace('voice', 'clip ready', { text, ms: Math.round(performance.now() - sentAt), seconds: +(samples.length / e.rate).toFixed(2), sampleRate: e.rate, lipMarks: (e.marks || []).length, cues: (e.cues || []).map(c => ({ at: c.at, ...c.call })), by: 'Jaeger Agent (voice module)' });
+  const visemes = e.visemes || [], cues = e.cues || [];
+  const isSinging = Boolean(e.singing || visemes.some(v => v.singing));
+  trace('voice', 'clip ready', { text, ms: Math.round(performance.now() - sentAt), seconds: +(samples.length / e.rate).toFixed(2), sampleRate: e.rate, lipMarks: (e.marks || []).length, visemes: visemes.length, singing: isSinging, cues: cues.map(c => ({ at: c.at, ...c.call })), by: 'Jaeger Agent Omni V2 (MLX voicebox)' });
   loopChain = loopChain.then(async () => {
-    const marks = e.marks || [], track = voice.markLips(await work('analyze', samples, e.rate), marks);   // lip closures timed by the voice module
-    const op = { type: 'say', text, clip: { samples, sr: e.rate, natural: true, track, marks, cues: e.cues || [], voiceId: 'Jaeger Agent voice' } };
-    if (id === runId) sceneHold ? sceneHold.push(op) : enqueue([op]);
+    const marks = e.marks || [], track = voice.applyVisemes(voice.markLips(await work('analyze', samples, e.rate), marks), visemes);   // exact neural IPA visemes + lip closures from Omni V2
+    const bpm = e.bpm || 104, beats = isSinging ? Array.from({ length: Math.max(1, Math.floor(samples.length / e.rate * bpm / 60)) }, (_, i) => i * 60 / bpm) : undefined;
+    const clipData = { samples, sr: e.rate, natural: true, track, marks, cues, voiceId: 'Jaeger Agent Omni V2 voice', ...(isSinging ? { bpm, beats } : {}) };
+    const ops = [];
+    if (e.emotion && !isSinging && EMOTIONS[e.emotion] && !cues.some(c => c.at <= 0.05 && c.call?.emotion)) {
+      ops.push({ type: 'emotion', name: e.emotion });
+    }
+    ops.push({ type: isSinging ? 'sing' : 'say', text, clip: clipData });
+    if (id === runId) sceneHold ? sceneHold.push(...ops) : enqueue(ops);
   }).catch(err => console.warn('voice loop sound', err));
 }
 async function ask(text, { idle = false, heard = false } = {}) {
@@ -847,12 +902,15 @@ async function playReel() {
 }
 
 // --- Singing: type lyrics and she sings them --------------------------------------
-// The experimental singer (JaegerLyra's SoulX) renders the whole song first, about half a minute; her own Kokoro voice is quicker.
+// Omni V2 sings natively on Apple Silicon MLX Kokoro with VocalSet vibrato/glide + neural visemes in under a second.
 let song = null;
 const singInfo = t => { $('#singInfo').textContent = t; };
-const songClip = async (samples, sr, bpm) => ({ samples, sr, natural: true, bpm, beats: Array.from({ length: Math.floor(samples.length / sr * bpm / 60) }, (_, i) => i * 60 / bpm), track: await work('analyze', samples, sr) });
+const songClip = async (samples, sr, bpm, marks = [], visemes = []) => ({ samples, sr, natural: true, bpm, beats: Array.from({ length: Math.max(1, Math.floor(samples.length / sr * bpm / 60)) }, (_, i) => i * 60 / bpm), marks, track: voice.applyVisemes(voice.markLips(await work('analyze', samples, sr), marks), visemes) });
 function performSong(lyrics, c) { streamDone = true; enqueue([{ type: 'sing', text: lyrics.replace(/\s*\n\s*/g, ' / '), clip: c }]); }
-function showSingMethod() { document.querySelectorAll('#singSection .soulx').forEach(r => { r.hidden = $('#singMethod').value !== 'soulx'; }); }
+function showSingMethod() {
+  const m = $('#singMethod').value;
+  document.querySelectorAll('#singSection .soulx').forEach(r => { r.hidden = !(m === 'soulx' || (m === 'omni' && r.classList.contains('omni'))); });
+}
 $('#singMethod').onchange = showSingMethod;
 $('#singStop').onclick = () => { if (song) { fetch('/singer/stop', { method: 'POST', body: JSON.stringify({ id: song.id }) }).catch(() => {}); song.off = true; song = null; } stopEverything(); singInfo('Stopped.'); };
 $('#singGo').onclick = async () => {
@@ -860,8 +918,24 @@ $('#singGo').onclick = async () => {
   if (!lyrics) return singInfo('Type a line or two first.');
   if (song) $('#singStop').onclick();
   stopEverything(); startSound();const generation=runId;
+  if (method === 'omni') {
+    if (!loopOn()) return singInfo('Omni V2 neural singing requires the voice loop to be ready. Try "Her voice, on the beat" meanwhile.');
+    singInfo('Singing with Omni V2 MLX…');
+    try {
+      const melodyName = $('#singMelody').value || 'glow', tempo = +$('#singTempo').value || 104;
+      const r = await fetch('/agent/sing', { method: 'POST', body: JSON.stringify({ lyrics, melody: melodyName, tempo, voice: loopVoice() }) });
+      if (!r.ok) { const j = await r.json().catch(() => ({})); return singInfo(j.error || 'Omni V2 singing failed.'); }
+      const { samples, sr } = readWav(await r.arrayBuffer());
+      if (generation !== runId) return;
+      const marks = JSON.parse(r.headers.get('X-Lips') || '[]');
+      const visemes = JSON.parse(r.headers.get('X-Visemes') || '[]');
+      const meta = JSON.parse(r.headers.get('X-Song') || '{}');
+      singInfo('');
+      return performSong(lyrics, await songClip(samples, sr, meta.bpm || tempo, marks, visemes));
+    } catch { if (generation === runId) singInfo('Omni V2 singing failed. Try again.'); return; }
+  }
   if (method !== 'soulx') {
-    if (!singsHalf(voiceId)) return singInfo('Her own voice needs Kokoro on this Mac\'s GPU. Try the experimental singer.');
+    if (!singsHalf(voiceId)) return singInfo('Her own voice needs Kokoro on this Mac\'s GPU.');
     singInfo('Making the song…');
     const c = await singNatural(lyrics.replace(/\s*\n\s*/g, ', '), voiceId, serverTurn, method).catch(() => null);
     if(generation!==runId)return;
@@ -992,11 +1066,30 @@ $('#reelPause').onclick = pauseReel;
 $('#stop').onclick = stopEverything;
 function setTiming(onTwos) { TIMING.onTwos = onTwos; $('#timing').textContent = onTwos ? 'Anime, on twos' : 'Smooth, 60 fps'; remember({ onTwos }); }
 $('#timing').onclick = () => setTiming(!TIMING.onTwos);
-// Panels
+// Panels (Conversation lives permanently in #chatColumn; far-right #studioSidebar is collapsible!)
+const SIDEBAR_PANELS = ['agentic', 'perform', 'studio'];
+function setSidebarOpen(open) {
+  document.body.classList.toggle('sidebar-closed', !open);
+  const btn = $('#sidebarToggle');
+  if (btn) {
+    btn.setAttribute('aria-expanded', open);
+    btn.textContent = open ? 'Agentic & Studio ▸' : '◂ Agentic & Studio';
+  }
+  remember({ sidebarOpen: open });
+  window.dispatchEvent(new Event('resize'));
+}
+if ($('#sidebarToggle')) {
+  $('#sidebarToggle').onclick = () => setSidebarOpen(document.body.classList.contains('sidebar-closed'));
+}
+if ($('#openAgentSettingsBtn')) $('#openAgentSettingsBtn').onclick = () => $('#settingsOpen').click();
+if ($('#openHearingSettingsBtn')) $('#openHearingSettingsBtn').onclick = () => { $('#settingsOpen').click(); document.querySelector('#settingsTabs [data-page="setHearing"]')?.click(); };
+if ($('#openFlowBtn')) $('#openFlowBtn').onclick = () => $('#flowOpen').click();
 function selectPanel(name) {
-  for (const b of $('#panelTabs').children) { const on = b.dataset.panel === name; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; }
-  for (const p of ['perform', 'talk', 'studio']) $(`#${p}Panel`).hidden = p !== name;
-  remember({ panel: name });
+  if (name === 'talk') { $('#talkPanel').hidden = false; return; }
+  const target = SIDEBAR_PANELS.includes(name) ? name : 'agentic';
+  for (const b of $('#panelTabs').children) { const on = b.dataset.panel === target; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; }
+  for (const p of SIDEBAR_PANELS) { const el = $(`#${p}Panel`); if (el) el.hidden = p !== target; }
+  remember({ panel: target });
 }
 for (const b of $('#panelTabs').children) {
   b.onclick = () => selectPanel(b.dataset.panel);
@@ -1118,7 +1211,9 @@ function moodUI() {
   shownMood = key;
   const [icon, label] = FEELING[rig.emotion] ?? ['○', rig.emotion];
   $('#moodIcon').textContent = hearing ? '◉' : icon;
-  $('#moodLabel').textContent = hearing ? 'Listening to you' : rig.mode === 'thinking' ? 'Thinking it over' : rig.emotion === 'neutral' ? (rig.mode === 'speaking' ? 'Talking' : 'Here with you') : label;
+  const labelText = hearing ? 'Listening to you' : rig.mode === 'thinking' ? 'Thinking it over' : rig.emotion === 'neutral' ? (rig.mode === 'speaking' ? 'Talking' : 'Here with you') : label;
+  $('#moodLabel').textContent = labelText;
+  if ($('#talkStatus')) $('#talkStatus').textContent = hearing ? 'Listening…' : rig.mode === 'thinking' ? 'Thinking…' : rig.mode === 'speaking' ? 'Speaking…' : 'Ready when you are';
   for (const b of $('#emo').children) { const on = b.dataset.emotion === rig.emotion; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }
 }
 // JP01 can wear several faces; this switches the one on its screen live.
@@ -1517,7 +1612,8 @@ setMuted(muted);
 setTiming(saved.onTwos ?? true);
 setCalm(!!saved.calm); setBackdrop(saved.backdrop ?? true);
 buildVoiceBox(); startSettings({ speed: () => saved.speed ?? 1, setSpeed: v => { remember({ speed: v }); preloadReel(); } }); showEngine(); refreshVoices().then(() => { warmClone(); setTimeout(preloadReel, 1200); });
-selectPanel(['perform', 'talk', 'studio'].includes(saved.panel) ? saved.panel : 'talk');   // the conversation, beside her, unless you left another panel open
+setSidebarOpen(saved.sidebarOpen ?? true);
+selectPanel(['agentic', 'perform', 'studio'].includes(saved.panel) ? saved.panel : 'agentic');
 if (params.has('obs')) document.body.classList.add('obs');
 if (params.has('stream') || params.has('obs')) setStream(true);
 $('#soundGate').onclick = async () => { await audio().resume().catch(() => {}); soundCheck(); toast(audio().state === 'running' ? 'Sound is on.' : 'This browser is still blocking sound. Check its site settings for this page.'); };
@@ -1549,6 +1645,8 @@ $('#singerSample').onclick=async()=>{stopEverything();const mine=runId;const c=a
 window.jaegerAvatar={...window.nori,get clip(){return clip;},packs:PACKS,characters:CHARACTERS,get current(){return current;},preparedSample,performScene,cueTrips};
 $('#scene').value = saved.scene ?? `look left | hold 3\nlook center | emotion joy | say So, what did you do today?\nsay I spent mine learning to juggle. | action ${agentActions()[0] ?? 'nod'} | on juggle`;   // the example uses a move this body offers
 $('#scenePlay').onclick = () => performScene($('#scene').value);
+$('#sceneOpen').onclick = () => $('#sceneFile').click();
+$('#sceneFile').onchange = async e => { const f = e.target.files[0]; if (f) $('#scene').value = await f.text(); e.target.value = ''; };   // a scene written in a file (.scene): the same steps
 // An agent outside the avatar drives the body on stage through the server's control link (dev/docs/runtime/EMBEDDING.md).
 // Its speech arrives as an uploaded clip with lip timing; a newer line preempts the one playing, as a speaker does.
 let speakId = 0;

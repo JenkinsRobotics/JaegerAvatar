@@ -21,7 +21,9 @@ import subprocess
 import threading
 import uuid
 
-WORKER = 'jaeger_agent.body.loop'
+DEFAULT_WORKER = 'jaeger_agent.body.loop'   # Jaeger Agent's voice loop; JAEGER_AGENT_WORKER=jaeger_omni_v2.avatar_loop for Omni
+WORKER = os.environ.get('JAEGER_AGENT_WORKER', DEFAULT_WORKER)
+OMNI_V2_PYTHON = Path.home() / 'GITHUB/jaeger-module-omni/.venv/bin/python'
 
 
 class Host:
@@ -32,8 +34,9 @@ class Host:
         atexit.register(self.close)
 
     def command(self, first):
-        """What to run: Jaeger Agent's own voice loop for a body, from the agent's package in the agent's Python."""
-        return [str(self.python), '-u', '-m', WORKER]
+        """What to run: Jaeger Agent's own voice loop by default (`JAEGER_AGENT_WORKER` overrides)."""
+        worker = os.environ.get('JAEGER_AGENT_WORKER', WORKER)
+        return [str(self.python), '-u', '-m', worker]
 
     def start(self, first=None):
         """Start the worker; it reads `first` (its start line) before loading. Nothing starts without that Python."""
@@ -128,7 +131,15 @@ class AgentHost(Host):
         return super().command(first) if first else [str(self.python),'-u',str(ROOT/'app/agent_worker.py')]
 
     def start(self,first=None):
-        self.python=Path(os.environ.get('JAEGER_AGENT_PYTHON',ROOT/'.agent-venv/bin/python'))
+        env_py = os.environ.get('JAEGER_AGENT_PYTHON', '').strip()
+        if env_py:
+            self.python = Path(env_py)
+        else:
+            worker = os.environ.get('JAEGER_AGENT_WORKER', WORKER)
+            if worker.startswith('jaeger_omni_v2') and OMNI_V2_PYTHON.is_file():
+                self.python = OMNI_V2_PYTHON
+            else:
+                self.python = ROOT / '.agent-venv/bin/python'
         super().start(first)
 
     def stream(self,text,system,session,adapter=None):

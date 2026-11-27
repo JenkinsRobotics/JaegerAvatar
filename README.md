@@ -41,8 +41,8 @@ model file, scripted replies and performances remain available. JaegerAI is not 
 
 ## Characters and packs
 
-**56 avatar packs, 62 persona profiles and 104 representations; every pack has a live rig.** The existing
-Mochi, JaegerAI and JaegerAgent library remains intact, including Clanker and the
+**57 avatar packs, 64 persona profiles and 109 representations; every pack has a live rig.** The existing
+Mochi, JaegerAI, JaegerAgent, and Omni V2 (`omni_core` / Lyra) library remains intact, including Clanker and the
 sculpted Jaeger artwork. **Avatar library** shows live rigs, portraits, video
 representations and source-only entries separately. Imported Python/MScript
 artwork is preserved but not executed by the browser.
@@ -84,9 +84,7 @@ See [pack format](dev/docs/packs/AVATAR_PACKS.md) and
 - **Singer A** is the exact prepared SoulX/Kokoro-reference recording preferred
   in KIN. Play it in Studio or leave **Singer A finale** enabled for an additional
   chapter after Nori's original reel. It is clearly labelled as prepared audio.
-- **Fresh songs** use the JaegerLyra checkout through a process adapter. Configure
-  `NORI_LYRA` if it is not beside JaegerAvatar. Model weights and synthesis scripts
-  stay with Lyra. The saved Singer A sample works without Lyra installed.
+- **Fresh songs** use **Jaeger Agent Omni V2's native MLX Kokoro neural singer** (`/agent/sing`, VocalSet vibrato/glide + Expressive Adapter + Decoder LoRA + 40 Hz neural lip-sync) directly in the active character's voice, in under a second. The saved Singer A sample also continues to work offline.
 - Kokoro speech, Whisper hearing, live mic lip sync, optional webcam tracking,
   local model loading, recording and output windows come from Nori. The local
   audio bridge is retained; JaegerOS speech-topic integration remains planned.

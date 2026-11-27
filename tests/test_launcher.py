@@ -13,7 +13,7 @@ KEYS = ('JAEGER_AGENT_NO_TOOLS', 'JAEGER_AGENT_NO_SKILLS')
 class LauncherTest(unittest.TestCase):
     def launch(self, **env):
         with mock.patch.dict(os.environ, env), mock.patch.object(runpy, 'run_path'), \
-                mock.patch.object(sys, 'argv', ['jaeger_avatar']), mock.patch.object(sys, 'path', list(sys.path)):
+                mock.patch.object(sys, 'argv', ['jaeger_avatar', '--browser']), mock.patch.object(sys, 'path', list(sys.path)):   # --browser: the server itself (no argument opens the window)
             for key in KEYS: os.environ.pop(key, None)
             launcher.main()
             return [os.environ.get(key) for key in KEYS]

@@ -37,9 +37,9 @@ class RecoveredLibraryTests(unittest.TestCase):
 
     def test_archived_prototypes_are_not_registered_as_working_representations(self):
         packs = validate_catalog(ROOT / "avatar-packs")
-        self.assertEqual(len(packs), 56)
-        self.assertEqual(sum(len(p["profiles"]) for p in packs), 62)
-        self.assertEqual(sum(len(p["representations"]) for p in packs), 106)  # +1: Bender's locked screen look, +1: Truth's card
+        self.assertEqual(len(packs), 57)
+        self.assertEqual(sum(len(p["profiles"]) for p in packs), 64)
+        self.assertEqual(sum(len(p["representations"]) for p in packs), 109)  # +3: omni_core (Jaeger: screen body wearing its own look, the locked screen look, card)
         archived = 0
         for pack in packs:
             for key, source in pack["sources"].items():

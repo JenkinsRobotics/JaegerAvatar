@@ -58,7 +58,7 @@ packs. They require a browser renderer integration or authored raster exports.
 .agent-venv/bin/python -m pip install -r requirements-deployment-test.txt
 .agent-venv/bin/python scripts/qualify_robot_packs.py \
   --bundle dist/robot-packs-alpha-0.1 \
-  --mochi ../Mochi --animation ../JaegerAnimation \
+  --mochi ../Mochi --animation ../jaeger-module-animation \
   --output dev/evidence/deployment/mochi-offline.json
 ```
 

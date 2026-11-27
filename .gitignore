@@ -70,3 +70,5 @@ htmlcov/
 .agent-venv/
 node_modules/
 app/evidence/
+# Kept local: over GitHub's 100 MB limit, private, or other checkouts (2026-11-26)
+/.jaeger_agent_omni/memory/state.db
