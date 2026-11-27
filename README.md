@@ -60,6 +60,8 @@ JP01's body is the real Onshape assembly, opening on its top half like Vita. Vit
 share a pack and conversation. Persona selection in Studio is independent of
 appearance. Existing Mochi defaults and its original source variants are preserved.
 
+Mochi (now archived) demoed how a hardware integration works; this app is the full end-to-end test bed — every hardware body simulated at its native pixels — and JP01 is the real integration.
+
 Jaeger Avatar owns **`avatar/v1`**, the successor to character packs. Pack data
 contains identity, assets and representation defaults. Conversations, model
 configuration, credentials and tool permissions belong to the runtime.
