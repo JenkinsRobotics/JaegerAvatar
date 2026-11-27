@@ -148,10 +148,34 @@ function showPane(id) {
   if (id === 'paneAgent') fillAgent(PACKS.find(p => p.id === (current.personaPack || current.packId)) ?? current.pack);   // a stream is only made while someone watches it
 }
 for (const b of document.querySelectorAll('#bottomTabs button')) b.onclick = () => showPane(b.dataset.pane);
-$('#toExhibit').onclick = e => { e.preventDefault(); showPane('paneHow'); $('#exhibit').scrollIntoView({ behavior: 'smooth' }); };
+// The nav bar's pages: each section under the stage shows alone; Studio (home) shows none of them.
+function goPage(page) {
+  const framed = page.endsWith('.html');
+  document.body.classList.toggle('page-assets', page === 'assets');
+  document.body.classList.toggle('page-exhibit', page.startsWith('pane'));
+  document.body.classList.toggle('page-panel', ['agentic', 'perform', 'studio'].includes(page));
+  document.body.classList.toggle('page-frame', framed);
+  $('#agenticPanel').hidden = page !== 'agentic';
+  $('#performPanel').hidden = page !== 'perform';
+  $('#studioPanel').hidden = page !== 'studio';
+  for (const b of document.querySelectorAll('#pages [data-page]')) b.setAttribute('aria-selected', b.dataset.page === page);
+  const navBox = document.querySelector('#pages').getBoundingClientRect();
+  document.documentElement.style.setProperty('--pageTop', navBox.top + 'px');
+  document.documentElement.style.setProperty('--pageLeft', navBox.right + 10 + 'px');
+  const frame = $('#pageFrame');
+  if (framed) { if (frame.dataset.src !== page) { frame.src = page; frame.dataset.src = page; } }
+  else if (frame.dataset.src) { frame.src = 'about:blank'; frame.dataset.src = ''; }   // a closed page stops its camera, mic and streams
+  if (page.startsWith('pane')) { showPane(page); $('#exhibit').scrollTop = 0; }
+  else { $('#hwList').replaceChildren(); outputsFor = ''; }   // leaving the exhibit: stop the device streams
+  if (page === 'assets') { $('#assetsBox').open = true; $('#assets').scrollTop = 0; }
+}
+for (const b of document.querySelectorAll('#pages button[data-page]')) b.onclick = () => goPage(b.dataset.page);
+for (const a of document.querySelectorAll('#pages a[data-page]')) a.onclick = e => { e.preventDefault(); goPage(a.dataset.page); };
+$('#toExhibit').onclick = e => { e.preventDefault(); goPage('paneHow'); };
 // Outputs: the body's hardware streams, inline and in windows of their own.
 let outputsFor = '';
 function fillOutputs() {
+  if (!document.body.classList.contains('page-exhibit')) return;   // the Outputs page is closed: no stream without a watcher
   if (!$('#paneOutputs').classList.contains('on')) return;
   const hw = hardwareFor(current), key = current.id + '|' + hw;
   if (key === outputsFor && $('#hwList').children.length) return;
@@ -312,7 +336,7 @@ const { readWav } = voice;
 let voiceList = [], naturalStatus = 'off', kokoroOn = null, cloneStatus = 'idle', serverTurn = Date.now();   // always ahead of an earlier page's turns
 const chosenVoice = () => {
   if (saved.engine === 'fast') return null;
-  const id = saved.voices?.[current.id] ?? `kokoro:${current.kokoro}`;
+  const id = saved.voices?.[current.id] ?? 'chatterbox:default';   // Chatterbox speaks by default; pick a Kokoro voice per character in Voice settings
   return voiceList.some(v => v.id === id) ? id : voiceList.some(v => v.id === `kokoro:${current.kokoro}`) ? `kokoro:${current.kokoro}` : null;
 };
 // The reel's lines are rendered ahead of time in the quiet after the page loads, so pressing Play starts it straight away.
@@ -1067,13 +1091,13 @@ $('#stop').onclick = stopEverything;
 function setTiming(onTwos) { TIMING.onTwos = onTwos; $('#timing').textContent = onTwos ? 'Anime, on twos' : 'Smooth, 60 fps'; remember({ onTwos }); }
 $('#timing').onclick = () => setTiming(!TIMING.onTwos);
 // Panels (Conversation lives permanently in #chatColumn; far-right #studioSidebar is collapsible!)
-const SIDEBAR_PANELS = ['agentic', 'perform', 'studio'];
+const SIDEBAR_PANELS = [];   // Agent config, Perform and Studio tools are left-nav pages; the sidebar is the telemetry feed
 function setSidebarOpen(open) {
   document.body.classList.toggle('sidebar-closed', !open);
   const btn = $('#sidebarToggle');
   if (btn) {
     btn.setAttribute('aria-expanded', open);
-    btn.textContent = open ? 'Agentic & Studio ▸' : '◂ Agentic & Studio';
+    btn.textContent = open ? 'Agent panel ▸' : '◂ Agent panel';
   }
   remember({ sidebarOpen: open });
   window.dispatchEvent(new Event('resize'));
@@ -1433,7 +1457,7 @@ function setEngine(engine, audition = false) {
   if (reel) playReel();
   else perform(`[joy] Hi, I'm ${current.name}. [excited] This is the ${engine === 'fast' ? 'original' : 'Kokoro'} voice. [love] How do I sound?`);
 }
-const showEngine = () => { $('#abVoice').textContent = saved.engine === 'fast' ? 'Voice: Original' : 'Voice: Kokoro'; };
+const showEngine = () => { $('#abVoice').textContent = saved.engine === 'fast' ? 'Voice: Original' : 'Voice: Natural'; };
 $('#abVoice').onclick = () => setEngine(saved.engine === 'fast' ? 'natural' : 'fast', true);
 async function refreshVoices() {
   try {
@@ -1613,7 +1637,7 @@ setTiming(saved.onTwos ?? true);
 setCalm(!!saved.calm); setBackdrop(saved.backdrop ?? true);
 buildVoiceBox(); startSettings({ speed: () => saved.speed ?? 1, setSpeed: v => { remember({ speed: v }); preloadReel(); } }); showEngine(); refreshVoices().then(() => { warmClone(); setTimeout(preloadReel, 1200); });
 setSidebarOpen(saved.sidebarOpen ?? true);
-selectPanel(['agentic', 'perform', 'studio'].includes(saved.panel) ? saved.panel : 'agentic');
+
 if (params.has('obs')) document.body.classList.add('obs');
 if (params.has('stream') || params.has('obs')) setStream(true);
 $('#soundGate').onclick = async () => { await audio().resume().catch(() => {}); soundCheck(); toast(audio().state === 'running' ? 'Sound is on.' : 'This browser is still blocking sound. Check its site settings for this page.'); };
@@ -1677,3 +1701,24 @@ const stageLink = startControlLink({
   },
 });
 showPane(saved.bottomTab ?? 'paneOutputs');   // under the stage: outputs first, unless another tab was left open
+
+// Agent telemetry: the right-hand panel is a live feed — what it hears, thinks, says, and every tool it uses.
+if (!params.has('obs')) {
+  const teleSkip = new Set(['audio', 'voiced', 'done']);   // sound payloads and timing ticks: noise in a reading feed
+  const teleFeed = $('#teleFeed'), teleStatus = $('#teleStatus');
+  const brief = v => { if (v == null || v === '') return ''; const t = typeof v === 'string' ? v : JSON.stringify(v); return t.length > 220 ? t.slice(0, 220) + '…' : t; };
+  const teleSource = new EventSource('/agent/events');
+  teleSource.onmessage = m => {
+    let e; try { e = JSON.parse(m.data); } catch { return; }
+    if (!e.event || teleSkip.has(e.event)) return;
+    if (e.event === 'state' || e.event === 'status') teleStatus.textContent = e.text || '';
+    const d = document.createElement('div');
+    d.className = 'tele ' + e.event;
+    const b = document.createElement('b');
+    b.textContent = { user: 'heard', assistant: 'says', tool: 'tool', feeling: 'feeling' }[e.event] ?? e.event;
+    d.append(b, ' ' + [e.event === 'tool' ? e.text : '', e.event === 'tool' ? brief(e.data?.value ?? e.data) : brief(e.text) || brief(e.data)].filter(Boolean).join(' · '));
+    teleFeed.prepend(d);
+    while (teleFeed.children.length > 250) teleFeed.lastChild.remove();
+  };
+  teleSource.onerror = () => { if (teleSource.readyState === EventSource.CLOSED) teleStatus.textContent = 'No agent loop: scripted replies have no telemetry.'; };
+}

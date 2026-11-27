@@ -1,4 +1,4 @@
-"""Natural voices. Kokoro speaks for every character: on the Apple GPU through MLX where it can, otherwise on the CPU through ONNX. Chatterbox Turbo loads only when someone uses a voice cloned from a sample.
+"""Natural voices. Chatterbox Turbo is the default speaker (its built-in voice, no sample needed); Kokoro offers the named per-character voices: on the Apple GPU through MLX where it can, otherwise on the CPU through ONNX. Both load lazily; the character's fast voice carries on until the chosen one is ready.
 
 Everything stays on this machine. Requests from an interrupted turn are skipped.
 """
@@ -212,6 +212,7 @@ class Engine:
             from mlx_audio.tts.utils import load_model
             print(f"Loading the voice clone model {CLONE_MODEL} (the first use downloads about 3.2 GB)...")
             self.clone_model = load_model(CLONE_MODEL)
+            self.conds["default"] = self.clone_model._conds   # the model's own built-in voice: "chatterbox:default", no sample needed
             self.clone_status = "ready"
             print("Voice clone model ready")
         except Exception as e:      # no MLX on this machine, or no network: clones fall back to the character's own voice
@@ -257,7 +258,8 @@ class Engine:
 
     # --- voices ---------------------------------------------------------
     def list(self):
-        voices = [{"id": "kokoro:" + k, "name": n, "kind": "built-in"} for k, n in KOKORO_VOICES.items()] if self.status == "ready" else []
+        voices = [{"id": "chatterbox:default", "name": "Chatterbox", "kind": "built-in"}]
+        voices += [{"id": "kokoro:" + k, "name": n, "kind": "built-in"} for k, n in KOKORO_VOICES.items()] if self.status == "ready" else []
         for meta in sorted(CLONES.glob("*.json")) if CLONES.exists() else []:
             voices.append({"id": "clone:" + meta.stem, "name": json.loads(meta.read_text())["name"], "kind": "clone"})
         return voices
@@ -363,6 +365,8 @@ class Engine:
         elif kind == "clone":
             self.clone_path(name)
             x = self._call(lambda: self._speak_clone(name, text, emotion), turn)
+        elif kind == "chatterbox":
+            x = self._call(lambda: self._speak_clone("default", text, emotion), turn)
         else:
             raise ValueError("no such voice")
         if x is not None and len(text) <= 12:

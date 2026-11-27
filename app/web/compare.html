@@ -24,9 +24,10 @@
   dt { color:#9aa3b2; } dd { margin:0; overflow-wrap:anywhere; }
 </style>
 </head>
-<body>
+<body class="demo-page">
 <main>
-  <div class="row"><a href="/">Jaeger Avatar</a><h1>Two voices, side by side</h1></div>
+  <nav class="demo-nav"><a href="/">Studio</a><a href="/multimodal.html">Multimodal</a><a href="/demo-packs.html">Demo packs</a><a href="/compare.html">Compare voices</a></nav>
+  <div class="row"><h1>Two voices, side by side</h1></div>
   <div class="tiny">The same character twice. Each side speaks the same line through the voice you pick for it, one after the other, never together. The numbers under each side are measured on that clip.</div>
   <form id="say">
     <label>Character <select id="who" aria-label="Character"></select></label>
@@ -44,5 +45,7 @@
 </main>
 <script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/","@pixiv/three-vrm":"./vendor/three-vrm.module.min.js"}}</script>
 <script type="module" src="compare.js"></script>
+<script>/* Framed inside the Studio shell: no duplicate nav; links back into the app steer the whole window. */
+if(self!==top){document.querySelector('.demo-nav')?.remove();addEventListener('click',e=>{const a=e.target.closest('a');if(a&&/^\/(\?|$)/.test(a.getAttribute('href')||''))a.target='_top';},true);}</script>
 </body>
 </html>

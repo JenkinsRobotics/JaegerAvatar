@@ -57,6 +57,7 @@ export function startSettings({ speed, setSpeed }) {
     $('#setTokens').value = s.agent.max_tokens;
     $('#setTimeout').value = s.agent.timeout_s; $('#setSkip').checked = s.agent.skip_thinking;
     fill($('#setDuplex'), Object.entries(s.options.duplex ?? { quasi: 'Quasi full duplex' }), s.agent.duplex ?? 'quasi');
+    fill($('#setEngine'), Object.entries(s.options.engines ?? { loop: 'JaegerAgent voice loop' }), s.agent.engine ?? 'loop');
     $('#agentAllBody').innerHTML = allSettings(s.jaeger_agent, s.agent, s.parts);
     fill($('#setStt'), Object.entries(s.options.whisper).map(([m, size]) => [m, `${m} · ${size}`]), s.hearing.model);
     fill($('#setLang'), Object.entries(s.options.languages), s.hearing.language);
@@ -78,6 +79,7 @@ export function startSettings({ speed, setSpeed }) {
   $('#setTokens').onchange = e => save({ agent: { max_tokens: Math.round(+e.target.value) } });
   $('#setTimeout').onchange = e => save({ agent: { timeout_s: +e.target.value } });
   $('#setDuplex').onchange = e => save({ agent: { duplex: e.target.value } });
+  $('#setEngine').onchange = e => save({ agent: { engine: e.target.value } });
   $('#setSkip').onchange = e => save({ agent: { skip_thinking: e.target.checked } });
   $('#setStt').onchange = e => save({ hearing: { model: e.target.value } });
   $('#setLang').onchange = e => save({ hearing: { language: e.target.value } });

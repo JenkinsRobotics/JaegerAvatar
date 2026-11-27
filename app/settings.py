@@ -10,10 +10,12 @@ WHISPER = {'tiny.en': '75 MB', 'base.en': '140 MB', 'small.en': '470 MB', 'mediu
 LANGUAGES = {'en': 'English', 'auto': 'Detect automatically'}
 # Jaeger Agent's two ways of taking turns with a body: quasi (open mic, echo cancelled, you can cut in) or half (mic shut while she speaks).
 DUPLEX = {'quasi': 'Quasi full duplex: talk over her', 'half': 'Half duplex: the mic shuts while she speaks'}
+# The two conversation engines, each a worker in its own right: the voice loop speaks with Kokoro, Omni V2 with Chatterbox.
+ENGINES = {'loop': 'JaegerAgent voice loop · Kokoro voice', 'omni': 'Omni V2 · Chatterbox voice'}
 
 
 def defaults(model, stt):
-    return {'agent': {'model': model, 'temperature': 0.7, 'max_tokens': 700, 'timeout_s': 60, 'skip_thinking': True, 'duplex': 'quasi'}, 'hearing': {'model': stt, 'language': 'en'}}
+    return {'agent': {'model': model, 'temperature': 0.7, 'max_tokens': 700, 'timeout_s': 60, 'skip_thinking': True, 'duplex': 'quasi', 'engine': 'loop'}, 'hearing': {'model': stt, 'language': 'en'}}
 
 
 def _number(v, lo, hi, kind):
@@ -39,6 +41,8 @@ def apply(current, patch, models):
         raise ValueError('Skip thinking is on or off')
     if 'duplex' in a and a['duplex'] not in DUPLEX:
         raise ValueError('Duplex is half or quasi')
+    if 'engine' in a and a['engine'] not in ENGINES:
+        raise ValueError('Engine is loop or omni')
     if 'model' in h and h['model'] not in WHISPER:
         raise ValueError('Unknown speech model')
     if 'language' in h and h['language'] not in LANGUAGES:

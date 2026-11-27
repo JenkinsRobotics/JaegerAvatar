@@ -185,6 +185,8 @@ def loop_start():
     page's microphone has the browser's echo canceller, so the agent keeps hearing while she speaks and you can cut in;
     half = the agent's own half duplex, its ears shut until the page says it has played her words. The rest is the agent's."""
     a = config['agent']
+    # The chosen engine decides the worker (and with it the voice): the host reads this env when it starts.
+    os.environ['JAEGER_AGENT_WORKER'] = 'jaeger_omni_v2.avatar_loop' if a.get('engine') == 'omni' else 'jaeger_agent.body.loop'
     return {'op': 'start', 'model': a['model'], **{k: a[k] for k in ('temperature', 'max_tokens', 'timeout_s') if k in a},
             'hearing': config['hearing']['model'], **loop_who({'pack': 'vita'}), 'session': 'avatar', 'open_mic': a.get('duplex', 'quasi') != 'half'}
 
@@ -452,7 +454,7 @@ class Handler(SimpleHTTPRequestHandler):
             notes = [{"t": float(n["t"]), "f": float(n["f"]), "dur": float(n["dur"])} for n in notes]
         except (TypeError, KeyError, ValueError):
             return self.reply(400, b'{"error":"bad notes"}')
-        if voice.partition(":")[0] in ("kokoro", "clone"):
+        if voice.partition(":")[0] in ("kokoro", "clone", "chatterbox"):
             if not engine.ready_for(voice):
                 return self.reply(503, b'{"error":"voice not ready"}')
             try:
@@ -504,7 +506,7 @@ class Handler(SimpleHTTPRequestHandler):
                 "jaeger_agent": {**(agent_host.schema or {}), "in_app": {"provider": "llama_cpp", "base_url": "", "model_path": str(files.get(shown["agent"]["model"], "")), "api_key_env": "",
                     "system_prompt": "built for each character", "max_iterations": 1, "tools_enabled": False, "ctx": 8192, "gpu_layers": -1,
                     **{k: report[k] for k in ("max_iterations", "tools_enabled", "ctx") if k in report}}},
-                "options": {"models": list(files), "whisper": app_settings.WHISPER, "languages": app_settings.LANGUAGES, "duplex": app_settings.DUPLEX}}).encode())
+                "options": {"models": list(files), "whisper": app_settings.WHISPER, "languages": app_settings.LANGUAGES, "duplex": app_settings.DUPLEX, "engines": app_settings.ENGINES}}).encode())
         if self.path == "/health":
             ears, where = bool(stt) or stt is None, stt_where
             if LOOP:   # the loop's ears: the hearing module, and what it computes on
@@ -753,7 +755,7 @@ class Handler(SimpleHTTPRequestHandler):
             text = str(body.get("text", ""))[:1000].strip()
             if not text:
                 return self.reply(400, b'{"error":"empty"}')
-            if str(body.get("voice", "")).partition(":")[0] in ("kokoro", "clone"):
+            if str(body.get("voice", "")).partition(":")[0] in ("kokoro", "clone", "chatterbox"):
                 return self.say_natural(str(body["voice"]), text, body.get("emotion"), body.get("speed", 1), int(body.get("turn", engine.current_turn)))
             name = body.get("voice") if body.get("voice") in VOICES else VOICE
             if not load_voice(name):

@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Multimodal · Jaeger Avatar</title>
+<link rel="stylesheet" href="/theme.css">
+<style>
+  main { padding:16px; display:grid; gap:14px; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); max-width:1400px; margin:0 auto; }
+  section { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:14px; min-width:0; }
+  h2 { font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin:0 0 10px; }
+  video { width:100%; aspect-ratio:4/3; border-radius:10px; object-fit:cover; }
+  canvas { width:100%; height:90px; border-radius:10px; background:var(--panel2); display:block; }
+  #level { height:10px; margin-top:8px; }
+  .row { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:center; }
+  select { max-width:220px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  td { padding:4px 6px; border-top:1px solid var(--line); vertical-align:top; }
+  td:first-child { color:var(--dim); white-space:nowrap; width:1%; }
+  #events { font:11px/1.5 ui-monospace, Menlo, monospace; max-height:320px; overflow:auto; white-space:pre-wrap; word-break:break-word; margin:0; }
+  #events div { border-top:1px solid var(--line); padding:3px 0; }
+  .err { color:var(--hot); }
+</style>
+</head>
+<body class="demo-page">
+<main>
+  <div style="grid-column:1/-1" class="demo-nav"><a href="/">Studio</a><a href="/multimodal.html" aria-current="page">Multimodal</a><a href="/demo-packs.html">Demo packs</a><a href="/compare.html">Compare voices</a><span class="tag" id="brain"></span></div>
+
+  <section>
+    <h2>Camera</h2>
+    <video id="cam" autoplay playsinline muted></video>
+    <div class="row">
+      <button id="camBtn">Start camera</button>
+      <select id="camPick" hidden></select>
+      <small id="camNote"></small>
+    </div>
+  </section>
+
+  <section>
+    <h2>Voice input</h2>
+    <canvas id="wave" width="640" height="180"></canvas>
+    <canvas id="level" width="640" height="20"></canvas>
+    <div class="row">
+      <button id="micBtn">Start microphone</button>
+      <small id="micNote"></small>
+    </div>
+  </section>
+
+  <section>
+    <h2>Telemetry</h2>
+    <table id="health"></table>
+  </section>
+
+  <section>
+    <h2>Live agent events</h2>
+    <div id="events"><small>Waiting for the voice loop…</small></div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+
+// Camera: preview only; frames stay in the browser.
+let camStream = null;
+$('camBtn').onclick = async () => {
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; $('cam').srcObject = null; $('camBtn').textContent = 'Start camera'; return; }
+  try {
+    const id = $('camPick').value;
+    camStream = await navigator.mediaDevices.getUserMedia({ video: id ? { deviceId: { exact: id } } : true });
+    $('cam').srcObject = camStream; $('camBtn').textContent = 'Stop camera'; $('camNote').textContent = '';
+    const cams = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+    if (cams.length > 1) { $('camPick').hidden = false; $('camPick').replaceChildren(...cams.map(d => new Option(d.label || 'Camera', d.deviceId))); }
+  } catch (e) { $('camNote').textContent = e.message; $('camNote').className = 'err'; }
+};
+$('camPick').onchange = () => { if (camStream) { $('camBtn').onclick(); $('camBtn').onclick(); } };
+
+// Microphone: waveform + level meter, same AnalyserNode.
+let micStream = null, raf = 0;
+$('micBtn').onclick = async () => {
+  if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; cancelAnimationFrame(raf); $('micBtn').textContent = 'Start microphone'; return; }
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+    $('micBtn').textContent = 'Stop microphone'; $('micNote').textContent = '';
+    const ctx = new AudioContext(), an = ctx.createAnalyser();
+    an.fftSize = 2048; ctx.createMediaStreamSource(micStream).connect(an);
+    const data = new Uint8Array(an.fftSize), wave = $('wave').getContext('2d'), level = $('level').getContext('2d');
+    const accent = getComputedStyle(document.body).getPropertyValue('--accent');
+    (function draw() {
+      raf = requestAnimationFrame(draw);
+      an.getByteTimeDomainData(data);
+      wave.clearRect(0, 0, 640, 180); wave.strokeStyle = accent; wave.lineWidth = 2; wave.beginPath();
+      let peak = 0;
+      for (let i = 0; i < data.length; i++) {
+        const v = (data[i] - 128) / 128; peak = Math.max(peak, Math.abs(v));
+        wave[i ? 'lineTo' : 'moveTo'](i * 640 / data.length, 90 + v * 85);
+      }
+      wave.stroke();
+      level.clearRect(0, 0, 640, 20); level.fillStyle = peak > .9 ? '#ff5a62' : accent;
+      level.fillRect(0, 0, peak * 640, 20);
+    })();
+  } catch (e) { $('micNote').textContent = e.message; $('micNote').className = 'err'; }
+};
+
+// Telemetry: /health, repolled every 3 s.
+async function health() {
+  try {
+    const h = await (await fetch('/health')).json();
+    $('brain').textContent = h.brain || '';
+    $('health').replaceChildren(...Object.entries(h).map(([k, v]) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td></td><td></td>';
+      tr.children[0].textContent = k; tr.children[1].textContent = typeof v === 'object' ? JSON.stringify(v) : String(v);
+      return tr;
+    }));
+  } catch { $('health').innerHTML = '<tr><td class="err" colspan="2">Server unreachable</td></tr>'; }
+}
+health(); setInterval(health, 3000);
+
+// Live events: the voice loop's SSE stream (words, voice sound, timings). 404s when the loop is off.
+const es = new EventSource('/agent/events');
+es.onmessage = e => {
+  const box = $('events'), line = document.createElement('div');
+  line.textContent = e.data;
+  box.prepend(line);
+  while (box.children.length > 200) box.lastChild.remove();
+};
+es.onerror = () => { if (es.readyState === EventSource.CLOSED) $('events').innerHTML = '<small>No agent loop running — scripted mode has no event stream.</small>'; };
+</script>
+<script>/* Framed inside the Studio shell: no duplicate nav; links back into the app steer the whole window. */
+if(self!==top){document.querySelector('.demo-nav')?.remove();addEventListener('click',e=>{const a=e.target.closest('a');if(a&&/^\/(\?|$)/.test(a.getAttribute('href')||''))a.target='_top';},true);}</script>
+</body>
+</html>
