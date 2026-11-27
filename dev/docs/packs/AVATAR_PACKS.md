@@ -170,3 +170,5 @@ authored packs; imports are explicit snapshots, not automatic synchronization.
 An explicit compatibility exporter is now available; see [robot deployment](ROBOT_DEPLOYMENT.md). No downstream loader switch is included. JaegerAnimation's
 existing `character/v1` contract remains in service for unmigrated clients.
 Version and coordinate changes at that boundary rather than silently changing it.
+
+The original Mochi drop-in character format, which every pack preserves under `sources/mochi/`, is documented in [mochi-format/CHARACTER_FORMAT.md](mochi-format/CHARACTER_FORMAT.md) (Mochi itself is archived; this app builds, tests and packages packs now).
