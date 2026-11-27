@@ -6,6 +6,7 @@
 <title>Jaeger Avatar Studio</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23141726'/%3E%3Crect x='14' y='20' width='13' height='24' rx='6' fill='%235fe0d0'/%3E%3Crect x='37' y='20' width='13' height='24' rx='6' fill='%235fe0d0'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="./theme.css">
+<link rel="stylesheet" href="./app-shell/app-shell.css">
 <style>
   * { box-sizing:border-box; }
   html,body { height:100%; margin:0; background:var(--bg); color:var(--ink); font:14px/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
@@ -17,35 +18,40 @@
   kbd { font:11px ui-monospace,Menlo,monospace; color:var(--dim); border:1px solid var(--line); border-radius:4px; padding:0 4px; margin-left:auto; }
   .tiny { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
 
-  #app { display:grid; grid-template-columns:172px minmax(340px,1.12fr) minmax(330px,.96fr) 348px; grid-template-rows:auto minmax(0,1fr) auto auto auto; gap:10px; height:100%; padding:0 12px 12px; transition:grid-template-columns .18s ease; }
-  body.sidebar-closed #app { grid-template-columns:172px minmax(360px,1.15fr) minmax(340px,1fr); }
+  /* The app shell (NexusUI's, copied in app-shell/): Aether Studio's sidebar, no header, a status bar. The studio's
+     grid is the shell's main area now; the pages inside it are unchanged. */
+  #app { height:100%; }
+  #app .nx-main { display:grid; grid-template-columns:minmax(340px,1.12fr) minmax(330px,.96fr) 348px; grid-template-rows:minmax(0,1fr) auto auto auto; gap:10px; padding:12px; transition:grid-template-columns .18s ease; }
+  body.sidebar-closed #app .nx-main { grid-template-columns:minmax(360px,1.15fr) minmax(340px,1fr); }
   body.sidebar-closed aside#studioSidebar { display:none; }
-  header { grid-column:1/-1; display:flex; align-items:center; gap:14px; padding:10px 2px 0; min-width:0; }
-  .brand { display:flex; align-items:center; gap:8px; font-size:17px; font-weight:700; letter-spacing:-.01em; }
-  .brand svg { width:26px; height:26px; }
-  #tabs { display:flex; gap:3px; padding:3px; background:var(--panel); border:1px solid var(--line); border-radius:11px; overflow-x:auto; scrollbar-width:none; min-width:0; }
-  #tabs button { border:0; background:transparent; color:var(--dim); padding:4px 10px; border-radius:8px; white-space:nowrap; }
+  .nx-collapsed .nx-section-items[hidden] { display:flex !important; }   /* the app's [hidden] rule is !important; the rail shows every destination */
+  /* The header's controls, in the sidebar's footer (32px rows, 12px text). */
+  .nx-tools .tool::before { content:""; flex:none; width:18px; height:18px; background:currentColor; -webkit-mask:var(--icon) center/contain no-repeat; mask:var(--icon) center/contain no-repeat; }
+  .nx-tools .sound { display:flex; align-items:center; gap:6px; }
+  .nx-collapsed .nx-tools .tool { font-size:0; justify-content:center; padding:0; }
+  .nx-collapsed #tabs, .nx-collapsed #level { display:none; }
+  #tabs { display:flex; flex-wrap:wrap; gap:3px; padding:3px; margin-bottom:6px; background:var(--bg); border:1px solid var(--line); border-radius:8px; min-width:0; }
+  #tabs button { border:0; background:transparent; color:var(--dim); padding:3px 8px; border-radius:6px; white-space:nowrap; font-size:12px; }
   #tabs button:hover { color:var(--ink); background:var(--panel2); }
   #tabs button[aria-selected=true] { background:var(--ink); color:#0d0f18; font-weight:600; }
-  .conn { margin-left:auto; display:flex; align-items:center; gap:7px; color:var(--dim); font-size:12px; white-space:nowrap; }
-  #light { width:7px; height:7px; border-radius:50%; background:var(--warm); }
+  #light { display:inline-block; width:7px; height:7px; margin-right:5px; border-radius:50%; background:var(--warm); }
   #light.on { background:var(--accent); box-shadow:0 0 0 3px #5fe0d022; }
-  #privacy { padding-left:10px; border-left:1px solid var(--line); }
   #privacy.live { color:var(--accent); }
   #abVoice { white-space:nowrap; padding:4px 9px; font-size:13px; }
-  #level { width:44px; height:6px; flex:none; border-radius:3px; background:var(--panel2); overflow:hidden; }
+  #level { width:44px; height:6px; flex:none; margin-right:8px; border-radius:3px; background:var(--panel2); overflow:hidden; }
   #level i { display:block; width:0; height:100%; background:var(--accent); }
-  #mute { padding:4px 8px; font-size:13px; white-space:nowrap; }
+  #mute { flex:1; white-space:nowrap; }
   #mute[aria-pressed=true] { color:var(--hot); }
+  .nx-profile .nx-avatar > svg { width:18px; height:18px; }
 
-  main { position:relative; min-height:0; min-width:0; display:grid; border-radius:16px; overflow:hidden; border:1px solid var(--line); background:#000; }
-  main.single { grid-template:1fr / 1fr; }
-  main.all { grid-template:repeat(4,1fr) / repeat(4,1fr); gap:2px; }
+  #stage { position:relative; min-height:0; min-width:0; display:grid; border-radius:16px; overflow:hidden; border:1px solid var(--line); background:#000; }
+  #stage.single { grid-template:1fr / 1fr; }
+  #stage.all { grid-template:repeat(4,1fr) / repeat(4,1fr); gap:2px; }
   .pane { position:relative; min-width:0; min-height:0; overflow:hidden; display:none; background:#000; }
   .pane.on { display:block; }
   .pane canvas { position:absolute; inset:0; width:100%; height:100%; display:block; }
   .pane .tag { position:absolute; left:10px; top:8px; font-size:11px; color:#fff; background:rgba(0,0,0,.5); padding:2px 7px; border-radius:6px; z-index:2; display:none; }
-  main.all .tag { display:block; }
+  #stage.all .tag { display:block; }
   #sub { position:absolute; left:50%; bottom:18px; transform:translateX(-50%); max-width:min(82%,640px); padding:7px 14px; border-radius:10px; background:rgba(8,9,14,.76); backdrop-filter:blur(6px); color:#fff; font-size:15px; text-align:center; opacity:0; transition:opacity .18s; pointer-events:none; z-index:3; }
   #sub.on { opacity:1; }
   #streamBtn { position:absolute; right:12px; top:12px; z-index:4; background:rgba(10,12,20,.6); backdrop-filter:blur(8px); border-color:#ffffff22; color:#fff; }
@@ -53,8 +59,8 @@
   #views button { min-width:38px; min-height:30px; padding:4px 6px; background:rgba(10,12,20,.55); backdrop-filter:blur(8px); border-color:#ffffff22; color:#fff; font-size:12.5px; }
   #views button[aria-pressed=true] { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:650; }
   #views button:disabled { opacity:.35; cursor:not-allowed; }
-  #tabs .who { padding:4px 8px 4px 6px; font-weight:650; white-space:nowrap; align-self:center; }
-  #assets { grid-column:2; min-width:0; padding:8px 10px; background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+  #tabs .who { flex-basis:100%; padding:2px 5px; font-size:12px; font-weight:650; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #assets { grid-column:1; min-width:0; padding:8px 10px; background:var(--panel); border:1px solid var(--line); border-radius:12px; }
   #assetGroups { display:flex; gap:16px; overflow-x:auto; padding-top:6px; }
   #assetGroups .group { flex:0 0 auto; max-width:420px; }
   #assetGroups .chips { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; max-height:96px; overflow-y:auto; }
@@ -65,12 +71,6 @@
   #toExhibit { position:absolute; top:8px; right:12px; color:var(--accent); text-decoration:none; }
   /* The exhibit, below the app: how this avatar is animated, its face sheet and the files its pack ships.
      These sections are pages now: hidden until the nav bar picks one, so the home page stays clear. */
-  #pages { grid-column:1; grid-row:2/6; display:flex; flex-direction:column; gap:2px; padding:8px 6px; background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow-y:auto; }
-  #pages button, #pages a { background:transparent; border:0; border-left:3px solid transparent; border-radius:8px; padding:9px 11px; color:var(--dim); font:inherit; text-align:left; text-decoration:none; cursor:pointer; white-space:nowrap; transition:color .15s, background .15s; }
-  #pages button:hover, #pages a:hover { color:var(--ink); background:var(--panel2); border-color:transparent; border-left-color:transparent; }
-  #pages button[aria-selected=true] { color:var(--accent); background:var(--panel2); border-left-color:var(--accent); font-weight:600; }
-  #pages .site { margin-top:auto; border-top:1px solid var(--line); border-radius:0; padding-top:12px; }
-  #pages a[aria-selected=true] { color:var(--accent); background:var(--panel2); border-left-color:var(--accent); font-weight:600; }
   #panelTabs { display:none; }
   #telemetryPanel { gap:10px; }
   #teleFeed { flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:5px; font-size:12px; scrollbar-width:thin; }
@@ -79,20 +79,20 @@
   .tele.tool { border-left-color:var(--accent); } .tele.tool b { color:var(--accent); }
   .tele.assistant { border-left-color:#9d8cff; } .tele.user { border-left-color:#7cc7ff; }
   #pageFrame { display:none; border:0; }
-  body.page-frame #pageFrame { display:block; position:fixed; left:var(--pageLeft,184px); top:var(--pageTop,64px); width:calc(100vw - var(--pageLeft,184px)); height:calc(100vh - var(--pageTop,64px)); z-index:40; background:var(--bg); }
-  body.page-panel #agenticPanel:not([hidden]), body.page-panel #performPanel:not([hidden]), body.page-panel #studioPanel:not([hidden]) { position:fixed; left:var(--pageLeft,184px); right:0; top:var(--pageTop,64px); bottom:0; overflow:auto; z-index:40; background:var(--bg); display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,460px)); gap:18px 28px; align-content:start; padding:16px 20px 40px; }
+  body.page-frame #pageFrame { display:block; position:fixed; left:var(--pageLeft,224px); top:var(--pageTop,0px); width:calc(100vw - var(--pageLeft,224px)); height:calc(100vh - var(--pageTop,0px) - var(--pageBottom,24px)); z-index:40; background:var(--bg); }
+  body.page-panel #agenticPanel:not([hidden]), body.page-panel #performPanel:not([hidden]), body.page-panel #studioPanel:not([hidden]) { position:fixed; left:var(--pageLeft,224px); right:0; top:var(--pageTop,0px); bottom:var(--pageBottom,24px); overflow:auto; z-index:40; background:var(--bg); display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,460px)); gap:18px 28px; align-content:start; padding:16px 20px 40px; }
   #assets, #exhibit { display:none; }
   body.page-assets #assets { display:block; }
   body.page-exhibit #exhibit { display:grid; align-content:start; }
-  /* A selected page replaces the view: a full layer below the header and nav; the Studio stays alive behind it. */
-  body.page-assets #assets, body.page-exhibit #exhibit { position:fixed; left:var(--pageLeft,174px); right:0; bottom:0; top:var(--pageTop,64px); overflow:auto; background:var(--bg); z-index:40; margin:0; border:none; border-radius:0; padding:12px 16px 40px; }
+  /* A selected page replaces the view: a full layer beside the sidebar, above the status bar; the Studio stays alive behind it. */
+  body.page-assets #assets, body.page-exhibit #exhibit { position:fixed; left:var(--pageLeft,224px); right:0; bottom:var(--pageBottom,24px); top:var(--pageTop,0px); overflow:auto; background:var(--bg); z-index:40; margin:0; border:none; border-radius:0; padding:12px 16px 40px; }
   #exhibit { padding:8px 12px 40px; gap:14px; }
   #exhibit h3 { margin:6px 0 2px; font-size:18px; }
   #settingsTabs button { padding:6px 12px; }
   #settingsTabs { display:flex; gap:4px; margin:12px 0; }
   #settingsTabs button[aria-selected=true] { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
   #settings { width:min(900px,94vw); max-height:88vh; background:var(--panel); color:var(--ink); border:1px solid var(--line); border-radius:16px; padding:20px; } #settings::backdrop { background:#000a; }
-  #flowOpen, #settingsOpen { white-space:nowrap; } #settings label.row .note { flex:1; min-width:0; }
+  #settingsOpen { white-space:nowrap; } #settings label.row .note { flex:1; min-width:0; }
   #settings .row > span:first-child { min-width:120px; } #settings select { max-width:300px; }
   #agentAll table { width:100%; border-collapse:collapse; margin:8px 0 14px; font-size:12px; } #agentAll td:nth-child(-n+3) { white-space:nowrap; } #agentAll td:nth-child(2), #agentAll td:nth-child(3) { min-width:74px; max-width:170px; overflow-wrap:anywhere; white-space:normal; } #agentAll td, #agentAll th { text-align:left; vertical-align:top; padding:5px 6px; border-top:1px solid var(--line); } #agentAll th { color:var(--ink); } #agentAll code { color:var(--ink); } #agentAll h3 { font-size:13px; margin:12px 0 4px; color:var(--ink); }
   .tabPane { display:none; gap:14px; }
@@ -141,7 +141,7 @@
   #toast { position:fixed; left:50%; top:66px; transform:translateX(-50%) translateY(8px); z-index:20; max-width:min(90vw,520px); padding:9px 15px; border-radius:10px; background:var(--ink); color:#0d0f18; font-size:13.5px; opacity:0; transition:opacity .2s,transform .2s; pointer-events:none; }
   #toast.on { opacity:1; transform:translateX(-50%); }
 
-  #bar { grid-column:2; display:flex; align-items:center; gap:12px; min-width:0; padding:7px 10px; background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+  #bar { grid-column:1; display:flex; align-items:center; gap:12px; min-width:0; padding:7px 10px; background:var(--panel); border:1px solid var(--line); border-radius:12px; }
   #mood { display:flex; align-items:center; gap:8px; min-width:0; flex:0 1 170px; }
   #moodIcon { font-size:18px; width:22px; text-align:center; color:var(--accent); }
   #moodLabel { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -156,7 +156,7 @@
   #recBtn { white-space:nowrap; }
   #recBtn[aria-pressed=true] { color:var(--hot); border-color:var(--hot); }
 
-  #dock { grid-column:2; display:none; }   /* the message box lives in the conversation; stream mode borrows it */
+  #dock { grid-column:1; display:none; }   /* the message box lives in the conversation; stream mode borrows it */
   #log { font-size:12.5px; line-height:18px; height:18px; color:var(--dim); overflow:hidden; margin:0 4px 6px; white-space:nowrap; text-overflow:ellipsis; }
   form { display:flex; gap:7px; margin:0; }
   #cloneName { font:inherit; padding:6px 9px; color:var(--ink); background:var(--panel2); border:1px solid var(--line); border-radius:9px; min-width:0; }
@@ -175,10 +175,10 @@
   #mic[data-state=hearing] { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600; }
   #mic[data-state=working] { border-color:var(--accent); }
 
-  #chatColumn { grid-row:2/6; grid-column:3; min-height:0; min-width:0; display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
-  aside#studioSidebar { grid-row:2/6; grid-column:4; min-height:0; display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
-  #sidebarToggle { white-space:nowrap; font-weight:600; }
-  #sidebarToggle[aria-expanded=true] { border-color:var(--accent); color:var(--accent); }
+  #chatColumn { grid-row:1/5; grid-column:2; min-height:0; min-width:0; display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+  aside#studioSidebar { grid-row:1/5; grid-column:3; min-height:0; display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+  #sidebarToggle { white-space:nowrap; }
+  #sidebarToggle[aria-expanded=true] { color:var(--accent); }
   #assets summary { cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; }
   #assets summary::-webkit-details-marker { display:none; }
   #panelTabs { display:flex; gap:4px; padding:6px; border-bottom:1px solid var(--line); flex-shrink:0; }
@@ -253,26 +253,20 @@
   #chat b { color:var(--accent); font-weight:600; }
   #exit { position:absolute; right:12px; top:12px; display:none; z-index:4; background:rgba(8,9,12,.6); color:#fff; }
   #plate { position:absolute; left:14px; top:12px; display:none; z-index:3; padding:4px 11px; border-radius:8px; background:rgba(8,9,12,.6); color:#fff; font-weight:650; font-size:14px; }
-  body.stream #app { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) auto; padding:0; gap:0; }
-  body.stream header, body.stream #pages, body.stream #chatColumn, body.stream aside#studioSidebar, body.stream #log, body.stream #bar, body.stream #streamBtn, body.stream #views, body.stream #assets, body.stream #exhibit { display:none; }
-  body.stream main { border:0; border-radius:0; }
+  body.stream #app .nx-main { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) auto; padding:0; gap:0; }
+  body.stream .nx-sidebar, body.stream .nx-status, body.stream #chatColumn, body.stream aside#studioSidebar, body.stream #log, body.stream #bar, body.stream #streamBtn, body.stream #views, body.stream #assets, body.stream #exhibit { display:none; }
+  body.stream #stage { border:0; border-radius:0; }
   body.stream #chat { display:flex; }
   body.stream #exit, body.stream #plate { display:block; }
   body.stream #sub { font-size:22px; bottom:26px; max-width:min(58%,820px); }
   body.stream #dock { grid-column:1; padding:8px 14px; display:block; }
   body.obs #dock, body.obs #exit, body.obs #recBadge, body.obs #loading, body.obs #toast { display:none; }
-  body[data-bg=green], body[data-bg=green] #app, body[data-bg=green] main, body[data-bg=green] .pane { background:#00b140; }
-  body[data-bg=clear], html:has(body[data-bg=clear]), body[data-bg=clear] #app, body[data-bg=clear] main, body[data-bg=clear] .pane { background:transparent; }
+  body[data-bg=green], body[data-bg=green] #app, body[data-bg=green] .nx-app, body[data-bg=green] .nx-main, body[data-bg=green] #stage, body[data-bg=green] .pane { background:#00b140; }
+  body[data-bg=clear], html:has(body[data-bg=clear]), body[data-bg=clear] #app, body[data-bg=clear] .nx-app, body[data-bg=clear] .nx-main, body[data-bg=clear] #stage, body[data-bg=clear] .pane { background:transparent; }
   body[data-bg=green] .bgl, body[data-bg=clear] .bgl { display:none !important; }
   @media (max-width:800px) {
-    html,body { height:auto; }
-    #app { display:flex; flex-direction:column; height:auto; min-height:100dvh; padding:0 16px 16px; }
-    header { flex-wrap:wrap; gap:8px 12px; }
-    #tabs { order:3; width:100%; }
-    .conn { font-size:11.5px; min-width:0; }
-    #status { overflow:hidden; text-overflow:ellipsis; min-width:0; }
-    #privacy, #level { display:none; }
-    main { position:sticky; top:0; z-index:10; height:48dvh; flex:none; }
+    #app .nx-main { display:flex; flex-direction:column; padding:12px 16px 16px; }
+    #stage { position:sticky; top:0; z-index:10; height:48dvh; flex:none; }
     #bar { flex-wrap:wrap; }
     #mood { flex:1 1 40%; }
     #quick { order:3; width:100%; }
@@ -284,13 +278,12 @@
     #keys, kbd, #streamBtn { display:none; }
     #views { flex-direction:row; top:auto; bottom:10px; right:10px; transform:none; }
     #views button { min-width:34px; }
-    body.stream #app { display:flex; min-height:100dvh; padding:0; }
-    body.stream main { flex:1; position:relative; height:auto; }
+    body.stream #app .nx-main { padding:0; }
+    body.stream #stage { flex:1; position:relative; height:auto; }
   }
-  @media (max-width:1240px) and (min-width:801px) { #privacy { display:none; } }
   @media (prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; } }
 
-  #libraryOpen {margin-bottom:0;white-space:nowrap} .brand{white-space:nowrap} #tabs {overflow-x:auto;flex-wrap:nowrap} #tabs button{flex-shrink:0}
+  #tabs button{flex-shrink:0}
   #library{width:min(900px,94vw);max-height:88vh;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:20px} #library::backdrop{background:#000a}
   #librarySearch{width:100%;margin:16px 0;padding:12px} #libraryGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px} #libraryGrid article{padding:12px;background:var(--bg);border:1px solid var(--line);border-radius:12px} #libraryGrid img{width:100%;height:130px;object-fit:contain} #libraryGrid button{display:block;width:100%;margin-top:6px;text-align:left;font-size:12px} #libraryGrid h3{margin:4px 0 10px} .reel-singer{font-size:11px;display:flex;align-items:center;gap:4px} #packProfile{max-width:180px}
   @media(max-width:800px){#bar .actions{width:100%;flex-wrap:wrap;justify-content:flex-end}.reel-singer{margin-right:auto}}
@@ -298,31 +291,17 @@
 </head>
 <body>
 <div id="app">
-  <header>
-    <div class="brand"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#1c2034"/><rect x="14" y="20" width="13" height="24" rx="6" fill="#5fe0d0"/><rect x="37" y="20" width="13" height="24" rx="6" fill="#5fe0d0"/></svg>Jaeger Avatar</div>
-    <div id="tabs" role="tablist" aria-label="Bodies and modes"></div>
-    <div class="conn"><i id="light"></i><span id="status" aria-live="polite"></span><span id="privacy">Mic off · Camera off</span></div>
-    <button id="settingsOpen" title="Agent, voice and hearing">Settings</button>
-    <span id="level" title="The sound leaving the app. If this moves and you hear nothing, check your output device and the browser tab." aria-hidden="true"><i></i></span>
-    <button id="mute" aria-pressed="false" aria-label="Mute her voice" title="Mute her voice">Sound on</button>
-    <button id="sidebarToggle" aria-expanded="true" aria-controls="studioSidebar" title="Collapse or expand the agent panel">Agent panel ▸</button>
-  </header>
-  <nav id="pages" aria-label="Pages">
-    <button data-page="home" aria-selected="true">Studio</button>
-    <button data-page="paneOutputs">Outputs</button>
-    <button data-page="paneInputs">Inputs</button>
-    <button data-page="paneAgent">Agent controls</button>
-    <button data-page="paneHow">How this is animated</button>
-    <button data-page="assets">Pack assets</button>
-    <button data-page="agentic">Agent config</button>
-    <button data-page="perform">Perform</button>
-    <button data-page="studio">Studio tools</button>
-    <button id="libraryOpen" class="site">Avatar library · 57</button>
-    <button id="flowOpen" title="Watch every stage live: mic, hearing, agent, voice, animation">Data flow</button>
-    <a href="/multimodal.html" data-page="/multimodal.html">Multimodal</a>
-    <a href="/demo-packs.html" data-page="/demo-packs.html">Demo packs</a>
-    <a href="/compare.html" data-page="/compare.html">Compare voices</a>
-  </nav>
+  <!-- What the header held: app.js moves these into the app shell's sidebar (the pages become its sections), ids kept. -->
+  <div id="shellParts" hidden>
+    <svg id="brandMark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="18" fill="#1c2034"/><rect x="14" y="20" width="13" height="24" rx="6" fill="#5fe0d0"/><rect x="37" y="20" width="13" height="24" rx="6" fill="#5fe0d0"/></svg>
+    <div id="shellTools">
+      <div id="tabs" role="tablist" aria-label="Bodies and modes"></div>
+      <button id="settingsOpen" class="nx-row tool" title="Agent, voice and hearing">Settings</button>
+      <div class="sound"><button id="mute" class="nx-row tool" aria-pressed="false" aria-label="Mute her voice" title="Mute her voice">Sound on</button><span id="level" title="The sound leaving the app. If this moves and you hear nothing, check your output device and the browser tab." aria-hidden="true"><i></i></span></div>
+      <button id="sidebarToggle" class="nx-row tool" aria-expanded="true" aria-controls="studioSidebar" title="Collapse or expand the agent panel">Agent panel ▸</button>
+    </div>
+    <div id="shellProfile"><span class="nx-avatar" aria-hidden="true"></span><span class="nx-profile-text"><b>Agent</b><span><i id="light"></i><span id="status" aria-live="polite"></span></span><span id="privacy">Mic off · Camera off</span></span></div>
+  </div>
   <main id="stage" class="single">
     <div id="sub"></div>
     <div id="chat" aria-live="polite"></div>

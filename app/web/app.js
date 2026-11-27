@@ -19,6 +19,46 @@ import { VrmChar, STAGE } from './render-vrm.js';
 import { openMic, isEcho, toPcm, fromPcm, Gate } from './ears.js';
 import { startSettings } from './settings.js';
 import { trace, channels as traceChannels, describe as describeFlow, resend as resendFlow } from './flow.js';
+import { mountAppShell } from './app-shell/app-shell.js';
+import { ICONS } from './app-shell/icons.js';
+// The app shell (NexusUI's, copied in app-shell/): Aether Studio's sidebar with the pages as its sections, the header's
+// controls in its footer (ids kept), a status bar across the bottom. The studio and every page sit in shell.main unchanged.
+const framedPage = (id, label, icon) => ({ id, label, icon, href: id, onSelect: e => { e.preventDefault(); goPage(id); } });
+const shell = mountAppShell(document.querySelector('#app'), {
+  id: 'jaeger-avatar', brand: { name: 'Jaeger', suffix: 'Avatar', mark: document.querySelector('#brandMark') },
+  sections: [
+    { id: 'workspace', title: 'Workspace', items: [
+      { id: 'home', label: 'Studio', icon: 'home' }, { id: 'paneOutputs', label: 'Outputs', icon: 'display' },
+      { id: 'paneInputs', label: 'Inputs', icon: 'mic' }, { id: 'paneAgent', label: 'Agent controls', icon: 'brain' },
+      { id: 'paneHow', label: 'How this is animated', icon: 'info' }, { id: 'assets', label: 'Pack assets', icon: 'layers' },
+      { id: 'agentic', label: 'Agent config', icon: 'character' }, { id: 'perform', label: 'Perform', icon: 'play' },
+      { id: 'studio', label: 'Studio tools', icon: 'tools' }] },
+    { id: 'library', title: 'Library', items: [
+      { id: 'avatarLibrary', label: 'Avatar library', icon: 'library', onSelect: () => {} },   // its own handler: pack-library.js, on #libraryOpen
+      { id: 'dataFlow', label: 'Data flow', icon: 'dashboard', onSelect: () => {} },         // its own handler: below, on #flowOpen
+      framedPage('/multimodal.html', 'Multimodal', 'sparkles'), framedPage('/demo-packs.html', 'Demo packs', 'film'),
+      framedPage('/compare.html', 'Compare voices', 'waveform')] }],
+  current: 'home', onSelect: page => goPage(page),
+  status: { name: 'Jaeger Avatar', connection: 'waiting', message: '', company: 'Jenkins Robotics' },
+});
+{
+  const row = id => shell.sidebar.querySelector(`.nx-row[data-id="${id}"]`);
+  row('avatarLibrary').id = 'libraryOpen';
+  Object.assign(row('dataFlow'), { id: 'flowOpen', title: 'Watch every stage live: mic, hearing, agent, voice, animation' });
+  shell.tools.append(...document.querySelector('#shellTools').children);
+  const profile = shell.sidebar.querySelector('.nx-profile'), parts = document.querySelector('#shellProfile');
+  parts.querySelector('.nx-avatar').innerHTML = ICONS.brain;   // repository-owned SVG
+  profile.append(...parts.children);
+  document.querySelector('#shellParts').remove();
+  for (const [id, icon] of [['settingsOpen', 'settings'], ['mute', 'audio'], ['sidebarToggle', 'sidebar']])
+    document.getElementById(id).style.setProperty('--icon', `url("data:image/svg+xml,${encodeURIComponent(ICONS[icon])}")`);
+}
+// The pages open as a layer over the shell's main area: keep their edges on it as the rail collapses or the window resizes.
+function placePages() {
+  const r = shell.main.getBoundingClientRect(), s = document.documentElement.style;
+  s.setProperty('--pageTop', r.top + 'px'); s.setProperty('--pageLeft', r.left + 'px'); s.setProperty('--pageBottom', innerHeight - r.bottom + 'px');
+}
+new ResizeObserver(placePages).observe(shell.main);
 document.querySelector('#flowOpen').onclick = () => window.open('/flow.html', 'jaeger-flow', 'popup,width=1280,height=920');
 
 const { sampleTrack, SR, VOCAL_NAMES } = voice;
@@ -49,7 +89,7 @@ const params = new URLSearchParams(location.search);
 const startupTrace=params.has("startup")?(await import("/performance-review/startup-trace.js")).trace:()=>{};
 let startupRequest=0;
 const PACKS = await (await fetch('/api/avatars')).json();
-$('#libraryOpen').textContent='Avatar library · '+PACKS.length;
+shell.setBadge('avatarLibrary', PACKS.length);
 const CHARACTERS = charactersFromPacks(PACKS);
 // Any personality can drive any body: a profile is the mind (name, voice, prompt), a representation is the body.
 function setPersona(c, value) {
@@ -158,10 +198,8 @@ function goPage(page) {
   $('#agenticPanel').hidden = page !== 'agentic';
   $('#performPanel').hidden = page !== 'perform';
   $('#studioPanel').hidden = page !== 'studio';
-  for (const b of document.querySelectorAll('#pages [data-page]')) b.setAttribute('aria-selected', b.dataset.page === page);
-  const navBox = document.querySelector('#pages').getBoundingClientRect();
-  document.documentElement.style.setProperty('--pageTop', navBox.top + 'px');
-  document.documentElement.style.setProperty('--pageLeft', navBox.right + 10 + 'px');
+  shell.setCurrent(page);
+  placePages();
   const frame = $('#pageFrame');
   if (framed) { if (frame.dataset.src !== page) { frame.src = page; frame.dataset.src = page; } }
   else if (frame.dataset.src) { frame.src = 'about:blank'; frame.dataset.src = ''; }   // a closed page stops its camera, mic and streams
@@ -169,8 +207,6 @@ function goPage(page) {
   else { $('#hwList').replaceChildren(); outputsFor = ''; }   // leaving the exhibit: stop the device streams
   if (page === 'assets') { $('#assetsBox').open = true; $('#assets').scrollTop = 0; }
 }
-for (const b of document.querySelectorAll('#pages button[data-page]')) b.onclick = () => goPage(b.dataset.page);
-for (const a of document.querySelectorAll('#pages a[data-page]')) a.onclick = e => { e.preventDefault(); goPage(a.dataset.page); };
 $('#toExhibit').onclick = e => { e.preventDefault(); goPage('paneHow'); };
 // Outputs: the body's hardware streams, inline and in windows of their own.
 let outputsFor = '';
@@ -1297,6 +1333,7 @@ function hudStatic() {
   const v = chosenVoice();
   $('#status').title = `Brain: ${serverBrain}. Voice: ${v ?? (serverVoice ? (current.voice||KRISTIN).split('-')[1] : 'built-in synth')}.`;
   $('#light').classList.toggle('on', serverBrain !== 'scripted');
+  shell.setStatus({ name: 'Jaeger Avatar', connection: serverBrain !== 'scripted' ? 'connected' : 'waiting', message: $('#status').textContent, company: 'Jenkins Robotics' });
 }
 const showPrivacy = () => { const mic = !!closeMic || !!liveMouth, cam = !!stopCam, p = $('#privacy'); p.textContent = `Mic ${mic ? 'on' : 'off'} · Camera ${cam ? 'on' : 'off'}`; p.classList.toggle('live', mic || cam); };
 hudStatic();
