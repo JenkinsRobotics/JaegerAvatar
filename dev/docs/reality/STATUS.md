@@ -13,8 +13,9 @@ Release 0.2.0, on master. Verified today, in the running app unless noted:
 - **Voices**: Chatterbox Turbo's built-in voice is the app default
   (`chatterbox:default`, no sample; `app/voice_engine.py`), Kokoro's fifteen
   named voices beside it. Settings → Engine picks the conversation worker:
-  the JaegerAgent voice loop (Kokoro, `jaeger_agent.body.loop`) or Omni V2
-  (Chatterbox, `jaeger_omni_v2.avatar_loop`) — both exercised through the app.
+  the JaegerAgent voice loop (Kokoro, `jaeger_agent.body.loop`) — the one in
+  use — or Omni V2 (Chatterbox, `jaeger_omni_v2.avatar_loop`), exercised once
+  through the app and then put on hold pending better integration.
 - **Releases, November 26**: jaeger-module-agent master `cb7082b` (707 tests),
   jaeger-module-omni master `062aba12`, Mochi main `3854ab6` (230 tests) —
   archived: this app is the end-to-end avatar test bed with virtual hardware;

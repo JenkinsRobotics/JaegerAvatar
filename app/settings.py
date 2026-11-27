@@ -11,7 +11,7 @@ LANGUAGES = {'en': 'English', 'auto': 'Detect automatically'}
 # Jaeger Agent's two ways of taking turns with a body: quasi (open mic, echo cancelled, you can cut in) or half (mic shut while she speaks).
 DUPLEX = {'quasi': 'Quasi full duplex: talk over her', 'half': 'Half duplex: the mic shuts while she speaks'}
 # The two conversation engines, each a worker in its own right: the voice loop speaks with Kokoro, Omni V2 with Chatterbox.
-ENGINES = {'loop': 'JaegerAgent voice loop · Kokoro voice', 'omni': 'Omni V2 · Chatterbox voice'}
+ENGINES = {'loop': 'JaegerAgent voice loop · Kokoro voice', 'omni': 'Omni V2 · Chatterbox voice (on hold: pending better integration)'}
 
 
 def defaults(model, stt):
