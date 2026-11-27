@@ -24,6 +24,12 @@ Release 0.2.0, on master. Verified today, in the running app unless noted:
   `dev/docs/packs/mochi-format/`. Merged working branches were deleted
   (kept: agent `dev` worktree, which `.agent-venv` installs from;
   unmerged `sync/vendor-parity`; `gh-pages` everywhere).
+- **Virtual hardware** (`virtual-hardware/`): Mochi's virtual LED display,
+  re-homed onto the real stream contract. `display.py` opens any device output
+  as its own window (rings drawn as the physical circle of LEDs), stdlib
+  tkinter only; `--probe` is the runnable check. Verified end to end today:
+  JP01 face 64 x 64 and ring 24 x 1 frames read from `/hardware/stream/`.
+  `main.py` at the root launches the app the way Mochi's did (it is `./run.sh`).
 - A fresh install has not been tried since these changes.
 
 ---
