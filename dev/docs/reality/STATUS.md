@@ -1,4 +1,33 @@
-# Current status — November 8, 2026
+# Current status — November 26, 2026
+
+Release 0.2.0, on master. Verified today, in the running app unless noted:
+
+- **The Studio shell**: a left navigation bar whose entries replace the workspace
+  one page at a time — Studio, Outputs, Inputs, Agent controls, How this is
+  animated, Pack assets, Agent config, Perform, Studio tools — with Multimodal,
+  Demo packs and Compare voices opening framed inside the same shell. The right
+  panel is live agent telemetry only (every loop event: heard words, thinking,
+  tool calls, feelings, latency marks); configuration moved to the left-nav pages.
+- **Multimodal page** (`app/web/multimodal.html`): camera preview, microphone
+  waveform and level, `/health` repolled, and the `/agent/events` stream live.
+- **Voices**: Chatterbox Turbo's built-in voice is the app default
+  (`chatterbox:default`, no sample; `app/voice_engine.py`), Kokoro's fifteen
+  named voices beside it. Settings → Engine picks the conversation worker:
+  the JaegerAgent voice loop (Kokoro, `jaeger_agent.body.loop`) or Omni V2
+  (Chatterbox, `jaeger_omni_v2.avatar_loop`) — both exercised through the app.
+- **Releases, November 26**: jaeger-module-agent master `cb7082b` (707 tests),
+  jaeger-module-omni master `062aba12`, Mochi main `3854ab6` (230 tests) —
+  archived: this app is the end-to-end avatar test bed with virtual hardware;
+  JP01 is the real integration. Every Mochi character verified file-for-file
+  under each pack's `sources/mochi/`; format docs preserved at
+  `dev/docs/packs/mochi-format/`. Merged working branches were deleted
+  (kept: agent `dev` worktree, which `.agent-venv` installs from;
+  unmerged `sync/vendor-parity`; `gh-pages` everywhere).
+- A fresh install has not been tried since these changes.
+
+---
+
+# Status as of November 8, 2026
 
 ## Implemented
 
